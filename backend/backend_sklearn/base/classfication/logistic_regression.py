@@ -6,10 +6,12 @@ hyper-parameters setting for this model
 
 @author: Guangqiang.lu
 """
-from sklearn.linear_model import LogisticRegression
+import numpy as np
+from auto_ml.backend.backend_sklearn.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
+                                                          GridHyperparameter)
 
 
-class LR():
+class LogisticRegression():
     def __init__(self, C=1.,
                  class_weight=None,
                  dual=False,
@@ -27,6 +29,8 @@ class LR():
         self.random_state = random_state
 
     def fit(self, x, y):
+        from sklearn.linear_model import LogisticRegression
+
         self.estimator = LogisticRegression(C=self.C,
                                 class_weight=self.class_weight,
                                 dual=self.dual,
@@ -36,6 +40,7 @@ class LR():
                                 random_state=self.random_state)
 
         self.estimator.fit(x, y)
+        return self
 
     def predict(self, x):
         return self.estimator.predict(x)
@@ -46,14 +51,27 @@ class LR():
     def predict_proba(self, x):
         return self.estimator.predict_proba(x)
 
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        c_list = UniformHyperparameter(name="C", low=0.1, high=10, size=3)
+        dual = CategoryHyperparameter(name="dual", categories=[True, False])
+        grid = GridHyperparameter(name="C", values=[1, 2, 3])
+
+        config.add_hyper([c_list, dual, grid])
+
+        # config.get_hypers()
+        return config
 
 if __name__ == '__main__':
-    lr = LR()
+    lr = LogisticRegression()
 
     from sklearn.datasets import load_iris
-    x, y  = load_iris(return_X_y=True)
+    x, y = load_iris(return_X_y=True)
 
     lr.fit(x, y)
 
     print(lr.score(x, y))
+    lr.get_search_space()
 

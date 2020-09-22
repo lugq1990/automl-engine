@@ -69,16 +69,14 @@ def check_data_and_label(data, label):
     :return: checked data and label
     """
     check_label(y)
-    # before we check data and label, we should ensure
-    # data and label without any nan value.
-    # if label is Nan, we don't support that.
-    data = ensure_no_nan_value(data)
+    # Here is to ensure that the data is 2D
+    data = ensure_2d_data(data)
     data, label = check_X_y(data, label, accept_sparse=True)
 
     return data, label
 
 
-def ensure_no_nan_value(data):
+def ensure_2d_data(data):
     """
     this is to ensure without nan or inf value,
     as for training step, we don't support nan value,

@@ -12,7 +12,7 @@ import os
 import shutil
 import traceback
 
-from backend.backend_sklearn.utils.logger import create_logger
+from auto_ml.backend.backend_sklearn.utils.logger import create_logger
 
 
 logger = create_logger(__file__)
@@ -20,13 +20,15 @@ logger = create_logger(__file__)
 
 class Backend(object):
     def __init__(self,
+                 tmp_folder_name=None,
+                 output_folder=None,
                  delete_tmp_folder_after_terminate=True,
                  delete_output_folder_after_terminate=True):
         self.tmp_folder_name = os.path.join(tempfile.gettempdir(), 'tmp') \
-            if self.tmp_folder_name is None else self.tmp_folder_name
+            if tmp_folder_name is None else tmp_folder_name
 
         self.output_folder = os.path.join(tempfile.gettempdir(), 'models') \
-            if self.output_folder is None else self.output_folder
+            if output_folder is None else output_folder
 
         self.delete_tmp_folder_after_terminate = delete_tmp_folder_after_terminate
         self.delete_output_folder_after_terminate = delete_output_folder_after_terminate

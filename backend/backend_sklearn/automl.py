@@ -7,14 +7,15 @@ author: Guangqiang.lu
 """
 import numpy as np
 from sklearn.base import BaseEstimator
-from backend.backend_sklearn.utils.backend_obj import Backend
-from backend.backend_sklearn.metrics.scorer import Scorer
-from backend.backend_sklearn.utils.data_rela import check_data_and_label, hash_dataset_name
+from auto_ml.backend.backend_sklearn.utils.backend_obj import Backend
+from auto_ml.backend.backend_sklearn.metrics.scorer import Scorer
+from auto_ml.backend.backend_sklearn.utils.data_rela import check_data_and_label, hash_dataset_name
+from auto_ml.backend.backend_sklearn.utils.files import load_yaml_file
 
 
 class AutoML(BaseEstimator):
-    def __init__(self, backend: Backend,
-                 time_left_for_this_task: int,
+    def __init__(self, backend=None,
+                 time_left_for_this_task=3600,
                  n_ensemble=10,
                  n_best_model=5,
                  include_estimators=None,
@@ -43,7 +44,7 @@ class AutoML(BaseEstimator):
         """
         super(AutoML, self).__init__()
         self.backend = Backend() if backend is None else backend
-        self.time_left_for_this_taks = 60 if time_left_for_this_task is None else time_left_for_this_task
+        self.time_left_for_this_taks = 3600 if time_left_for_this_task is None else time_left_for_this_task
         self.n_ensemble = n_ensemble
         self.n_best_model = n_best_model
         self.include_estimators = include_estimators
@@ -58,7 +59,7 @@ class AutoML(BaseEstimator):
             ytrain,
             task: int,
             metric: Scorer,
-            xtest:np.array = None,
+            xtest: np.array = None,
             ytest: np.array = None,
             dataset_name = None):
         # first check data and label to ensure data and
@@ -69,7 +70,9 @@ class AutoML(BaseEstimator):
         # we want to store the dataset name as a string.
         self.dataset_name = hash_dataset_name(xtrain) if dataset_name is None else dataset_name
 
-        check_data_and_label(xtrain, ytrain)
+        xtrain, ytrain = check_data_and_label(xtrain, ytrain)
+
+
 
     def predict(self, x, **kwargs):
         pass
@@ -82,6 +85,9 @@ class AutoML(BaseEstimator):
         here I want to use a Ensemble object to create
         the list of models."""
         pass
+
+    def _get_training_algorithm_names(self):
+        default_algorithms_list = load_yaml_file('default_algorithms.yml')['classifcation']['default']
 
 
 

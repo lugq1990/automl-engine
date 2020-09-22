@@ -10,7 +10,7 @@ useful in this class.
 author: Guangqiang.lu
 """
 from sklearn.base import BaseEstimator
-from ..backend_sklearn.automl import ClassificationAutoML
+from auto_ml.backend.backend_sklearn.automl import ClassificationAutoML
 
 
 class Estimators(BaseEstimator):
@@ -31,7 +31,7 @@ class Estimators(BaseEstimator):
                  tmp_models_folder=None,
                  delete_tmp_models_folder_after_finish=True,
                  delete_models_folder_after_finish=False,
-                 n_jobs=None,
+                 n_jobs=1,
                  ):
         """
         This is main class for whole sklearn processor class.
