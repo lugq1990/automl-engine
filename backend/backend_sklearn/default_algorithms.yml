@@ -1,0 +1,4 @@
+classification:
+  default:
+    - LogisticRegression
+    - SVM
