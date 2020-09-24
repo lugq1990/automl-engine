@@ -73,27 +73,44 @@ class AutoML(BaseEstimator):
         xtrain, ytrain = check_data_and_label(xtrain, ytrain)
 
 
-
     def predict(self, x, **kwargs):
         pass
 
     def score(self, x, y, **kwargs):
         pass
 
-    def create_ml_object_list(self):
+    def create_ml_object_dir(self):
         """create a list of object that we need,
-        here I want to use a Ensemble object to create
-        the list of models."""
-        pass
+        here is to use the list of names that we need to instant
+        each algorithm class, so that we could start the training 
+        step using these algorithms.
+        Let subclass to implement.
+        the directory should be {name: instance_obj}"""
+        raise NotImplementedError
 
-    def _get_training_algorithm_names(self):
-        default_algorithms_list = load_yaml_file('default_algorithms.yml')['classifcation']['default']
+    def _get_training_algorithm_names(self, file_name):
+        """according to different problem to 
+        get default algorithms"""
 
-
-
+        self.algorithm_dir = load_yaml_file(file_name)
 
 
 class ClassificationAutoML(AutoML):
+    def __init__(self):
+        super(ClassificationAutoML, self).__init__()
+
     def fit(self, xtrain, ytrain, xtest=None, ytest=None, batch_size=None):
         pass
+
+    def create_ml_object_dir(self):
+        algorithm_name_list = self.algorithm_dir['classification']['default']
+        from auto_ml.backend.backend_sklearn.base.classifier_algorithms import *
+
+        al_obj_dir = {}
+        # currently with manually creation of object
+        for al in algorithm_name_list:
+            if al == 'LogisticRegression':
+                al_obj_dir[al] = LogisticRegression()
+            elif al == 'SupportVectorMachine':
+                al_obj_dir[al] = SupportVectorMachine()
 

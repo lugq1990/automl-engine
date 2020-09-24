@@ -1,4 +1,8 @@
 classification:
   default:
     - LogisticRegression
-    - SVM
+    - SupportVectorMachine
+regression:
+  default:
+    - LinearRegression
+    -
