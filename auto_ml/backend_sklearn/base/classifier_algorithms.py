@@ -5,7 +5,7 @@ here so that we could change or do something change could be easier.
 
 @author: Guangqiang.lu
 """
-from auto_ml.backend.backend_sklearn.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
+from backend.backend_sklearn.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
                                                           GridHyperparameter)
 from sklearn.base import BaseEstimator
 

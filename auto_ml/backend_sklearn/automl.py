@@ -72,7 +72,6 @@ class AutoML(BaseEstimator):
 
         xtrain, ytrain = check_data_and_label(xtrain, ytrain)
 
-
     def predict(self, x, **kwargs):
         pass
 

@@ -13,5 +13,8 @@ def load_yaml_file(file_path):
     :param file_path:
     :return: dictionary
     """
-    with open(file_path, 'r') as file:
-        return yaml.load(file)
+    try:
+        with open(file_path, 'r') as file:
+            return yaml.load(file)
+    except IOError as e:
+        raise IOError("When load file: {} with error: {}".format(file_path, e))

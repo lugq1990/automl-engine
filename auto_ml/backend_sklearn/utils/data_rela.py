@@ -147,4 +147,3 @@ if __name__ == '__main__':
     print(hash_dataset_name(x))
     # print(ensure_no_nan_value(x))
     # print(check_data_and_label(x, y))
-    data = ['', np.nan, ]

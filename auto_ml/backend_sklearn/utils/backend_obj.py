@@ -11,11 +11,10 @@ import tempfile
 import os
 import shutil
 import traceback
+from auto_ml.backend_sklearn.utils.logger import create_logger
 
-from auto_ml.backend.backend_sklearn.utils.logger import create_logger
 
-
-logger = create_logger(__file__)
+logger = create_logger()
 
 
 class Backend(object):
@@ -33,19 +32,14 @@ class Backend(object):
         self.delete_tmp_folder_after_terminate = delete_tmp_folder_after_terminate
         self.delete_output_folder_after_terminate = delete_output_folder_after_terminate
 
-    @property
-    def get_tmp_folder(self):
-        return os.path.expandvars(self.tmp_folder_name)
+        # I think when we init instance,then we should create the tmp folder first
+        self._create_tmp_and_output_folder()
 
-    @property
-    def get_output_folder(self):
-        return os.path.expandvars(self.output_folder)
-
-    def create_tmp_and_output_folder(self):
-        if not (os.path.exists(self.get_tmp_folder()) or os.path.exists(self.get_output_folder())):
+    def _create_tmp_and_output_folder(self):
+        if not (os.path.exists(self.tmp_folder_name) or os.path.exists(self.output_folder)):
             try:
-                os.makedirs(self.get_tmp_folder())
-                os.makedirs(self.get_output_folder())
+                os.makedirs(self.tmp_folder_name)
+                os.makedirs(self.output_folder)
             except Exception as e:
                 logger.error("When create tmp and model folder with error: %s"
                              % traceback.format_exc())
@@ -80,23 +74,24 @@ class Backend(object):
                          (identifier, traceback.format_exc()))
             raise IOError("When to load %s model, face problem:%s" % (identifier, e))
 
-    def list_models(self):
+    def list_models(self, extension='pkl'):
         """
         this is to list whole saved model in local disk,
-        model name should be end with `pkl`
+        model name should be end with `pkl`, should be extended
+        to other framework with other extension.
         :return: a list of model list
         """
-        models_list = [x for x in os.listdir(self.output_folder) if x.endswith('pkl')]
+        models_list = [x for x in os.listdir(self.output_folder) if x.endswith(extension)]
         return models_list
 
-    def list_models_with_identifiers(self, identifiers):
+    def list_models_with_identifiers(self, identifiers, extension='pkl'):
         """
         this is to list whole models with identifiers satisfication.
         :param identifiers: a list of idenfifiers
         :return: a model list with satisfied
         """
         models_list = [x for x in os.listdir(self.output_folder)
-                       if x.endswith('pkl') and x.split('.')[0] in identifiers]
+                       if x.endswith(extension) and x.split('.')[0] in identifiers]
 
         return models_list
 
@@ -124,3 +119,4 @@ class Backend(object):
 
 if __name__ == "__main__":
     backend = Backend()
+    print(backend.output_folder)
