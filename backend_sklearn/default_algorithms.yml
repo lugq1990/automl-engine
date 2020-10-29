@@ -1,8 +1,9 @@
-classification:
+classifiction:
   default:
     - LogisticRegression
-    - SupportVectorMachine
+    - SupportVectorClassifier
+    - GradientBoostingClassifier
 regression:
   default:
     - LinearRegression
-    -
+    - GradientBoostingRegressor

@@ -11,7 +11,7 @@ import scipy.sparse as sp
 from sklearn.utils.validation import check_X_y, check_array
 from sklearn.utils.multiclass import type_of_target
 
-from backend.backend_sklearn.utils.CONSTANT import *
+from auto_ml.backend_sklearn.utils.CONSTANT import *
 
 
 def ensure_data_without_nan(data):
@@ -68,7 +68,7 @@ def check_data_and_label(data, label):
     :param label: array-like
     :return: checked data and label
     """
-    check_label(y)
+    check_label(label)
     # Here is to ensure that the data is 2D
     data = ensure_2d_data(data)
     data, label = check_X_y(data, label, accept_sparse=True)

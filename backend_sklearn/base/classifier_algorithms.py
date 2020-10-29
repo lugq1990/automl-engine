@@ -5,9 +5,10 @@ here so that we could change or do something change could be easier.
 
 @author: Guangqiang.lu
 """
-from backend.backend_sklearn.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
-                                                          GridHyperparameter)
 from sklearn.base import BaseEstimator
+
+from auto_ml.backend_sklearn.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
+                                                          GridHyperparameter)
 
 
 class ClassifierClass(BaseEstimator):
@@ -141,7 +142,7 @@ if __name__ == '__main__':
     from sklearn.datasets import load_iris
     x, y = load_iris(return_X_y=True)
 
-    lr = LogisticRegression()
+    lr = SupportVectorMachine()
 
     lr.fit(x, y)
     print(lr.score(x, y))

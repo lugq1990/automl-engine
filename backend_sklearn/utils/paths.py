@@ -45,6 +45,19 @@ def load_param_config():
         raise IOError("When try to read config file with error: %s" % e)
 
 
+def get_file_base_name(path):
+    """
+    To get base file name based on the path
+    :param path:
+    :return:
+    """
+    try:
+        name = os.path.basename(path).split('.')[0]
+        return name
+    except ValueError as e:
+        raise ValueError("When to get file path: {} with error: {}".format(path, e))
+
+
 if __name__ == "__main__":
     print(get_param_config_path())
 

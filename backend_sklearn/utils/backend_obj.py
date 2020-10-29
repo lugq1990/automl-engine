@@ -18,6 +18,11 @@ logger = create_logger()
 
 
 class Backend(object):
+    """
+    This the the common module that could be used for whole project,
+    currently supported with save models files, load model from disk,
+    should be added more here.
+    """
     def __init__(self,
                  tmp_folder_name=None,
                  output_folder=None,
