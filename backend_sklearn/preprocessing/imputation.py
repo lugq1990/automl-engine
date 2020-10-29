@@ -4,7 +4,6 @@ First step should cover missing field logic.
 
 @author: Guangqiang.lu
 """
-from sklearn.utils.validation import check_is_fitted
 from sklearn.impute import KNNImputer, SimpleImputer
 from auto_ml.backend_sklearn.preprocessing.processing_base import Process
 
@@ -145,3 +144,4 @@ if __name__ == '__main__':
     i.fit(data_new)
     print(i.transform(data_new))
     print(i.fit_transform(sample_data))
+    print(i.name)

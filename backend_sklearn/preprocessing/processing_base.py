@@ -14,9 +14,10 @@ class Process(object):
     """
     def __init__(self):
         self.name = self.__class__.__name__
+        self.estimator = None
 
     def fit(self, data):
-        pass
+        self.estimator.fit(data)
 
     def fit_transform(self, data):
         """
@@ -28,7 +29,7 @@ class Process(object):
         return self.transform(data)
 
     def transform(self, data):
-        pass
+        return self.estimator.transform(data)
 
 
 if __name__ == '__main__':

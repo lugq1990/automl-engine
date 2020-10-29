@@ -108,6 +108,8 @@ def check_label(y):
     if type_y not in supported_type:
         raise NotImplementedError("Don't support: %s type of problem" % type_y)
 
+    return type_y
+
 
 def hash_dataset_name(data):
     """
