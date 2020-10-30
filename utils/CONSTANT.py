@@ -31,3 +31,11 @@ TASK_TO_STRING = {BINARY_CLASSIFICATION: "binary",
 
 # Here is to make string to task names
 STRING_TO_TASK = {v: k for k, v in TASK_TO_STRING.items()}
+
+# Here I just add a tmp folder path and model save path
+import tempfile
+import os
+
+PROJECT_TMP_PATH = tempfile.mkdtemp()
+TMP_FOLDER = os.path.join(PROJECT_TMP_PATH, "tmp")
+OUTPUT_FOLDER = os.path.join(PROJECT_TMP_PATH, "models")

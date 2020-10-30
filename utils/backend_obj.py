@@ -12,6 +12,7 @@ import os
 import shutil
 import traceback
 from auto_ml.utils.logger import create_logger
+from auto_ml.utils.CONSTANT import *
 
 
 logger = create_logger()
@@ -24,15 +25,20 @@ class Backend(object):
     should be added more here.
     """
     def __init__(self,
-                 tmp_folder_name=None,
-                 output_folder=None,
+                 # tmp_folder_name=None,
+                 # output_folder=None,
                  delete_tmp_folder_after_terminate=True,
                  delete_output_folder_after_terminate=True):
-        self.tmp_folder_name = os.path.join(tempfile.gettempdir(), 'tmp') \
-            if tmp_folder_name is None else tmp_folder_name
+        # self.tmp_folder_name = os.path.join(tempfile.gettempdir(), 'tmp') \
+        #     if tmp_folder_name is None else tmp_folder_name
+        #
+        # self.output_folder = os.path.join(tempfile.gettempdir(), 'models') \
+        #     if output_folder is None else output_folder
 
-        self.output_folder = os.path.join(tempfile.gettempdir(), 'models') \
-            if output_folder is None else output_folder
+        # This is to ensure we could use same folder for whole project.
+        # but one more thing is if we face any problems, then we will lose whole
+        self.tmp_folder_name = TMP_FOLDER
+        self.output_folder = OUTPUT_FOLDER
 
         self.delete_tmp_folder_after_terminate = delete_tmp_folder_after_terminate
         self.delete_output_folder_after_terminate = delete_output_folder_after_terminate
@@ -125,3 +131,4 @@ class Backend(object):
 if __name__ == "__main__":
     backend = Backend()
     print(backend.output_folder)
+    print(backend.tmp_folder_name)

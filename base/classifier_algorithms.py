@@ -5,13 +5,20 @@ here so that we could change or do something change could be easier.
 
 @author: Guangqiang.lu
 """
+import warnings
 from sklearn.base import BaseEstimator
 
 from auto_ml.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
                                                           GridHyperparameter)
 
+warnings.simplefilter('ignore')
+
 
 class ClassifierClass(BaseEstimator):
+    def __init__(self):
+        super(ClassifierClass, self).__init__()
+        self.name = self.__class__.__name__
+
     def fit(self, x, y):
         raise NotImplementedError
 
@@ -32,6 +39,12 @@ class ClassifierClass(BaseEstimator):
 
     @staticmethod
     def get_search_space():
+        """
+        This is to get predefined search space for different algorithms,
+        and we should use this to do cross validation to get best fitted
+        parameters.
+        :return:
+        """
         raise NotImplementedError
 
 
@@ -44,6 +57,7 @@ class LogisticRegression(ClassifierClass):
                  n_jobs=None,
                  random_state=1234
                  ):
+        super(LogisticRegression, self).__init__()
         self.C = C
         self.class_weight = class_weight
         self.dual = dual
@@ -80,13 +94,13 @@ class LogisticRegression(ClassifierClass):
         config = ConfigSpace()
 
         c_list = UniformHyperparameter(name="C", low=0.1, high=10, size=3)
-        dual = CategoryHyperparameter(name="dual", categories=[True, False])
+        # dual = CategoryHyperparameter(name="dual", categories=[True, False])
         grid = GridHyperparameter(name="C", values=[1, 2, 3])
 
-        config.add_hyper([c_list, dual, grid])
+        config.add_hyper([c_list, grid])
 
         # config.get_hypers()
-        return config
+        return config.get_hypers()
 
 
 class SupportVectorMachine(ClassifierClass):
@@ -96,6 +110,7 @@ class SupportVectorMachine(ClassifierClass):
                  probability=True,
                  random_state=1234
                  ):
+        super(SupportVectorMachine, self).__init__()
         self.C = C
         self.class_weight = class_weight
         self.kernel = kernel
@@ -129,22 +144,30 @@ class SupportVectorMachine(ClassifierClass):
         config = ConfigSpace()
 
         c_list = UniformHyperparameter(name="C", low=0.1, high=10, size=3)
-        dual = CategoryHyperparameter(name="dual", categories=[True, False])
-        grid = GridHyperparameter(name="C", values=[1, 2, 3])
+        # dual = CategoryHyperparameter(name="dual", categories=[True, False])
+        grid = GridHyperparameter(name="C", values=[10, 20, 30])
 
-        config.add_hyper([c_list, dual, grid])
+        config.add_hyper([c_list, grid])
 
-        # config.get_hypers()
-        return config
+        return config.get_hypers()
 
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
+    from sklearn.model_selection import GridSearchCV
+
     x, y = load_iris(return_X_y=True)
 
-    lr = SupportVectorMachine()
+    lr = LogisticRegression()
 
-    lr.fit(x, y)
-    print(lr.score(x, y))
-    print(lr.predict_proba(x))
-    print(lr.predict(x))
+    print(lr.get_search_space())
+
+    grid = GridSearchCV(lr, param_grid=lr.get_search_space())
+    grid.fit(x, y)
+
+    print(grid.score(x, y))
+    print(grid.best_estimator_)
+
+    print(hasattr(lr, 'get_search_space'))
+
+    print(lr.name)

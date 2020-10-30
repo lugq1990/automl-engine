@@ -23,10 +23,15 @@ class ConfigSpace(object):
         return self
 
     def get_hypers(self):
-        for key, values in self.hyper_space.items():
-            print("key: ", key)
-            print("Values: ", values)
+        # for key, values in self.hyper_space.items():
+        #     print("key: ", key)
+        #     print("Values: ", values)
             # print("Get hyper key: {}, {}".format(key, '\t'.join(str(values))))
+        res_dict = dict()
+        for k, v in self.hyper_space.items():
+            res_dict[k] = v
+
+        return res_dict
 
 
 class Hyperarameter(object):

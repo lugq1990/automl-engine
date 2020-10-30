@@ -52,6 +52,6 @@ if __name__ == '__main__':
 
     x,y = load_iris(return_X_y=True)
 
-    f = FeatureSelect(simple_select=False)
+    f = FeatureSelect(simple_select=False, tree_select=True)
     f.fit(x, y)
     print(f.transform(x))

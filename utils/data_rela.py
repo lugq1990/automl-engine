@@ -11,7 +11,7 @@ import scipy.sparse as sp
 from sklearn.utils.validation import check_X_y, check_array
 from sklearn.utils.multiclass import type_of_target
 
-from auto_ml.backend_sklearn.utils.CONSTANT import *
+from auto_ml.utils.CONSTANT import *
 
 
 def ensure_data_without_nan(data):
