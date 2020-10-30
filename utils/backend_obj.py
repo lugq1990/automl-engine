@@ -11,7 +11,7 @@ import tempfile
 import os
 import shutil
 import traceback
-from auto_ml.backend_sklearn.utils.logger import create_logger
+from auto_ml.utils.logger import create_logger
 
 
 logger = create_logger()

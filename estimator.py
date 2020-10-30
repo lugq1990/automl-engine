@@ -10,7 +10,7 @@ useful in this class.
 author: Guangqiang.lu
 """
 from sklearn.base import BaseEstimator
-from auto_ml.backend.backend_sklearn.automl import ClassificationAutoML
+from auto_ml.automl import ClassificationAutoML
 
 
 class Estimators(BaseEstimator):

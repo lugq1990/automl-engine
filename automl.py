@@ -8,15 +8,15 @@ author: Guangqiang.lu
 import numpy as np
 from sklearn.base import BaseEstimator
 
-from auto_ml.backend_sklearn.utils.backend_obj import Backend
-from auto_ml.backend_sklearn.utils.data_rela import check_data_and_label, hash_dataset_name
-from auto_ml.backend_sklearn.utils.files import load_yaml_file
+from auto_ml.utils.backend_obj import Backend
+from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name
+from auto_ml.utils.files import load_yaml_file
 # This is whole classification algorithms
-from auto_ml.backend_sklearn.base.classifier_algorithms import *
+from auto_ml.base.classifier_algorithms import *
 # This is whole scorer that we could use
-from auto_ml.backend_sklearn.metrics.scorer import *
+from auto_ml.metrics.scorer import *
 # Get type of training
-from auto_ml.backend_sklearn.utils.CONSTANT import *
+from auto_ml.utils.CONSTANT import *
 
 
 class AutoML(BaseEstimator):

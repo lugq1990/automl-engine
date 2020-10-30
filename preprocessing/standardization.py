@@ -5,7 +5,7 @@ To process data with standard logic
 @author: Guangqiang.lu
 """
 from sklearn.preprocessing import StandardScaler
-from auto_ml.backend_sklearn.preprocessing.processing_base import Process
+from auto_ml.preprocessing.processing_base import Process
 
 
 class Standard(Process):

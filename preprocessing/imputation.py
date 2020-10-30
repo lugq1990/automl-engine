@@ -5,7 +5,7 @@ First step should cover missing field logic.
 @author: Guangqiang.lu
 """
 from sklearn.impute import KNNImputer, SimpleImputer
-from auto_ml.backend_sklearn.preprocessing.processing_base import Process
+from auto_ml.preprocessing.processing_base import Process
 
 
 class Impution(Process):

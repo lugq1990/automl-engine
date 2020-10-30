@@ -8,7 +8,7 @@ whole algorithms that we used in this class.
 import numpy as np
 import os
 
-from backend.backend_sklearn.utils.paths import load_param_config
+from auto_ml.utils.paths import load_param_config
 
 
 class ConfigSpace(object):

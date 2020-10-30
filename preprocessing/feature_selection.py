@@ -8,9 +8,9 @@ reduce our training time, also we could remove some relevant features.
 from sklearn.feature_selection import VarianceThreshold, SelectFromModel
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import ExtraTreesClassifier
-from auto_ml.backend_sklearn.preprocessing.processing_base import Process
-from auto_ml.backend_sklearn.utils.data_rela import check_label
-from auto_ml.backend_sklearn.utils.CONSTANT import *
+from auto_ml.preprocessing.processing_base import Process
+from auto_ml.utils.data_rela import check_label
+from auto_ml.utils.CONSTANT import *
 
 
 class FeatureSelect(Process):

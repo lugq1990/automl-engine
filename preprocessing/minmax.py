@@ -5,7 +5,7 @@ This is just MinMax logic to process data
 @author: Guangqiang.lu
 """
 from sklearn.preprocessing import MinMaxScaler
-from auto_ml.backend_sklearn.preprocessing.processing_base import Process
+from auto_ml.preprocessing.processing_base import Process
 
 
 class MinMax(Process):

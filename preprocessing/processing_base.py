@@ -4,7 +4,7 @@ This is main class that is used for whole processing logic for sklearn.
 
 @author: Guangqiang.lu
 """
-from auto_ml.backend_sklearn.utils.paths import get_file_base_name
+from auto_ml.utils.paths import get_file_base_name
 
 
 class Process(object):

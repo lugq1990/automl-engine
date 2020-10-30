@@ -6,7 +6,7 @@ This is to use PCA to do feature reduction
 """
 import numpy as np
 from sklearn.decomposition import PCA
-from auto_ml.backend_sklearn.preprocessing.processing_base import Process
+from auto_ml.preprocessing.processing_base import Process
 
 
 cols_keep_ratio = .8

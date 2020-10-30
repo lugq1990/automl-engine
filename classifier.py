@@ -4,7 +4,7 @@ This is used for whole classification problem that could be used
 with sklearn backend engine.
 author: Guangqiang.lu
 """
-from auto_ml.backend.backend_sklearn.estimator import ClassificationEstimator
+from auto_ml.estimator import ClassificationEstimator
 
 
 if __name__ == '__main__':

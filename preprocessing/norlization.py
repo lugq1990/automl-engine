@@ -5,7 +5,7 @@ This is to normalize the data to a normal distribution for some algorithms
 @author: Guangqiang.lu
 """
 from sklearn.preprocessing import Normalizer
-from auto_ml.backend_sklearn.preprocessing.processing_base import Process
+from auto_ml.preprocessing.processing_base import Process
 
 
 class Normalize(Process):

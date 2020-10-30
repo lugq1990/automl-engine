@@ -7,7 +7,7 @@ here so that we could change or do something change could be easier.
 """
 from sklearn.base import BaseEstimator
 
-from auto_ml.backend_sklearn.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
+from auto_ml.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
                                                           GridHyperparameter)
 
 
