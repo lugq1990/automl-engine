@@ -2,7 +2,8 @@
 """
 This will contain some model selection logic should be used here like
 Grid search logic, as here what I could do is create the search space.
-So maybe Grid search to find whole models
+So maybe Grid search to find whole models.
+Here is the classifier real training happens here.
 
 @author: Guangqiang.lu
 """
