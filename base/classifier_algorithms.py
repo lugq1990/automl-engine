@@ -9,7 +9,7 @@ import warnings
 from sklearn.base import BaseEstimator
 
 from auto_ml.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
-                                                          GridHyperparameter)
+                                                         NormalHyperameter, GridHyperparameter)
 
 warnings.simplefilter('ignore')
 
@@ -18,6 +18,7 @@ class ClassifierClass(BaseEstimator):
     def __init__(self):
         super(ClassifierClass, self).__init__()
         self.name = self.__class__.__name__
+        self.estimator = None
 
     def fit(self, x, y):
         raise NotImplementedError
@@ -152,13 +153,97 @@ class SupportVectorMachine(ClassifierClass):
         return config.get_hypers()
 
 
+class RandomForestClassifier(ClassifierClass):
+    def __init__(self, n_estimators=100,
+                 max_depth=None,
+                 max_features='auto',
+                 class_weight=None):
+        super(RandomForestClassifier, self).__init__()
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.max_features = max_features
+        self.class_weight = class_weight
+
+    def fit(self, x, y):
+        from sklearn.ensemble import RandomForestClassifier
+
+        self.estimator = RandomForestClassifier(n_estimators=self.n_estimators,
+                                                max_depth=self.max_depth,
+                                                max_features=self.max_features,
+                                                class_weight=self.class_weight)
+        self.estimator.fit(x, y)
+        return self
+
+    def predict(self, x):
+        return super().predict(x)
+
+    def score(self, x, y):
+        return super(RandomForestClassifier, self).score(x, y)
+
+    def predict_proba(self, x):
+        return super(RandomForestClassifier, self).predict_proba(x)
+
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        n_estimator_list = GridHyperparameter(name='n_estimators', values=[100, 300, 500])
+
+        config.add_hyper(n_estimator_list)
+
+        return config.get_hypers()
+
+
+class GradientBoostingTree(ClassifierClass):
+    def __init__(self,
+                 n_estimators=100,
+                 max_depth=3,
+                 max_features=None,
+                 learning_rate=0.1):
+        super(GradientBoostingTree, self).__init__()
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.max_features = max_features
+        self.learning_rate = learning_rate
+
+    def fit(self, x, y):
+        from sklearn.ensemble import GradientBoostingClassifier
+
+        self.estimator = GradientBoostingClassifier(n_estimators=self.n_estimators,
+                                                    max_depth=self.max_depth,
+                                                    max_features=self.max_features,
+                                                    learning_rate=self.learning_rate)
+        self.estimator.fit(x, y)
+        return self
+
+    def predict_proba(self, x):
+        return super(GradientBoostingTree, self).predict_proba(x)
+
+    def predict(self, x):
+        return super(GradientBoostingTree, self).predict(x)
+
+    def score(self, x, y):
+        return super(GradientBoostingTree, self).score(x, y)
+
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        n_estimator_list = GridHyperparameter(name='n_estimators', values=[100, 300, 500])
+        learning_rate = UniformHyperparameter(name='learning_rate', low=0.01, high=1.0, size=2)
+
+        config.add_hyper([n_estimator_list, learning_rate])
+
+        return config.get_hypers()
+
+
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
     from sklearn.model_selection import GridSearchCV
 
     x, y = load_iris(return_X_y=True)
 
-    lr = LogisticRegression()
+    lr = GradientBoostingTree()
 
     print(lr.get_search_space())
 

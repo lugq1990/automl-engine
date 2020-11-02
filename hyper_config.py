@@ -58,7 +58,7 @@ class NormalHyperameter(Hyperarameter):
         get sorted sampled values list
         :return: sorted list
         """
-        samples = np.random.normal(loc=self.mean, scale=self.std, size=self.n_samples).tolist()
+        samples = np.random.normal(loc=self.loc, scale=self.scale, size=self.size).tolist()
         return sorted(samples)
 
 
