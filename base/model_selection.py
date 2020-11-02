@@ -18,11 +18,16 @@ class GridSearchModel(object):
     I want to make this class to do real training part.
     """
     def __init__(self):
+        """
+        self.estimator_list is like: [GridSearchCV(lr, params), ...]
+        self.score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
+        """
         super(GridSearchModel, self).__init__()
         # as we need to do training, so here will just store the trained best model
         # for later step ensemble
         self.backend = Backend()
         self.estimator_list = None
+        self.score_dict = {}
 
     def add_estimator(self, estimator, estimator_params=None):
         """
@@ -86,6 +91,13 @@ class GridSearchModel(object):
                     estimator.n_jobs = n_jobs
                 estimator.fit(x, y)
 
+        # after the training finished, then we should get each estimator with score
+        # and store the score with each instance class name and score.
+        self._get_estimators_score(x, y)
+
+        # after we have get the score, then we should store the trained estimators
+        self.save_best_model_list()
+
         return self
 
     def score(self, x, y):
@@ -114,9 +126,32 @@ class GridSearchModel(object):
         save whole best fitted model based on each algorithm own parameters, so
         that we could save each best models.
         Then we could do ensemble logic.
+        Here I think I could just save the each best parameters trained model
+        into disk, also the file name should be like `LogisticRegression_9813.pkl`:
+        with `classname_score.pkl`.
+        Noted: This func should only be called after trained
         :return:
         """
-        pass
+        for estimator_name, estimator_tuple in self.score_dict.items():
+            estimator = estimator_tuple[0]
+            model_name = estimator_name + str(round(estimator_tuple[1], 6)).split('.')[-1]
+            self.backend.save_model(estimator, model_name)
+
+    def load_best_model_list(self):
+        """
+        Load previous saved best model into a list of trained instance.
+        :return:
+        """
+        model_list = []
+        for estimator_name, estimator_tuple in self.score_dict.items():
+            model_name = estimator_name + str(round(estimator_tuple[1], 6)).split('.')[-1]
+            try:
+                model_instance = self.backend.load_model(model_name)
+                model_list.append(model_instance)
+            except IOError as e:
+                raise IOError("When try load trained model file:{} "
+                              "with error: {}".format(estimator_name, e))
+        return model_list
 
     def save_bestest_model(self):
         """
@@ -156,7 +191,44 @@ class GridSearchModel(object):
         except Exception as e:
             raise Exception("When try to get best score get error: {}".format(e))
 
+    def _get_estimators_score(self, x, y):
+        """
+        To get whole trained estimator based on data and label for storing
+        the result based on each trained grid model best estimator.
+        score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
+        :return:
+        """
+        for estimator in self.estimator_list:
+            # here I also need the trained estimator object, so here
+            # also with trained object.
+            best_estimator = estimator.best_estimator_
+            self.score_dict[best_estimator.__class__.__name__] = (best_estimator,
+                                               self._score_with_estimator(best_estimator, x, y))
 
+    @staticmethod
+    def _score_with_estimator(estimator_instance, x, y):
+        """
+        Just to get score with trained estimator based on data and label
+        :param estimator_instance:
+        :param x:
+        :param y:
+        :return:
+        """
+        try:
+            score = estimator_instance.score(x, y)
+            return score
+        except Exception as e:
+            raise Exception("When try to get score with estimator: {} "
+                            "get error: {}".format(estimator_instance.__class__.__name__, e))
+
+    def save_trained_estimator(self, estimator, estimator_name):
+        """
+        To save the trained model into disk with file name
+        :param estimator:
+        :param estimator_name:
+        :return:
+        """
+        self.backend.save_model(estimator, estimator_name)
 
 
 if __name__ == '__main__':
@@ -180,3 +252,6 @@ if __name__ == '__main__':
     g.save_bestest_model()
     bst_model = g.load_bestest_model()
     print(bst_model.score(x, y))
+    print(g.score_dict)
+    # g.save_best_model_list()
+    print(g.load_best_model_list())
