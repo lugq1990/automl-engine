@@ -30,14 +30,15 @@ class PipelineTrain(Pipeline):
     def build_pipeline(self):
         """
         Real pipeline step should happen here.
-        Let child to do real build.
+        Let child to do real build with different steps
+        and add the steps instance into `pipeline` object.
         :return:
         """
         raise NotImplementedError
 
-    def fit(self, X, y=None, **fit_params):
+    def fit(self, x, y):
         try:
-            self.pipeline.fit(X, y)
+            self.pipeline.fit(x, y)
             return self
         except Exception as e:
             raise Exception("When do real pipeline training get error: {}".format(e))
@@ -46,10 +47,38 @@ class PipelineTrain(Pipeline):
         return self.pipeline.score(x, y)
 
     def predict(self, x):
-        return self.pipeline.predict(x)
+        try:
+            pred = self.pipeline.predict(x)
+            return pred
+        except Exception as e:
+            raise Exception("When try to use pipeline to "
+                            "get prediction with error: {}".format(e))
 
     def predict_proba(self, x):
-        return self.pipeline.predict_proba(x)
+        try:
+            prob = self.pipeline.predict_proba(x)
+            return prob
+        except Exception as e:
+            raise Exception("When try to use pipeline to "
+                            "get probability with error: {}".format(e))
 
 
+class ClassificationPipeline(PipelineTrain):
+    def build_pipeline(self):
+        """
+        Here should be the classification step that could be used
+        to build the pipeline object.
+        :return:
+        """
+        pass
+
+
+class RegressionPipeline(PipelineTrain):
+    def build_pipeline(self):
+        """
+        Here should be the regression step that could be used
+        to build the pipeline object.
+        :return:
+        """
+        pass
 
