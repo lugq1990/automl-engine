@@ -23,7 +23,7 @@ class PrincipalComponentAnalysis(Process):
         self.estimator = PCA(n_components=n_components)
         self.selection_ratio = selection_ratio
 
-    def transform(self, data):
+    def transform(self, data, y=None):
         """
         Here I want to do feature decomposition based on pca score to reduce to less feature
 

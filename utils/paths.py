@@ -15,7 +15,7 @@ def get_root_path():
     this is to get the root path of the code
     :return: path
     """
-    path = str(Path(__file__).parent.parent.parent.parent)
+    path = str(Path(__file__).parent.parent)
     return path
 
 
@@ -27,7 +27,7 @@ def get_param_config_path():
     path = str(Path(__file__).parent)
     config_path = os.path.join(path,
                                [x for x in os.listdir(path)
-                                if x == 'param_config.yaml'][0])
+                                if x == 'param_config.yml'][0])
     return config_path
 
 
@@ -43,6 +43,25 @@ def load_param_config():
         return config
     except yaml.YAMLError as e:
         raise IOError("When try to read config file with error: %s" % e)
+
+
+def load_yaml_file(file_path=None):
+    """
+    To load yaml file from server path.
+    :param file_path: where the file exist
+    :return: dictionary
+    """
+    try:
+        if file_path is None:
+            # if we don't provide the file_path, try to load root path with file_name: default_algorithms.yaml
+            default_file_name = 'default_algorithms.yml'
+            file_path = os.path.join(get_root_path(), default_file_name)
+
+        with open(file_path, 'r') as f:
+            data = yaml.safe_load(f)
+        return data
+    except yaml.YAMLError as e:
+        raise IOError("When try to load yaml file from path: {} get error: {}".format(file_path, e))
 
 
 def get_file_base_name(path):
@@ -61,4 +80,4 @@ def get_file_base_name(path):
 if __name__ == "__main__":
     print(get_param_config_path())
 
-    print(load_param_config())
+    print(get_root_path())

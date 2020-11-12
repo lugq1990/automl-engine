@@ -1,9 +1,0 @@
-sklearn:
-  classification:
-    LogisticRegression:
-      C: 1.0
-      dual: False
-      fit_intercept: True
-      n_jobs: ''
-      penalty: l2
-      random_state: 1234

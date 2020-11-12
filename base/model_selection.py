@@ -27,8 +27,9 @@ class GridSearchModel(object):
         # as we need to do training, so here will just store the trained best model
         # for later step ensemble
         self.backend = Backend()
-        self.estimator_list = None
+        self.estimator_list = []
         self.score_dict = {}
+        self.n_best_model = 5
 
     def add_estimator(self, estimator, estimator_params=None):
         """
@@ -57,6 +58,8 @@ class GridSearchModel(object):
                 self.estimator_list = [GridSearchCV(estimator, estimator_params)]
             else:
                 self.estimator_list.append(GridSearchCV(estimator, estimator_params))
+
+        return self
 
     def add_estimators(self, estimator_param_pairs):
         """
@@ -131,9 +134,14 @@ class GridSearchModel(object):
         into disk, also the file name should be like `LogisticRegression_9813.pkl`:
         with `classname_score.pkl`.
         Noted: This func should only be called after trained
+        :param n_best_model: How many best model to save
         :return:
         """
-        for estimator_name, estimator_tuple in self.score_dict.items():
+        # added how many best model to be saved into disk based on score.
+        n_best_score_dict = {k: v for k, v in sorted(self.score_dict.items(),
+                                                     key=lambda x: x[1][1], reverse=True)[:self.n_best_model]}
+
+        for estimator_name, estimator_tuple in n_best_score_dict.items():
             estimator = estimator_tuple[0]
             model_name = estimator_name + str(round(estimator_tuple[1], 6)).split('.')[-1]
             self.backend.save_model(estimator, model_name)
@@ -144,7 +152,10 @@ class GridSearchModel(object):
         :return:
         """
         model_list = []
-        for estimator_name, estimator_tuple in self.score_dict.items():
+        n_best_score_dict = {k: v for k, v in sorted(self.score_dict.items(),
+                                                     key=lambda x: x[1][1], reverse=True)[:self.n_best_model]}
+
+        for estimator_name, estimator_tuple in n_best_score_dict.items():
             model_name = estimator_name + str(round(estimator_tuple[1], 6)).split('.')[-1]
             try:
                 model_instance = self.backend.load_model(model_name)
@@ -231,6 +242,15 @@ class GridSearchModel(object):
         """
         self.backend.save_model(estimator, estimator_name)
 
+    def list_estimators(self):
+        """
+        To list whole grid models instances, so that we could check.
+        :return:
+        """
+        print("Get {} estimators.".format(len(self.estimator_list)))
+        for grid_estimator in self.estimator_list:
+            print(grid_estimator)
+
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
@@ -254,5 +274,5 @@ if __name__ == '__main__':
     bst_model = g.load_bestest_model()
     print(bst_model.score(x, y))
     print(g.score_dict)
-    # g.save_best_model_list()
+    g.save_best_model_list()
     print(g.load_best_model_list())

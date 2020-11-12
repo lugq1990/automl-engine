@@ -19,7 +19,7 @@ class FeatureSelect(Process):
         self.simple_select = simple_select
         self.tree_select = tree_select
 
-    def fit(self, data, label=None):
+    def fit(self, data, y=None):
         """
         Also support with algorithm based feature selection
         :param data: data to process
@@ -31,18 +31,18 @@ class FeatureSelect(Process):
             self.estimator.fit(data)
         else:
             # if we want to use algorithms based feature extraction, currently will use LinearRegression
-            if label is None:
+            if y is None:
                 raise ValueError("When want to use Algorithm, label data should be provided!")
 
             # before next step, we should ensure task should be classification
-            label_type = check_label(label)
+            label_type = check_label(y)
             if STRING_TO_TASK.get(label_type) not in CLASSIFICTION_TASK:
                 raise ValueError("When we want to use model selection logic, task type should just be classification.")
 
             if self.tree_select:
-                model = ExtraTreesClassifier(n_estimators=50).fit(data, label)
+                model = ExtraTreesClassifier(n_estimators=50).fit(data, y)
             else:
-                model = LinearRegression().fit(data, label)
+                model = LinearRegression().fit(data, y)
 
             self.estimator = SelectFromModel(model, prefit=True)
 

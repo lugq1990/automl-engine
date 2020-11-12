@@ -19,6 +19,6 @@ if __name__ == '__main__':
     x, y = load_iris(return_X_y=True)
 
     s = Standard()
-    s.fit(x)
+    s.fit(x, y)
     print(s.transform(x))
     print(s.fit_transform(x))

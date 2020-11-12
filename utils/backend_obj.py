@@ -10,6 +10,7 @@ import pickle
 import tempfile
 import os
 import shutil
+import pandas as pd
 import traceback
 from auto_ml.utils.logger import create_logger
 from auto_ml.utils.CONSTANT import *
@@ -126,6 +127,52 @@ class Backend(object):
         for identifier in identifiers:
             model_obj_list.append(self.load_model(identifier))
         return model_obj_list
+
+    def save_dataset(self, dataset, dataset_name, file_path=None):
+        """
+        As most of us have the structed data, so that I would love to
+        store the data into disk with `csv` file, then we could use
+        `pandas` to load it from the disk and convert it directly into
+        DataFrame.
+        :param dataset: dataset object to be saved
+        :param dataset_name: what name for it, so that we could re-load it
+        :param file_path: Where to save the data.
+        :return:
+        """
+        if file_path is None:
+            file_path = self.output_folder
+
+        try:
+            dataset_path = os.path.join(file_path, dataset_name + '.csv')
+            if not isinstance(dataset, pd.DataFrame):
+                dataset = pd.DataFrame(dataset, columns=[str(x) for x in range(1, dataset.shape[1] + 1)])
+
+            dataset.to_csv(dataset_path, index=False, sep='|')
+            logger.info("Dataset: {} has been saved into: {}".format(dataset_name, dataset_path))
+        except IOError as e:
+            raise IOError("When try to save dataset: {} get error: {}".format(dataset_name, e))
+
+    def load_dataset(self, dataset_name, file_path=None):
+        """
+        To load data again from disk.
+        :param dataset_name:
+        :param file_path:
+        :return:
+        """
+        if file_path is None:
+            file_path = self.output_folder
+
+        if dataset_name not in os.listdir(file_path):
+            raise IOError("When try to load dataset: {} from path:{}, "
+                          "we couldn't find it!".format(dataset_name, file_path))
+
+        try:
+            dataset_path = os.path.join(file_path, dataset_name + '.csv')
+            dataset = pd.read_csv(dataset_path, index=False, sep='|')
+
+            return dataset
+        except IOError as e:
+            raise IOError("When try to load dataset: {} get error: {}".format(dataset_name, e))
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ class OnehotEncoding(Process):
         self.except_feature_indexes = except_feature_indexes
         self.except_feature_names_list = except_feature_names_list
 
-    def fit(self, x, y=None):
+    def fit(self, x, lable=None):
         """
         To fit the onehot model.
         :param x: data should be DataFrame only! As if we have array that contains string,
@@ -68,7 +68,7 @@ class OnehotEncoding(Process):
         self.estimator.fit(x)
         return self
 
-    def transform(self, data):
+    def transform(self, data, lable=None):
         """
         Should try to keep the data type with same type like array or pandas,
         so even if we fit with pandas, but we still could use array data type to do transform.

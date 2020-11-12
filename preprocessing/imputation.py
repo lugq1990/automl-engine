@@ -13,7 +13,7 @@ class Impution(Process):
         super(Impution, self).__init__()
         self.use_al_to_im = use_al_to_im
 
-    def fit(self, data):
+    def fit(self, data, y=None):
         """
         Impution logic happens here.
         I have to add a logic to process with different type of columns,
@@ -58,7 +58,7 @@ class Impution(Process):
         except Exception as e:
             raise Exception("When try to impute data with Imputer with error: {}".format(e))
 
-    def transform(self, data):
+    def transform(self, data, y=None):
         # here just to according to different type data to transform data and combine them
         if self.numeric_index:
             numeric_data = self.num_estimator.transform(data[:, self.numeric_index])
@@ -76,16 +76,16 @@ class Impution(Process):
         else:
             return cate_data
 
-    def fit_transform(self, data):
+    def fit_transform(self, data, y=None):
         """
         This have to overwrite parent func, as we need different processing logic
         :param data:
         :return:
         """
         # first we have to do fit logic, just like sklearn done.
-        self.fit(data)
+        self.fit(data, y=None)
 
-        return self.transform(data)
+        return self.transform(data, y=None)
 
     @staticmethod
     def get_col_data_type(data):
@@ -135,13 +135,14 @@ if __name__ == '__main__':
 
     sample_data = np.array([["1", 2], ["3", 6], ["4", 8], [np.nan, 3], ["4", np.nan]])
     data_new = np.array([['good', 1], [np.nan, 2]])
+    lable = [1, 2]
     i = Impution()
     print(i.get_col_data_type(y))
     # n, c = i.get_col_data_type(x)
     # print(x[:, n])
     # print(i.fit_transform(data_new))
 
-    i.fit(data_new)
+    i.fit(data_new, lable)
     print(i.transform(data_new))
     print(i.fit_transform(sample_data))
     print(i.name)
