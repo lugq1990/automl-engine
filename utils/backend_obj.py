@@ -7,16 +7,11 @@ class to do like model saving, model loading etc.
 author: Guangqiang.lu
 """
 import pickle
-import tempfile
-import os
 import shutil
 import pandas as pd
 import traceback
-from auto_ml.utils.logger import create_logger
+from auto_ml.utils.logger import logger
 from auto_ml.utils.CONSTANT import *
-
-
-logger = create_logger()
 
 
 class Backend(object):
@@ -100,6 +95,7 @@ class Backend(object):
         """
         this is to list whole models with identifiers satisfication.
         :param identifiers: a list of idenfifiers
+        :param extension: what data type to include.
         :return: a model list with satisfied
         """
         models_list = [x for x in os.listdir(self.output_folder)

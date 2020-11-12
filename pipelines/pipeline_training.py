@@ -4,6 +4,7 @@ This will just contain the training logic here with both preprocessing and algor
 
 @author: Guangqiang.lu
 """
+import time
 from sklearn.pipeline import Pipeline
 from auto_ml.base import model_selection
 from auto_ml.preprocessing import \
@@ -11,11 +12,8 @@ from auto_ml.preprocessing import \
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.backend_obj import Backend
-from auto_ml.utils.logger import create_logger
+from auto_ml.utils.logger import logger
 from auto_ml.base.model_selection import GridSearchModel
-
-
-logger = create_logger()
 
 
 class PipelineTrain(Pipeline):
@@ -27,7 +25,7 @@ class PipelineTrain(Pipeline):
                  use_norm=False,
                  use_pca=False,
                  use_minmax=False,
-                 user_feature_seletion=True
+                 user_feature_seletion=False
                  ):
         self.use_standard = use_standard
         self.use_norm = use_norm
@@ -137,18 +135,23 @@ class PipelineTrain(Pipeline):
         :param y:
         :return:
         """
+        start_time = time.time()
         logger.info("Start Model Training step!")
 
         self.training_pipeline = self.build_training_pipeline()
 
+        logger.info("Before processing, data shape: %d" % x.shape[1])
         x_processed = self._fit_processing_pipeline(x, y)
+        logger.info("After processing, data shape: %d" % x_processed.shape[1])
 
         try:
             # real training pipeline with Grid search to find best models, also will store the
             # best models.
             self.training_pipeline.fit(x_processed, y)
 
-            logger.info("Finished Pipeline training step.")
+            training_time = time.time() - start_time
+            logger.info("Finished Pipeline training step, "
+                        "whole training takes {} seconds.".format(round(training_time, 2)))
 
             return self
         except Exception as e:
@@ -156,25 +159,36 @@ class PipelineTrain(Pipeline):
             raise Exception("When do real pipeline training get error: {}".format(e))
 
     def score(self, x, y):
+        logger.info("Start to get accuracy score based on test data.")
         x_processed = self.processing_pipeline.transform(x)
 
-        return self.training_pipeline.score(x_processed, y)
+        acc_score = self.training_pipeline.score(x_processed, y)
+        logger.info("Get accuracy score: %.4f" % acc_score)
+
+        return acc_score
 
     def predict(self, x):
         try:
+            logger.info("Start to get model prediction based on trained model")
             x_processed = self.processing_pipeline.transform(x)
 
             pred = self.pipeline.predict(x_processed)
             return pred
         except Exception as e:
+            logger.error("When try to use pipeline to "
+                            "get prediction with error: {}".format(e))
             raise Exception("When try to use pipeline to "
                             "get prediction with error: {}".format(e))
 
     def predict_proba(self, x):
         try:
+            logger.info("Start to get model probability prediction based on trained model")
+
             prob = self.pipeline.predict_proba(x)
+
             return prob
         except Exception as e:
+            logger.error("When try to use pipeline to get probability with error: {}".format(e))
             raise Exception("When try to use pipeline to "
                             "get probability with error: {}".format(e))
 

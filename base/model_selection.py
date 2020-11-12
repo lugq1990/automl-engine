@@ -10,6 +10,7 @@ Here is the classifier real training happens here.
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from auto_ml.utils.backend_obj import Backend
+from auto_ml.utils.logger import logger
 
 
 class GridSearchModel(object):
@@ -99,7 +100,13 @@ class GridSearchModel(object):
         # and store the score with each instance class name and score.
         self._get_estimators_score(x, y)
 
+        # Here add with information for `n_best_model` name and score
+        logger.info("Get some best model scores information based on model_selection module.")
+        for alg_name, score_tuple in self.score_dict.items():
+            logger.info("Algorithm: {} with score: {}".format(alg_name, score_tuple[1]))
+
         # after we have get the score, then we should store the trained estimators
+        logger.info("Start to save best selected models into disk.")
         self.save_best_model_list()
 
         return self
@@ -143,8 +150,14 @@ class GridSearchModel(object):
 
         for estimator_name, estimator_tuple in n_best_score_dict.items():
             estimator = estimator_tuple[0]
-            model_name = estimator_name + str(round(estimator_tuple[1], 6)).split('.')[-1]
+            # Get score string with round 6 or 100% accuracy
+            score_str = str(round(estimator_tuple[1], 6)).split('.')[-1] \
+                if estimator_tuple[1] < 1.0 else '100'
+            model_name = estimator_name + score_str
+            logger.info("Start to save model: {}".format(model_name))
             self.backend.save_model(estimator, model_name)
+
+        logger.info("Already have saved models: %s" % '\t'.join(self.backend.list_models()))
 
     def load_best_model_list(self):
         """
@@ -190,9 +203,14 @@ class GridSearchModel(object):
 
         if best_estimator_list is not None:
             if best_score_list is None:
+                logger.error("We to get best estimator, don't get best score list")
                 raise Exception("We to get best estimator, don't get best score list")
-            return best_estimator_list[np.argmax(best_score_list)]
+
+            best_estimator = best_estimator_list[np.argmax(best_score_list)]
+
+            return best_estimator
         else:
+            logger.error("When to get best estimator, we don't get the best estimator list")
             raise Exception("When to get best estimator, we don't get the best estimator list")
 
     @property
@@ -214,8 +232,11 @@ class GridSearchModel(object):
             # here I also need the trained estimator object, so here
             # also with trained object.
             best_estimator = estimator.best_estimator_
-            self.score_dict[best_estimator.__class__.__name__] = (best_estimator,
-                                               self._score_with_estimator(best_estimator, x, y))
+            best_score = estimator.best_score_
+
+            # This should based on the trained best score, not based on trained model then score again.
+            self.score_dict[best_estimator.__class__.__name__] = (best_estimator, best_score)
+                                               #self._score_with_estimator(best_estimator, x, y))
 
     @staticmethod
     def _score_with_estimator(estimator_instance, x, y):
@@ -247,7 +268,7 @@ class GridSearchModel(object):
         To list whole grid models instances, so that we could check.
         :return:
         """
-        print("Get {} estimators.".format(len(self.estimator_list)))
+        logger.info("Get {} estimators.".format(len(self.estimator_list)))
         for grid_estimator in self.estimator_list:
             print(grid_estimator)
 
