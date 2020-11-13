@@ -36,6 +36,8 @@ STRING_TO_TASK = {v: k for k, v in TASK_TO_STRING.items()}
 import tempfile
 import os
 
-PROJECT_TMP_PATH = tempfile.mkdtemp()
+# PROJECT_TMP_PATH = tempfile.mkdtemp()
+# :TODO: in real prod, change this.
+PROJECT_TMP_PATH = "C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder"
 TMP_FOLDER = os.path.join(PROJECT_TMP_PATH, "tmp")
 OUTPUT_FOLDER = os.path.join(PROJECT_TMP_PATH, "models")

@@ -77,7 +77,7 @@ class Backend(object):
         :return:
         """
         try:
-            with open(os.path.join(self.output_folder, identifier + '.pkl'), 'rb') as f:
+            with open(os.path.join(self.output_folder, identifier), 'rb') as f:
                 model = pickle.load(f)
 
             return model
@@ -86,7 +86,7 @@ class Backend(object):
                          (identifier, traceback.format_exc()))
             raise IOError("When to load %s model, face problem:%s" % (identifier, e))
 
-    def load_model_with_model_name(self, identifiers):
+    def load_models_by_identi_combined_with_model_name(self, identifiers):
         """
         As I don't want to change current logic with `load_model` to just
         return model instance, sometimes we also need the model name, so
@@ -115,7 +115,8 @@ class Backend(object):
 
         # Here add logic to ensure we just add algorithm model list
         if except_model_list:
-            models_list = [x for x in models_list if x not in except_model_list]
+            models_list = [x for x in models_list if x.split('.')[0] not in except_model_list]
+
         return models_list
 
     def list_models_with_identifiers(self, identifiers, extension='pkl'):
@@ -150,8 +151,8 @@ class Backend(object):
         model_with_name_list = []
 
         for identifier in self.list_models():
-            model_with_name_list.append(
-                self.load_model_with_model_name(identifier))
+            model_with_name_list.extend(
+                self.load_models_by_identi_combined_with_model_name(identifier))
 
         return model_with_name_list
 
@@ -217,3 +218,5 @@ if __name__ == "__main__":
     backend = Backend()
     print(backend.output_folder)
     print(backend.tmp_folder_name)
+
+    print(backend.load_models_combined_with_model_name())
