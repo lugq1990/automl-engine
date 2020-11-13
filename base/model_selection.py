@@ -153,7 +153,9 @@ class GridSearchModel(object):
             # Get score string with round 6 or 100% accuracy
             score_str = str(round(estimator_tuple[1], 6)).split('.')[-1] \
                 if estimator_tuple[1] < 1.0 else '100'
-            model_name = estimator_name + score_str
+
+            # ADD with `-` with name and score, so that we could get the score later
+            model_name = estimator_name + "-" + score_str
             logger.info("Start to save model: {}".format(model_name))
             self.backend.save_model(estimator, model_name)
 

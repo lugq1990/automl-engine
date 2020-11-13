@@ -71,6 +71,11 @@ class Backend(object):
            raise IOError("When try to save model: %s, face problem: %s" % (identifier, e))
 
     def load_model(self, identifier):
+        """
+        Get model instance object
+        :param identifier:
+        :return:
+        """
         try:
             with open(os.path.join(self.output_folder, identifier + '.pkl'), 'rb') as f:
                 model = pickle.load(f)
@@ -81,7 +86,25 @@ class Backend(object):
                          (identifier, traceback.format_exc()))
             raise IOError("When to load %s model, face problem:%s" % (identifier, e))
 
-    def list_models(self, extension='pkl'):
+    def load_model_with_model_name(self, identifiers):
+        """
+        As I don't want to change current logic with `load_model` to just
+        return model instance, sometimes we also need the model name, so
+        that we could also return (model_name, model_instance)
+        :param identifiers:
+        :return:
+        """
+        model_list = []
+
+        if isinstance(identifiers, str):
+            identifiers = [identifiers]
+
+        for identi in identifiers:
+            model_list.append((identi, self.load_model(identi)))
+
+        return model_list
+
+    def list_models(self, extension='pkl', except_model_list=["processing_pipeline"]):
         """
         this is to list whole saved model in local disk,
         model name should be end with `pkl`, should be extended
@@ -89,6 +112,10 @@ class Backend(object):
         :return: a list of model list
         """
         models_list = [x for x in os.listdir(self.output_folder) if x.endswith(extension)]
+
+        # Here add logic to ensure we just add algorithm model list
+        if except_model_list:
+            models_list = [x for x in models_list if x not in except_model_list]
         return models_list
 
     def list_models_with_identifiers(self, identifiers, extension='pkl'):
@@ -105,13 +132,28 @@ class Backend(object):
 
     def load_models(self):
         """
-        this is to load whole models already trained in disk
+        this is to load whole models already trained in disk.
+        This should be algorithm models.
         :return: a list of trained model object.
         """
         model_obj_list = []
         for identifier in self.list_models():
             model_obj_list.append(self.load_model(identifier))
         return model_obj_list
+
+    def load_models_combined_with_model_name(self):
+        """
+        To load models combined with model name, so later could use this
+        models based on model score.
+        :return:
+        """
+        model_with_name_list = []
+
+        for identifier in self.list_models():
+            model_with_name_list.append(
+                self.load_model_with_model_name(identifier))
+
+        return model_with_name_list
 
     def load_models_with_identifiers(self, identifiers):
         """
