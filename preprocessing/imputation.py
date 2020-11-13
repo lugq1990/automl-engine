@@ -1,9 +1,14 @@
 # -*- coding:utf-8 -*-
 """
 First step should cover missing field logic.
+Here contain both algorithm based filling and frequency filling,
+also if one columns contain too many missing data, then will
+remove that column.
 
 @author: Guangqiang.lu
 """
+import numpy as np
+import pandas as pd
 from sklearn.impute import KNNImputer, SimpleImputer
 from auto_ml.preprocessing.processing_base import Process
 
@@ -24,6 +29,9 @@ class Impution(Process):
         :param use_al_to_im: Whether or not to use algorithm to impute data
         :return: fitted estimator
         """
+        # before we do any thing, should remove too many mssing cols
+        self._remove_cols_up_to_threshold(data)
+
         # Let's first try to split data into 2 parts with numeric and category
         numeric_index, category_index = self.get_col_data_type(data)
         # we have to save it for later transformation use
@@ -88,6 +96,24 @@ class Impution(Process):
         return self.transform(data, y=None)
 
     @staticmethod
+    def _remove_cols_up_to_threshold(data, threshold=.1):
+        """
+        As if there are too many missing value, we don't need it, just remove it
+        :param threshold: default is 0.5
+        :return:
+        """
+        if isinstance(data, pd.DataFrame):
+            null_ratio_series = data.isnull().sum() / len(data)
+            to_remove_cols = list(null_ratio_series[null_ratio_series >= threshold].index)
+            data.drop(to_remove_cols, axis=1, inplace=True)
+            return data
+        else:
+            null_ratio_series = pd.isnull(data).sum(axis=0) / len(data)
+            keep_cols = np.array(range(data.shape[1]))[null_ratio_series < threshold]
+            data = data[:, keep_cols]
+            return data
+
+    @staticmethod
     def get_col_data_type(data):
         """
         To get each column data type with some missing values
@@ -137,7 +163,7 @@ if __name__ == '__main__':
     data_new = np.array([['good', 1], [np.nan, 2]])
     lable = [1, 2]
     i = Impution()
-    print(i.get_col_data_type(y))
+    print(i.get_col_data_type(x))
     # n, c = i.get_col_data_type(x)
     # print(x[:, n])
     # print(i.fit_transform(data_new))

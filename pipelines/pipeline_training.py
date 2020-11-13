@@ -128,6 +128,20 @@ class PipelineTrain(Pipeline):
 
         return x_processed
 
+    def _process_data_without_null_value(self, x, y):
+        """
+        As I also want to compare with processed data and original data,
+        but I couldn't just store original data into disk directly as maybe
+        with missing values, so here add this func.
+        :param x:
+        :param y:
+        :return:
+        """
+        imput = imputation.Impution()
+        x_without_null = imput.fit_transform(x)
+
+
+
     def fit(self, x, y):
         """
         Real pipeline training steps happen here.
