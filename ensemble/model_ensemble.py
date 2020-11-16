@@ -108,5 +108,3 @@ class ModelEnsemble(BaseEstimator):
 if __name__ == '__main__':
     model_ensemble = ModelEnsemble()
     print(model_ensemble.model_list)
-
-

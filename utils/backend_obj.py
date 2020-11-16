@@ -4,6 +4,8 @@ This is backend object that we could use for whole file
 transfer or file processing, we could just use this
 class to do like model saving, model loading etc.
 
+Here also use `Singleton` method to create the object.
+
 author: Guangqiang.lu
 """
 import pickle
@@ -20,6 +22,9 @@ class Backend(object):
     currently supported with save models files, load model from disk,
     should be added more here.
     """
+    # This is used for Singleton.
+    instance = None
+
     def __init__(self,
                  # tmp_folder_name=None,
                  # output_folder=None,
@@ -212,6 +217,20 @@ class Backend(object):
             return dataset
         except IOError as e:
             raise IOError("When try to load dataset: {} get error: {}".format(dataset_name, e))
+    
+    @classmethod
+    def __new__(cls, *args, **kwargs):
+        """
+        Used to ensure there will be just one instance in
+        whole running process.
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        if not cls.instance:
+            cls.instance = super(Backend, cls).__new__(*args, **kwargs)
+
+        return cls.instance
 
 
 if __name__ == "__main__":
@@ -220,3 +239,6 @@ if __name__ == "__main__":
     print(backend.tmp_folder_name)
 
     print(backend.load_models_combined_with_model_name())
+
+    # To test there is just one instance.
+    print(backend == Backend())
