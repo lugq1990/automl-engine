@@ -19,6 +19,8 @@ class ClassifierClass(BaseEstimator):
         super(ClassifierClass, self).__init__()
         self.name = self.__class__.__name__
         self.estimator = None
+        # Add this for used `Ensemble` logic will check the estimator type.
+        self._estimator_type = 'classifier'
 
     def fit(self, x, y):
         raise NotImplementedError

@@ -11,6 +11,7 @@ automl training logic.
 """
 import numpy as np
 from sklearn.base import BaseEstimator
+from sklearn.ensemble import VotingClassifier, VotingRegressor
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.metrics.scorer import accuracy, r2
 
@@ -18,18 +19,21 @@ from auto_ml.metrics.scorer import accuracy, r2
 class ModelEnsemble(BaseEstimator):
     """
     Currently I want to support 2 different ensemble logic:
-    bagging(weight combine classification: voting, regression: weight multiple)
+    Voting(weight combine classification: with soft voting and hard voting,
+    regression: weight multiple)
     stacking(add trained model prediction into training data)
     """
-
-    def __init__(self, task_type='classification', ensemble_alg='bagging'):
+    def __init__(self, task_type='classification', ensemble_alg='voting',
+                 voting_logic='soft'):
         """
         Based on different task to do different logic.
         :param task_type: which task to do: classification or regression.
-        :param ensemble_alg:
+        :param ensemble_alg: which ensemble logic to use
+        :param voting_logic: whether with `hard` or `soft` voting
         """
         self.task_type = task_type
         self.ensemble_alg = ensemble_alg
+        self.voting_logic = voting_logic
         # To load and save models
         self.backend = Backend()
         self.model_list = self._load_trained_models()
@@ -42,32 +46,45 @@ class ModelEnsemble(BaseEstimator):
         # self.dataset = self.backend.load_dataset('processed_data')
 
     def fit(self, x, y, xtest, ytest, **kwargs):
-        if self.ensemble_alg == 'bagging':
+        if self.ensemble_alg == 'voting':
             self.fit_bagging(x, y, xtest, ytest, **kwargs)
         elif self.ensemble_alg == 'stacking':
             self.fit_stacking(x, y, xtest, ytest, **kwargs)
 
     def fit_bagging(self, x, y, xtest, ytest, **kwargs):
         """
+        Here with ensemble logic like `hard` by number voting or
+        `soft` by weight combine.
+
         For bagging fitting, if we face with classification problem,
         then we could use `voting` logic to get ensemble prediction,
         if regression, then will get weights * each model prediction.
         """
+
+        # Here change logic with voting
         if self.task_type == 'classification':
-            # based on prediction and do voting logic
-            pred_list = []
-            for model in self.model_list:
-                # get each model prediction, convert into list
-                pred = model.predict(xtest).tolist()
-                pred_list.append(pred)
-            # convert a list of prediction into array for later
-            pred_arr = np.array(pred_list)
+            model_list_without_score = self._get_model_list_without_score()
+            if self.voting_logic not in ['hard', 'soft']:
+                raise ValueError("For ensemble logic, only `hard` and soft is supported "
+                                 "when use `voting` logic.")
 
-            # get most frequent values based on voting logic to get prediction
-            xtest_pred = np.array([np.bincount(pred_arr[:, i]).argmax() for i in range(pred_arr.shape[1])])
+            voting_estimator = VotingClassifier(estimators=model_list_without_score,
+                                                voting=self.voting_logic)
 
-            score = self.metrics(ytest, xtest_pred)
+            # start to fit the voting estimator
+            voting_estimator.fit(x, y)
 
+            # get voting model score
+            score = voting_estimator.score(xtest, ytest)
+            score_str = str(round(score, 6)).split('.')[-1]
+
+            store_model_name = 'Voting_{}-{}'.format(self.voting_logic, score_str)
+
+            print('voting score:', score)
+            self.backend.save_model(voting_estimator, store_model_name)
+
+        elif self.task_type == 'regression':
+            pass
 
     def fit_stacking(self, x, y, **kwargs):
         pass
@@ -83,6 +100,9 @@ class ModelEnsemble(BaseEstimator):
         :return:
         """
         model_list = self.backend.load_models_combined_with_model_name()
+
+        # ADD logic: we shouldn't include the `Voting` algorithms instance object in fact
+        model_list = [x for x in model_list if not x[0].lower().startswith('voting')]
 
         # after we have get the model list, we should ensure the model by the model
         # name with endswith score.
@@ -104,7 +124,33 @@ class ModelEnsemble(BaseEstimator):
 
         return score_list
 
+    def _get_model_list_without_score(self):
+        """
+        To get the model list without score for ensemble use case.
+        :return:
+        """
+        model_list_without_score = []
+        for estimator_tuple in self.model_list:
+            estimator_name = estimator_tuple[0].split('-')[0]
+            model_list_without_score.append((estimator_name, estimator_tuple[1]))
+
+        return model_list_without_score
+
 
 if __name__ == '__main__':
-    model_ensemble = ModelEnsemble()
+    from sklearn.datasets import load_iris
+
+    x, y = load_iris(return_X_y=True)
+
+    model_ensemble = ModelEnsemble(voting_logic='soft')
+
+    # model_ensemble.fit(x, y, x, y)
+    # print([x[1].__class__ for x in model_ensemble.model_list])
     print(model_ensemble.model_list)
+    # for models in model_ensemble.model_list:
+    #     model = models[1]
+    #     print(model)
+    #     print(getattr(model, "_estimator_type", None))
+
+
+    model_ensemble.fit(x, y, x, y)
