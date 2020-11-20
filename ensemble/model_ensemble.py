@@ -14,9 +14,10 @@ from sklearn.base import BaseEstimator
 from sklearn.ensemble import VotingClassifier, VotingRegressor
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.metrics.scorer import accuracy, r2
+from auto_ml.base.classifier_algorithms import ClassifierClass
 
 
-class ModelEnsemble(BaseEstimator):
+class ModelEnsemble(ClassifierClass):
     """
     Currently I want to support 2 different ensemble logic:
     Voting(weight combine classification: with soft voting and hard voting,
@@ -43,7 +44,7 @@ class ModelEnsemble(BaseEstimator):
             self.metrics = accuracy
         elif self.task_type == 'regression':
             self.metrics = r2
-        # self.dataset = self.backend.load_dataset('processed_data')
+        self.estimator = None
 
     def fit(self, x, y, xtest, ytest, **kwargs):
         if self.ensemble_alg == 'voting':
@@ -68,20 +69,20 @@ class ModelEnsemble(BaseEstimator):
                 raise ValueError("For ensemble logic, only `hard` and soft is supported "
                                  "when use `voting` logic.")
 
-            voting_estimator = VotingClassifier(estimators=model_list_without_score,
+            self.estimator = VotingClassifier(estimators=model_list_without_score,
                                                 voting=self.voting_logic)
 
             # start to fit the voting estimator
-            voting_estimator.fit(x, y)
+            self.estimator.fit(x, y)
 
             # get voting model score
-            score = voting_estimator.score(xtest, ytest)
+            score = self.estimator.score(xtest, ytest)
             score_str = str(round(score, 6)).split('.')[-1]
 
             store_model_name = 'Voting_{}-{}'.format(self.voting_logic, score_str)
 
             print('voting score:', score)
-            self.backend.save_model(voting_estimator, store_model_name)
+            self.backend.save_model(self.estimator, store_model_name)
 
         elif self.task_type == 'regression':
             pass
@@ -103,6 +104,10 @@ class ModelEnsemble(BaseEstimator):
 
         # ADD logic: we shouldn't include the `Voting` algorithms instance object in fact
         model_list = [x for x in model_list if not x[0].lower().startswith('voting')]
+
+        # To ensure there should be at least one file for `Ensemble` logic.
+        if not model_list:
+            raise IOError("There isn't any trained model for `Ensemble`.")
 
         # after we have get the model list, we should ensure the model by the model
         # name with endswith score.
