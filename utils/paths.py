@@ -9,6 +9,8 @@ import os
 from pathlib import Path
 import yaml
 
+from auto_ml.utils.func_utils import deprecated
+
 
 def get_root_path():
     """
@@ -31,6 +33,7 @@ def get_param_config_path():
     return config_path
 
 
+@deprecated
 def load_param_config():
     """
     this is to load yaml config object.

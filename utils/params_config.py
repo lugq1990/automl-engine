@@ -36,12 +36,12 @@ if __name__ == '__main__':
     config.load_sklearn_params('LogisticRegression')
     lr_config = config.algorithm_config
 
-    from backend.backend_sklearn.base.classfication.logistic_regression import LR
+    from auto_ml.base.classifier_algorithms import LogisticRegression
     from sklearn.model_selection import GridSearchCV
     from sklearn.datasets import load_iris
     x, y = load_iris(return_X_y=True)
 
-    lr = LR()
+    lr = LogisticRegression()
     estimator = GridSearchCV(lr, lr_config, cv=10)
     estimator.fit(x, y)
     print(estimator.best_score_)

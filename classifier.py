@@ -6,7 +6,6 @@ author: Guangqiang.lu
 """
 from auto_ml.estimator import ClassificationEstimator
 
-
 if __name__ == '__main__':
     # this is unittest for classification functionality.
     from sklearn.datasets import load_iris
