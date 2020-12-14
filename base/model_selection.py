@@ -137,9 +137,11 @@ class GridSearchModel(object):
         save whole best fitted model based on each algorithm own parameters, so
         that we could save each best models.
         Then we could do ensemble logic.
+
         Here I think I could just save the each best parameters trained model
         into disk, also the file name should be like `LogisticRegression_9813.pkl`:
         with `classname_score.pkl`.
+
         Noted: This func should only be called after trained
         :param n_best_model: How many best model to save
         :return:

@@ -14,6 +14,43 @@ from auto_ml.hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHy
 warnings.simplefilter('ignore')
 
 
+class ClassifierFactory:
+    """
+    Factory design pattern.
+
+    This is used to init with different algorithm name with the instance.
+    """
+    def __init__(self):
+        self.algorithm_instance_list = []
+
+    @staticmethod
+    def get_algorithm_instance(alg_name_list):
+        """
+        To get whole classifier instance list based on the needed algorithms name.
+        :param alg_name_list:
+        :return:
+        """
+        algorithm_instance_list = []
+
+        if isinstance(alg_name_list, str):
+            # Should be list, but string will be fine
+            alg_name_list = [alg_name_list]
+
+        for alg_name in alg_name_list:
+            if alg_name == 'LogisticRegression':
+                algorithm_instance_list.append(LogisticRegression())
+            elif alg_name == 'SupportVectorMachine':
+                algorithm_instance_list.append(SupportVectorMachine())
+            elif alg_name == 'GradientBoostingTree':
+                algorithm_instance_list.append(GradientBoostingTree())
+
+        if len(alg_name_list) == 1:
+            # if we just provide with name, then return with one instance.
+            return algorithm_instance_list[0]
+        else:
+            return algorithm_instance_list
+
+
 class ClassifierClass(BaseEstimator):
     def __init__(self):
         super(ClassifierClass, self).__init__()
@@ -258,3 +295,8 @@ if __name__ == '__main__':
     print(hasattr(lr, 'get_search_space'))
 
     print(lr.name)
+
+    # test with factory pattern.
+    alg_name_list = ['LogisticRegression']
+
+    print(ClassifierFactory.get_algorithm_instance('LogisticRegression'))

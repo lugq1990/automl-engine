@@ -10,11 +10,12 @@ automl training logic.
 @author: Guangqiang.lu
 """
 import numpy as np
-from sklearn.base import BaseEstimator
 from sklearn.ensemble import VotingClassifier, VotingRegressor
+from sklearn.model_selection import cross_validate
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.metrics.scorer import accuracy, r2
-from auto_ml.base.classifier_algorithms import ClassifierClass
+from auto_ml.base.classifier_algorithms import ClassifierClass, ClassifierFactory
+from auto_ml.utils.logger import logger
 
 
 class ModelEnsemble(ClassifierClass):
@@ -45,14 +46,19 @@ class ModelEnsemble(ClassifierClass):
         elif self.task_type == 'regression':
             self.metrics = r2
         self.estimator = None
+        # Whole trained model object list, like: [('LogisticRegression', LogisticRegression-9323.pkl),...]
+        self.model_list_without_score = None
 
-    def fit(self, x, y, xtest, ytest, **kwargs):
+    def fit(self, x, y, **kwargs):
+        # First we should to get whole trained models no matter for `voting` or `stacking`
+        self.model_list_without_score = self._get_model_list_without_score()
+
         if self.ensemble_alg == 'voting':
-            self.fit_bagging(x, y, xtest, ytest, **kwargs)
+            self.fit_bagging(x, y, **kwargs)
         elif self.ensemble_alg == 'stacking':
-            self.fit_stacking(x, y, xtest, ytest, **kwargs)
+            self.fit_stacking(x, y, **kwargs)
 
-    def fit_bagging(self, x, y, xtest, ytest, **kwargs):
+    def fit_bagging(self, x, y, **kwargs):
         """
         Here with ensemble logic like `hard` by number voting or
         `soft` by weight combine.
@@ -61,34 +67,83 @@ class ModelEnsemble(ClassifierClass):
         then we could use `voting` logic to get ensemble prediction,
         if regression, then will get weights * each model prediction.
         """
-
         # Here change logic with voting
         if self.task_type == 'classification':
-            model_list_without_score = self._get_model_list_without_score()
             if self.voting_logic not in ['hard', 'soft']:
                 raise ValueError("For ensemble logic, only `hard` and soft is supported "
                                  "when use `voting` logic.")
 
-            self.estimator = VotingClassifier(estimators=model_list_without_score,
+            self.estimator = VotingClassifier(estimators=self.model_list_without_score,
                                                 voting=self.voting_logic)
 
             # start to fit the voting estimator
             self.estimator.fit(x, y)
 
-            # get voting model score
-            score = self.estimator.score(xtest, ytest)
+            # Here add logic with saving trained model into disk.
+            # TODO: but how to evaluate current model with score? Use cross-valiation to do score
+            # get voting model score based on CV result!
+            score = cross_validate(self.estimator, x, y, cv=3)['test_score'].mean()
             score_str = str(round(score, 6)).split('.')[-1]
+            logger.info("Model ensemble Cross-valiation score: {}".format(score_str))
 
             store_model_name = 'Voting_{}-{}'.format(self.voting_logic, score_str)
 
-            print('voting score:', score)
+            logger.info("Start to save trained model: {} into disk.".format(store_model_name))
             self.backend.save_model(self.estimator, store_model_name)
 
         elif self.task_type == 'regression':
             pass
 
     def fit_stacking(self, x, y, **kwargs):
-        pass
+        """
+        Implement with stacking logic is combined trained model prediction and original data into
+        a new training data.
+
+        # TODO: how TO choose new algorithm for the training?
+        # Just to select the best score algorithm for the later step, based on the factory class
+        to get the original class name and to load a new classifier.
+
+        :param x: training data
+        :param y: training label
+        :param kwargs:
+        :return:
+        """
+        n_estimators = len(self.model_list_without_score)
+
+        # Whole trained estimator prediction result.
+        pred_array = np.empty((len(x), n_estimators))
+
+        logger.info("Start to get trained model prediction for `stacking`")
+        for i in range(n_estimators):
+            logger.info("To get prediction for estimator: {}".format(self.model_list_without_score[i][0]))
+
+            estimator = self.model_list_without_score[i][1]
+            pred = estimator.predict(x)
+            pred_array[:, i] = pred
+
+        # Then should combined the prediction and original data
+        x_new = np.concatenate([x, pred_array], axis=1)
+
+        logger.info("Before stacking we have data dimention: {}, "
+                    "after stacking we have :{}".format(x.shape[1], x_new.shape[1]))
+
+        # Here we should get best score algorithm name for stacking
+        # `model_list_without_scorep` is sorted based on score in fact.
+        best_estimator_name = self.model_list_without_score[0][0]
+
+        print("estaimator name:",best_estimator_name)
+        self.estimator = ClassifierFactory.get_algorithm_instance(best_estimator_name)
+
+        print("get estimator ", self.estimator)
+        # start training step for `stacking`
+        self.estimator.fit(x_new, y)
+
+        # model score should also based on CV result.
+        score = cross_validate(self.estimator, x_new, y, cv=5)['test_score'][0]
+        stacking_model_name = "Stacking_{}".format(score)
+        logger.info("Stacking model score: {}".format(score))
+
+        self.backend.save_model(self.estimator, stacking_model_name)
 
     def _load_trained_models(self):
         """
@@ -97,7 +152,8 @@ class ModelEnsemble(ClassifierClass):
         algorithm models.
 
         Sorted instance object list with name, also we could get the model score
-        for later compare use case.
+        for later compare use case, this is `sorted` list, so later don't need to
+        consider for the order.
         :return:
         """
         model_list = self.backend.load_models_combined_with_model_name()
@@ -132,7 +188,7 @@ class ModelEnsemble(ClassifierClass):
     def _get_model_list_without_score(self):
         """
         To get the model list without score for ensemble use case.
-        :return:
+        :return: [('LogisticRegression', LogisticRegression-9323.pkl),...]
         """
         model_list_without_score = []
         for estimator_tuple in self.model_list:
@@ -147,15 +203,14 @@ if __name__ == '__main__':
 
     x, y = load_iris(return_X_y=True)
 
-    model_ensemble = ModelEnsemble(voting_logic='soft')
+    model_ensemble = ModelEnsemble(ensemble_alg='stacking', voting_logic='soft', )
 
-    # model_ensemble.fit(x, y, x, y)
+    model_ensemble.fit(x, y)
     # print([x[1].__class__ for x in model_ensemble.model_list])
-    print(model_ensemble.model_list)
+    # print(model_ensemble.model_list)
     # for models in model_ensemble.model_list:
     #     model = models[1]
     #     print(model)
     #     print(getattr(model, "_estimator_type", None))
 
 
-    model_ensemble.fit(x, y, x, y)

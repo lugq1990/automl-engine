@@ -140,8 +140,6 @@ class PipelineTrain(Pipeline):
         imput = imputation.Impution()
         x_without_null = imput.fit_transform(x)
 
-
-
     def fit(self, x, y):
         """
         Real pipeline training steps happen here.
@@ -228,7 +226,8 @@ class ClassificationPipeline(PipelineTrain):
     def build_training_pipeline(self):
         """
         Based on the `model_selection` module, when we do the fit logic,
-        then that module will store the best models list into disk.
+        then that module will store the best models list into disk(This is
+        based on the model parameters).
         So we don't need to care about the best model logic here.
         :return:
         """
