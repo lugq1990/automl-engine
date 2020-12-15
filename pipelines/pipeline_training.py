@@ -14,6 +14,7 @@ from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import logger
 from auto_ml.base.model_selection import GridSearchModel
+from auto_ml.base.classifier_algorithms import ClassifierFactory
 
 
 class PipelineTrain(Pipeline):
@@ -242,17 +243,22 @@ class ClassificationPipeline(PipelineTrain):
 
     def _get_algorithms_instance_list(self):
         """
-        To get whole instance object list based on the configuration in the yaml file.
+        To get whole instance object list based on the configuration in the yaml file,
+        as we have added with `factory pattern` in classifier class, so here we could
+        just use the class to get whole algorithms instance.
         :return:
         """
-        algorithms_instance_list = []
-        for name in self.algorithms_config['classification']['default']:
-            if name == 'LogisticRegression':
-                algorithms_instance_list.append(LogisticRegression())
-            elif name == 'SupportVectorMachine':
-                algorithms_instance_list.append(SupportVectorMachine())
-            elif name == 'GradientBoostingTree':
-                algorithms_instance_list.append(GradientBoostingTree())
+        # algorithms_instance_list = []
+        # for name in self.algorithms_config['classification']['default']:
+            # if name == 'LogisticRegression':
+            #     algorithms_instance_list.append(LogisticRegression())
+            # elif name == 'SupportVectorMachine':
+            #     algorithms_instance_list.append(SupportVectorMachine())
+            # elif name == 'GradientBoostingTree':
+            #     algorithms_instance_list.append(GradientBoostingTree())
+
+        algorithm_name_list = self.algorithms_config['classification']['default']
+        algorithms_instance_list = ClassifierFactory.get_algorithm_instance(algorithm_name_list)
 
         return algorithms_instance_list
 

@@ -16,6 +16,7 @@ from auto_ml.utils.backend_obj import Backend
 from auto_ml.metrics.scorer import accuracy, r2
 from auto_ml.base.classifier_algorithms import ClassifierClass, ClassifierFactory
 from auto_ml.utils.logger import logger
+from auto_ml.utils.paths import load_yaml_file
 
 
 class ModelEnsemble(ClassifierClass):
@@ -128,10 +129,12 @@ class ModelEnsemble(ClassifierClass):
                     "after stacking we have :{}".format(x.shape[1], x_new.shape[1]))
 
         # Here we should get best score algorithm name for stacking
-        # `model_list_without_scorep` is sorted based on score in fact.
-        best_estimator_name = self.model_list_without_score[0][0]
+        # `model_list_without_score` is sorted based on score in fact.
+        # In fact we have to add the estimator name based on what we have(using the yaml file result)
+        # as we want to avoid to load the pipeline instance...
+        best_estimator_name = self._get_best_model_estimator_name_based_on_yaml()
 
-        print("estaimator name:",best_estimator_name)
+        print("estaimator name:", best_estimator_name)
         self.estimator = ClassifierFactory.get_algorithm_instance(best_estimator_name)
 
         print("get estimator ", self.estimator)
@@ -140,10 +143,26 @@ class ModelEnsemble(ClassifierClass):
 
         # model score should also based on CV result.
         score = cross_validate(self.estimator, x_new, y, cv=5)['test_score'][0]
-        stacking_model_name = "Stacking_{}".format(score)
+        score = str(round(score, 6))
+        stacking_model_name = "Stacking-{}".format(score)
         logger.info("Stacking model score: {}".format(score))
 
         self.backend.save_model(self.estimator, stacking_model_name)
+
+    def _get_best_model_estimator_name_based_on_yaml(self):
+        """
+        Just to get the best estimator name based on the yaml file that we have
+        for `stacking` ensemble logic.
+        :return:
+        """
+        algorithm_name_list = load_yaml_file()['classification']['default']
+        trained_model_alg_name_list = [x[0].split("-")[0] for x in self.model_list_without_score]
+
+        for algo_name in trained_model_alg_name_list:
+            if algo_name in algorithm_name_list:
+                return algo_name
+
+        return None
 
     def _load_trained_models(self):
         """
@@ -193,7 +212,10 @@ class ModelEnsemble(ClassifierClass):
         model_list_without_score = []
         for estimator_tuple in self.model_list:
             estimator_name = estimator_tuple[0].split('-')[0]
-            model_list_without_score.append((estimator_name, estimator_tuple[1]))
+            # we shouldn't include `ensemble` models.
+            if not estimator_name.lower().startswith('votinig') \
+                    and not estimator_name.lower().startswith('stacking'):
+                model_list_without_score.append((estimator_name, estimator_tuple[1]))
 
         return model_list_without_score
 
