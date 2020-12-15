@@ -25,7 +25,7 @@ class OnehotEncoding(Process):
         self.except_feature_indexes = except_feature_indexes
         self.except_feature_names_list = except_feature_names_list
 
-    def fit(self, x, lable=None):
+    def fit(self, x, y=None):
         """
         To fit the onehot model.
         :param x: data should be DataFrame only! As if we have array that contains string,
@@ -68,7 +68,7 @@ class OnehotEncoding(Process):
         self.estimator.fit(x)
         return self
 
-    def transform(self, data, lable=None):
+    def transform(self, x, y=None):
         """
         Should try to keep the data type with same type like array or pandas,
         so even if we fit with pandas, but we still could use array data type to do transform.
@@ -78,34 +78,34 @@ class OnehotEncoding(Process):
         :return: array type
         """
         # at least we should ensure with same column numbers
-        if data.shape[1] != self.data_col_number:
+        if x.shape[1] != self.data_col_number:
             raise ValueError("When to do transform logic, should provide same dimension, "
-                             "fitted data is: {}, current is {}".format(self.data_col_number, data.shape[1]))
+                             "fitted data is: {}, current is {}".format(self.data_col_number, x.shape[1]))
 
         # based on different data type to convert different logic.
         if not self.feature_list:
             # if we don't have any category features
-            return data
+            return x
 
-        if isinstance(data, pd.DataFrame):
-            converted_data = self.estimator.transform(data.iloc[:, self.feature_list].values).toarray()
+        if isinstance(x, pd.DataFrame):
+            converted_data = self.estimator.transform(x.iloc[:, self.feature_list].values).toarray()
             # HERE I have convert the columns features to index, so here should just remove these columns by name
-            other_data = data.drop(df.columns[self.feature_list], axis=1)
+            other_data = x.drop(df.columns[self.feature_list], axis=1)
             if self.keep_origin_feature:
-                return np.concatenate([data.values, converted_data], axis=1)
+                return np.concatenate([x.values, converted_data], axis=1)
             else:
                 return np.concatenate([other_data.values, converted_data], axis=1)
         else:
-            converted_data = self.estimator.transform(data[:, self.feature_list]).toarray()
+            converted_data = self.estimator.transform(x[:, self.feature_list]).toarray()
             if self.keep_origin_feature:
-                return np.concatenate([data, converted_data], axis=1)
+                return np.concatenate([x, converted_data], axis=1)
             else:
-                other_index = list(set(range(data.shape[1])) - set(self.feature_list))
+                other_index = list(set(range(x.shape[1])) - set(self.feature_list))
                 if not other_index:
                     # in case there isn't any other columns
                     return converted_data
                 else:
-                    return np.concatenate([data[:, other_index], converted_data], axis=1)
+                    return np.concatenate([x[:, other_index], converted_data], axis=1)
 
     @staticmethod
     def _get_category_features_indexes(x):

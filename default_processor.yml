@@ -1,0 +1,8 @@
+default:
+  - Imputation
+  - OnehotEncoding
+  - Standard
+  - Normalize
+  - MinMax
+  - FeatureSelect
+  - PrincipalComponentAnalysis

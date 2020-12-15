@@ -11,12 +11,10 @@ from sklearn.base import BaseEstimator
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name
 from auto_ml.utils.files import load_yaml_file
-# This is whole classification algorithms
 from auto_ml.base.classifier_algorithms import *
-# This is whole scorer that we could use
 from auto_ml.metrics.scorer import *
-# Get type of training
 from auto_ml.utils.CONSTANT import *
+from auto_ml.pipelines.pipeline_training import ClassificationPipeline
 
 
 class AutoML(BaseEstimator):
@@ -66,7 +64,10 @@ class AutoML(BaseEstimator):
         # this is to save the whole instance object, so here should be in parent logic.
         # So child just to implement with function: `_create_ml_object_dir`
         self.al_obj_dir = dict()
+        # NOTED: this should be replaced with pipeline training step.
         self._create_ml_object_dir()
+
+        self.estimator = None
 
     def fit(self, xtrain,
             ytrain,
@@ -76,15 +77,16 @@ class AutoML(BaseEstimator):
             ytest=None,
             batch_size=None,
             dataset_name=None):
-        # first check data and label to ensure data and
-        # label as we want.
-        if not isinstance(task, int):
-            raise ValueError("We have to use int type of task!")
-
-        # we want to store the dataset name as a string.
-        self.dataset_name = hash_dataset_name(xtrain) if dataset_name is None else dataset_name
-
-        xtrain, ytrain = check_data_and_label(xtrain, ytrain)
+        # # first check data and label to ensure data and
+        # # label as we want.
+        # if not isinstance(task, int):
+        #     raise ValueError("We have to use int type of task!")
+        #
+        # # we want to store the dataset name as a string.
+        # self.dataset_name = hash_dataset_name(xtrain) if dataset_name is None else dataset_name
+        #
+        # xtrain, ytrain = check_data_and_label(xtrain, ytrain)
+        pass
 
     def predict(self, x, **kwargs):
         pass
@@ -97,6 +99,7 @@ class AutoML(BaseEstimator):
         here is to use the list of names that we need to instant
         each algorithm class, so that we could start the training 
         step using these algorithms.
+
         Let subclass to implement.
         the directory should be {name: instance_obj}.
         I think to put it into the init func will be better."""
@@ -111,6 +114,7 @@ class AutoML(BaseEstimator):
 class ClassificationAutoML(AutoML):
     def __init__(self):
         super(ClassificationAutoML, self).__init__()
+        self.estimator = ClassificationPipeline()
 
     def fit(self, xtrain, ytrain, task=None, metric=accuracy,
             xtest=None, ytest=None, batch_size=None, dataset_name=None):
@@ -140,14 +144,8 @@ class ClassificationAutoML(AutoML):
         xtrain, ytrain = check_data_and_label(xtrain, ytrain)
 
         # after the checking process, then we need to create the Pipeline for whole process.
-        #TODO: Here should use a Pipeline object to do real training.
-
-        print("Task:", TASK_TO_STRING[task])
-        for al_name, al_instance in self.al_obj_dir.items():
-            print("Al key:", al_name)
-            al_instance.fit(xtrain, ytrain)
-            print("Score: ", al_instance.score(xtrain, ytrain))
-
+        # TODO: Here should use a Pipeline object to do real training.
+        self.estimator.fit(xtrain, ytrain)
 
     def _create_ml_object_dir(self):
         """

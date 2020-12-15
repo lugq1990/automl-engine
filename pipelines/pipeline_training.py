@@ -7,14 +7,14 @@ This will just contain the training logic here with both preprocessing and algor
 import time
 from sklearn.pipeline import Pipeline
 from auto_ml.base import model_selection
-from auto_ml.preprocessing import \
-    (onehotencoding, standardization, norlization, minmax, imputation, feature_selection, pca_reduction)
+from auto_ml.preprocessing import imputation, standardization
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import logger
 from auto_ml.base.model_selection import GridSearchModel
 from auto_ml.base.classifier_algorithms import ClassifierFactory
+from auto_ml.preprocessing.processing_factory import ProcessingFactory
 
 
 class PipelineTrain(Pipeline):
@@ -22,20 +22,33 @@ class PipelineTrain(Pipeline):
     Let's make it as parent class for both classification and regression.
     """
     def __init__(self,
+                 include_estimators=None,
+                 exclude_estimators=None,
+                 include_preprocessors=None,
+                 exclude_preprocessors=None,
+                 use_imputation=True,
+                 use_onehot=False,
                  use_standard=True,
                  use_norm=False,
                  use_pca=False,
                  use_minmax=False,
-                 user_feature_seletion=False
+                 use_feature_seletion=False
                  ):
+        self.include_estimators = include_estimators
+        self.exclude_estimators = exclude_estimators
+        self.include_preprocessors = include_preprocessors
+        self.exclude_preprocessors = exclude_preprocessors
+        self.use_imputation = use_imputation
+        self.use_onehot = use_onehot
         self.use_standard = use_standard
         self.use_norm = use_norm
         self.use_pca = use_pca
         self.use_minmax = use_minmax
-        self.user_feature_seletion = user_feature_seletion
+        self.use_feature_seletion = use_feature_seletion
         self.processing_pipeline = None
         self.training_pipeline = None
         self.algorithms_config = load_yaml_file()
+        self.processor_config = load_yaml_file('default_processor.yml')['default']
         self.backend = Backend()
 
     def build_preprocessing_pipeline(self, data=None):
@@ -56,27 +69,44 @@ class PipelineTrain(Pipeline):
         :param data:
         :return:
         """
-        pipeline_steps = []
+        # except for included processor, then we also need to add some other's processor...
+        # TODO: But how to define the steps? Make it in the yaml file with order we want.
 
-        # No matter what happens, should first to add imputation logic
-        pipeline_steps.append(('Impuatation', imputation.Impution()))
-
-        # some logics needed to be added.
-        if self.use_standard:
-            pipeline_steps.append(('Standard', standardization.Standard()))
-
-        if self.use_norm:
-            pipeline_steps.append(('Normalization', norlization.Normalizer()))
-
-        if self.use_minmax:
-            pipeline_steps.append(('MinMax', minmax.MinMax()))
-
+        # Here I add a pre-order that for some processing step must be added like `imputation`...
+        # as some processing is a must, for other will be enhancement like feature-selection...
+        # I add a logic here is: the most less important step should be first added, the most important
+        # will be last inserted into 0 index... HERE add with data structure: Stack
+        step_stack = []
+        if self.use_feature_seletion or [True if data is not None and data.shape[1] > 20 else False][0]:
+            step_stack.append('FeatureSelection')
         if self.use_pca or [True if data is not None and data.shape[1] > 20 else False][0]:
-            # here to add PCA step if there are more than 20 columns in original data.
-            pipeline_steps.append(('PCA', pca_reduction.PCA()))
+            step_stack.append('PrincipalComponentAnalysis')
+        if self.use_minmax:
+            step_stack.append('MinMax')
+        if self.use_onehot:
+            step_stack.append('OnehotEncoding')
+        if self.use_standard:
+            step_stack.append('Standard')
+        if self.use_imputation:
+            step_stack.append('Imputation')
 
-        if self.user_feature_seletion or [True if data is not None and data.shape[1] > 20 else False][0]:
-            pipeline_steps.append(('FeatureSelection', feature_selection.FeatureSelect()))
+        process_step = [step_stack.pop() for _ in range(len(step_stack))]
+
+        # Whole need to add or delete processor steps should happen here.
+        if self.include_estimators:
+            process_step.extend([x for x in self.include_estimators if x not in process_step])
+
+        if self.exclude_estimators:
+            # not include some steps
+            [process_step.remove(x) for x in self.exclude_estimators]
+
+        # Here we should ensure that `process_step` should be at least 2 stages, otherwise will get error.
+        if len(process_step) == 1:
+            # add with `Standard` as most of algorithm would like data to be standard data.
+            process_step.append('Standard')
+
+        # return is a dictionary
+        pipeline_steps = ProcessingFactory.get_processor_list(process_step)
 
         self.processing_pipeline = Pipeline(pipeline_steps)
 
