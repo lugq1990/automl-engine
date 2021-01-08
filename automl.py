@@ -7,14 +7,16 @@ author: Guangqiang.lu
 """
 import numpy as np
 from sklearn.base import BaseEstimator
+from sklearn.exceptions import NotFittedError
 
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name
-from auto_ml.utils.files import load_yaml_file
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.metrics.scorer import *
 from auto_ml.utils.CONSTANT import *
 from auto_ml.pipelines.pipeline_training import ClassificationPipeline
+from auto_ml.utils.func_utils import deprecated
+from auto_ml.utils.logger import logger
 
 
 class AutoML(BaseEstimator):
@@ -59,15 +61,21 @@ class AutoML(BaseEstimator):
         self.model_dir = model_dir
         self.precision = precision
 
+        # Deprecated: We should ensure the whole thing should happen in pipeline `class`
         # for whole algorithms should be loaded first
-        self.algorithm_dir = load_yaml_file("default_algorithms.yml")
+        # self.algorithm_dir = load_yaml_file("default_algorithms.yml")
         # this is to save the whole instance object, so here should be in parent logic.
         # So child just to implement with function: `_create_ml_object_dir`
-        self.al_obj_dir = dict()
+        # self.al_obj_dir = dict()
         # NOTED: this should be replaced with pipeline training step.
-        self._create_ml_object_dir()
+        # self._create_ml_object_dir()
 
         self.estimator = None
+
+        # This is used to do testing and prediction.
+        self.models_list = self._load_trained_models_ordered_by_score()
+        # as we will use `ensemble` to combine models so the last will just be one model
+        self.best_model = None
 
     def fit(self, xtrain,
             ytrain,
@@ -77,27 +85,64 @@ class AutoML(BaseEstimator):
             ytest=None,
             batch_size=None,
             dataset_name=None):
-        # # first check data and label to ensure data and
-        # # label as we want.
-        # if not isinstance(task, int):
-        #     raise ValueError("We have to use int type of task!")
-        #
-        # # we want to store the dataset name as a string.
-        # self.dataset_name = hash_dataset_name(xtrain) if dataset_name is None else dataset_name
-        #
-        # xtrain, ytrain = check_data_and_label(xtrain, ytrain)
         pass
+
+    def _check_fitted(self):
+        if not self.models_list:
+            logger.error("When try to get prediction with `automl`, Please"
+                                 "fit the model first")
+            raise NotFittedError("When try to get prediction with `automl`, Please"
+                                 "fit the model first")
+
+        return True
 
     def predict(self, x, **kwargs):
-        pass
+        self._check_fitted()
+
+        # here I think to get prediction should based on highest score model
+        # for classifiction should `acc` highest as 1th, for regression should `rmse` lowest
+        # as 1th, but any way should use first model
+        logger.info("Start to get prediction based on best trained model!")
+        self.best_model = self.models_list[0][1]
+        logger.info("Get best trained model name is: ", self.models_list[0][0])
+
+        prediction = self.best_model.predict(x)
+
+        return prediction
 
     def score(self, x, y, **kwargs):
-        pass
+        self._check_fitted()
 
+        logger.info("Start to get prediction based on best trained model!")
+
+        print("Get model list")
+        self.best_model = self.models_list[0][1]
+        # logger.info("Get best trained model name is: ", self.models_list[0][0])
+        x_new = self._process_data_with_trained_processor(x)
+
+        print("Before data shape:", x.shape)
+        print("After", x_new.shape)
+        score = self.best_model.score(x_new, y)
+
+        return score
+
+    def _process_data_with_trained_processor(self, data):
+        logger.info('Start to load trained processor from disk.')
+        processor = self.backend.load_model('processing_pipeline')
+
+        try:
+            data_new = processor.transform(data)
+
+            return data_new
+        except Exception as e:
+            raise Exception("When try to process data with "
+                            "trained processor pipeline get error: {}".format(e))
+
+    @deprecated
     def _create_ml_object_dir(self):
         """create a list of object that we need,
         here is to use the list of names that we need to instant
-        each algorithm class, so that we could start the training 
+        each algorithm class, so that we could start the training
         step using these algorithms.
 
         Let subclass to implement.
@@ -105,15 +150,33 @@ class AutoML(BaseEstimator):
         I think to put it into the init func will be better."""
         raise NotImplementedError
 
-    def _get_training_algorithm_names(self, file_name):
-        """according to different problem to 
-        get default algorithms"""
-        self.algorithm_dir = load_yaml_file(file_name)
+    def _load_trained_models_ordered_by_score(self, higher_best=True):
+        """
+        To load whole trained model from disk and sorted them based on `higher_best`.
+        :param higher_best:
+        :return:
+            models_list: a list of trained models sorted with score.
+        """
+        models_list = self.backend.load_models_combined_with_model_name()
+
+        # let's sort these models based on score, this is a tuple:(model_name, model_instance)
+        if higher_best:
+            reverse = True
+        else:
+            reverse = False
+
+        models_list = sorted(models_list,
+                             key=lambda model: float(model[0].split("-")[1].replace(".pkl", '')),
+                             reverse=reverse)
+
+        return models_list
 
 
 class ClassificationAutoML(AutoML):
     def __init__(self):
         super(ClassificationAutoML, self).__init__()
+        # after pipeline has finished, then we should use `ensemble` to combine these models
+        # action should happen here.
         self.estimator = ClassificationPipeline()
 
     def fit(self, xtrain, ytrain, task=None, metric=accuracy,
@@ -144,13 +207,23 @@ class ClassificationAutoML(AutoML):
         xtrain, ytrain = check_data_and_label(xtrain, ytrain)
 
         # after the checking process, then we need to create the Pipeline for whole process.
-        # TODO: Here should use a Pipeline object to do real training.
+        # TODO: Here should use a Pipeline object to do real training, also with `ensemble`
         self.estimator.fit(xtrain, ytrain)
 
+        # TODO: load trained models for prediction and scoring for testing data.
+        # after we have fitted the trained models, then next step is to load whole of them from disk
+        # and sort them based on score, and get scores for `test data` and `test label`
+        # WE could get them from parent function, so that we could also use this for `regression`
+        self.models_list = self._load_trained_models_ordered_by_score(higher_best=True)
+
+
+    @deprecated
     def _create_ml_object_dir(self):
         """
         This is to create a dictionary of whole training algorithm instances.
-        So that we could use these algorithms to train model
+        So that we could use these algorithms to train model.
+
+        Here should use algorithm factory to instance get the instance.
         :return:
         """
         # currently with manually creation of object,
@@ -180,12 +253,13 @@ class ClassificationAutoML(AutoML):
                 return 1
 
 
-
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
 
     x, y = load_iris(return_X_y=True)
 
     auto_cl = ClassificationAutoML()
-    print(auto_cl.al_obj_dir)
-    auto_cl.fit(x, y)
+    # auto_cl.fit(x, y)
+
+    print(auto_cl.models_list)
+    print(auto_cl.score(x, y))

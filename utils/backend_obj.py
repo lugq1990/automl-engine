@@ -77,10 +77,13 @@ class Backend(object):
 
     def load_model(self, identifier):
         """
-        Get model instance object
+        Get model instance object with just model name.
         :param identifier:
         :return:
         """
+        if not identifier.endswith('pkl'):
+            identifier = identifier + '.pkl'
+
         try:
             with open(os.path.join(self.output_folder, identifier), 'rb') as f:
                 model = pickle.load(f)
@@ -149,9 +152,9 @@ class Backend(object):
 
     def load_models_combined_with_model_name(self):
         """
-        To load models combined with model name, so later could use this
+        To load models combined with `model name`, so later could use this
         models based on model score.
-        :return:
+        :return: a list of models: [('LR-0.98.pkl', LogisticRegression())]
         """
         model_with_name_list = []
 
@@ -172,7 +175,7 @@ class Backend(object):
             model_obj_list.append(self.load_model(identifier))
         return model_obj_list
 
-    def save_dataset(self, dataset, dataset_name, file_path=None):
+    def save_dataset(self, dataset, dataset_name, model_file_path=True):
         """
         As most of us have the structed data, so that I would love to
         store the data into disk with `csv` file, then we could use
@@ -183,8 +186,10 @@ class Backend(object):
         :param file_path: Where to save the data.
         :return:
         """
-        if file_path is None:
+        if model_file_path is None:
             file_path = self.output_folder
+        else:
+            file_path = self.tmp_folder_name
 
         try:
             dataset_path = os.path.join(file_path, dataset_name + '.csv')

@@ -173,7 +173,7 @@ class ModelEnsemble(ClassifierClass):
         Sorted instance object list with name, also we could get the model score
         for later compare use case, this is `sorted` list, so later don't need to
         consider for the order.
-        :return:
+        :return:a list of models: [('LR-0.98.pkl', LogisticRegression())]
         """
         model_list = self.backend.load_models_combined_with_model_name()
 
@@ -186,9 +186,10 @@ class ModelEnsemble(ClassifierClass):
 
         # after we have get the model list, we should ensure the model by the model
         # name with endswith score.
-        # Model name like this: ('lr_98.pkl', lr)
-        model_list.sort(key=lambda x: float("0." + x[0].split('-')[1].split('.')[0]), reverse=True)
-        # model_list = sorted(model_list, key=lambda x: x[0].split('.')[0].split('-')[1])
+        # Model name like this: ('lr_0.98.pkl', lr)
+        # model_list.sort(key=lambda x: float("0." + x[0].split('-')[1].split('.')[0]), reverse=True)
+        model_list.sort(key=lambda x: float(x[0].split('-')[1].split('.')[0]))
+
         return model_list
 
     def get_model_score_list(self):

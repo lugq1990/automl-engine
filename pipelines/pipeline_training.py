@@ -1,20 +1,28 @@
 # -*- coding:utf-8 -*-
 """
-This will just contain the training logic here with both preprocessing and algorithm training.
+This class is used to do training for different algorithms.
+
+This will just contain the training logic here with both preprocessing and algorithm training to
+produce already trained models and dump them.
+
+So if we do need to get the models' best score and prediction, the best process is to load
+the trained model from disk and do `transformation` and `prediction`. If we need to do test,
+then frist we need to do transformation based on the processor and use the highest score model
+to do `prediction`. One important thing here: 1. save the processor; 2. dump trained data; 3.
+dump whole trained models.
 
 @author: Guangqiang.lu
 """
 import time
 from sklearn.pipeline import Pipeline
-from auto_ml.base import model_selection
-from auto_ml.preprocessing import imputation, standardization
-from auto_ml.base.classifier_algorithms import *
+from auto_ml.preprocessing import imputation
 from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import logger
 from auto_ml.base.model_selection import GridSearchModel
 from auto_ml.base.classifier_algorithms import ClassifierFactory
 from auto_ml.preprocessing.processing_factory import ProcessingFactory
+from auto_ml.ensemble.model_ensemble import ModelEnsemble
 
 
 class PipelineTrain(Pipeline):
@@ -32,7 +40,10 @@ class PipelineTrain(Pipeline):
                  use_norm=False,
                  use_pca=False,
                  use_minmax=False,
-                 use_feature_seletion=False
+                 use_feature_seletion=False,
+                 use_ensemble=True,
+                 ensemble_alg='stacking',
+                 voting_logic='soft'
                  ):
         self.include_estimators = include_estimators
         self.exclude_estimators = exclude_estimators
@@ -50,6 +61,10 @@ class PipelineTrain(Pipeline):
         self.algorithms_config = load_yaml_file()
         self.processor_config = load_yaml_file('default_processor.yml')['default']
         self.backend = Backend()
+        # `ensemble` related
+        self.use_ensemble = use_ensemble
+        self.ensemble_alg = ensemble_alg
+        self.voting_logic = voting_logic
 
     def build_preprocessing_pipeline(self, data=None):
         """
@@ -155,7 +170,9 @@ class PipelineTrain(Pipeline):
         # To save the trained model and transformed dataset into disk.
         logger.info("Start to save the processor object and processed data into disk.")
         self.backend.save_model(self.processing_pipeline, 'processing_pipeline')
-        self.backend.save_dataset(x_processed, 'processed_data')
+
+        # This is to save processed data into disk, so should be in tmp folder.
+        self.backend.save_dataset(x_processed, 'processed_data', model_file_path=False)
 
         return x_processed
 
@@ -190,11 +207,20 @@ class PipelineTrain(Pipeline):
         try:
             # real training pipeline with Grid search to find best models, also will store the
             # best models.
+            logger.info("Start to do pipeline training step.")
             self.training_pipeline.fit(x_processed, y)
 
             training_time = time.time() - start_time
             logger.info("Finished Pipeline training step, "
                         "whole training takes {} seconds.".format(round(training_time, 2)))
+
+            # Whether or not to use `model_ensemble`
+            if self.use_ensemble:
+                logger.info("We are going to use `ensemble` logic to combine models")
+                # so that we could config this based on what we want.
+                kwargs = {"ensemble_alg": self.ensemble_alg, "voting_logic": self.voting_logic}
+                self._fit_ensemble(x_processed, y, **kwargs)
+                logger.info("`ensemble` training logic has finished.")
 
             return self
         except Exception as e:
@@ -215,7 +241,7 @@ class PipelineTrain(Pipeline):
             logger.info("Start to get model prediction based on trained model")
             x_processed = self.processing_pipeline.transform(x)
 
-            pred = self.pipeline.predict(x_processed)
+            pred = self.training_pipeline.predict(x_processed)
             return pred
         except Exception as e:
             logger.error("When try to use pipeline to "
@@ -227,7 +253,7 @@ class PipelineTrain(Pipeline):
         try:
             logger.info("Start to get model probability prediction based on trained model")
 
-            prob = self.pipeline.predict_proba(x)
+            prob = self.training_pipeline.predict_proba(x)
 
             return prob
         except Exception as e:
@@ -249,8 +275,40 @@ class PipelineTrain(Pipeline):
 
             return steps_str
 
+    @staticmethod
+    def _fit_ensemble(data, label, **kwargs):
+        """
+        Based on trained models to do model ensemble logic to try to get better model.
+
+        For `fitting`, we could provide key-words like: `ensemble_alg` and `voting_logic` etc.
+        to init our model
+        :param data:
+        :param label:
+        :return:
+        """
+        if kwargs:
+            ensemble_alg = kwargs['ensemble_alg']
+            voting_logic = kwargs['voting_logic']
+        else:
+            ensemble_alg = 'stacking'
+            voting_logic = 'soft'
+
+        model_ensemble = ModelEnsemble(ensemble_alg=ensemble_alg, voting_logic=voting_logic)
+
+        try:
+            # in fact with `training`, then the model will be saved into disk directly.
+            # so that we don't need to care the rest, just `fit`
+            model_ensemble.fit(data, label)
+        except Exception as e:
+            raise RuntimeError("When try to use `ModelEnsemble` to do model ensemble logic, "
+                               "we get error: {}".format(e))
+
 
 class ClassificationPipeline(PipelineTrain):
+    """
+    Classification pipeline class that we could use as a `pipeline`,
+    also the `ensemble` logic should happen here.
+    """
     def __init__(self):
         super(ClassificationPipeline, self).__init__()
 
@@ -278,15 +336,6 @@ class ClassificationPipeline(PipelineTrain):
         just use the class to get whole algorithms instance.
         :return:
         """
-        # algorithms_instance_list = []
-        # for name in self.algorithms_config['classification']['default']:
-            # if name == 'LogisticRegression':
-            #     algorithms_instance_list.append(LogisticRegression())
-            # elif name == 'SupportVectorMachine':
-            #     algorithms_instance_list.append(SupportVectorMachine())
-            # elif name == 'GradientBoostingTree':
-            #     algorithms_instance_list.append(GradientBoostingTree())
-
         algorithm_name_list = self.algorithms_config['classification']['default']
         algorithms_instance_list = ClassifierFactory.get_algorithm_instance(algorithm_name_list)
 

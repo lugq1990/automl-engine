@@ -30,7 +30,7 @@ class GridSearchModel(object):
         self.backend = Backend()
         self.estimator_list = []
         self.score_dict = {}
-        self.n_best_model = 5
+        self.n_best_model = 10
 
     def add_estimator(self, estimator, estimator_params=None):
         """
@@ -85,20 +85,23 @@ class GridSearchModel(object):
         if n_jobs is None:
             # as we don't need to use full cores, so here will just
             # to do training sequence for each training estimator
+            logger.info("Start to train model based on whole cores.")
             for estimator in self.estimator_list:
                 estimator.fit(x, y)
         elif n_jobs:
             # here couldn't use multiprocessing here, just to set
             # estimator `n_job`
             # we could add other multiprocessing here either if we want.
+            logger.info("Start to train model based on {} cores.".format(n_jobs))
             for estimator in self.estimator_list:
                 if hasattr(estimator, 'n_jobs'):
                     estimator.n_jobs = n_jobs
                 estimator.fit(x, y)
+        logger.info("Model selection training has finished.")
 
         # after the training finished, then we should get each estimator with score
         # and store the score with each instance class name and score.
-        self._get_estimators_score(x, y)
+        self._get_estimators_score()
 
         # Here add with information for `n_best_model` name and score
         logger.info("Get some best model scores information based on model_selection module.")
@@ -152,9 +155,11 @@ class GridSearchModel(object):
 
         for estimator_name, estimator_tuple in n_best_score_dict.items():
             estimator = estimator_tuple[0]
+            # NO NEED: just save the score float into str
             # Get score string with round 6 or 100% accuracy
-            score_str = str(round(estimator_tuple[1], 6)).split('.')[-1] \
-                if estimator_tuple[1] < 1.0 else '100'
+            # score_str = str(round(estimator_tuple[1], 6)).split('.')[-1] \
+            #     if estimator_tuple[1] < 1.0 else '100'
+            score_str = str(round(estimator_tuple[1], 6))
 
             # ADD with `-` with name and score, so that we could get the score later
             model_name = estimator_name + "-" + score_str
@@ -173,7 +178,7 @@ class GridSearchModel(object):
                                                      key=lambda x: x[1][1], reverse=True)[:self.n_best_model]}
 
         for estimator_name, estimator_tuple in n_best_score_dict.items():
-            model_name = estimator_name + str(round(estimator_tuple[1], 6)).split('.')[-1]
+            model_name = estimator_name + "-" + str(round(estimator_tuple[1], 6))
             try:
                 model_instance = self.backend.load_model(model_name)
                 model_list.append(model_instance)
@@ -184,17 +189,19 @@ class GridSearchModel(object):
 
     def save_bestest_model(self):
         """
-        dump best trained model into disk
+        dump best trained model into disk, one more thing here: We shouldn't save
+        the model into disk with fixed name, but should with score.
         :return:
         """
-        self.backend.save_model(self.best_estimator, 'grid_best')
+        self.best_esmator_name = self.best_estimator.__class__.__name__ + '-' + self.best_score
+        self.backend.save_model(self.best_estimator,  self.best_esmator_name)
 
     def load_bestest_model(self):
         """
         load best trained model from disk
         :return:
         """
-        return self.backend.load_model('grid_best')
+        return self.backend.load_model(self.best_esmator_name)
 
     @property
     def best_estimator(self):
@@ -221,11 +228,11 @@ class GridSearchModel(object):
     def best_score(self):
         best_score_list = [estimator.best_score_ for estimator in self.estimator_list]
         try:
-            return max(best_score_list)
+            return round(max(best_score_list), 6)
         except Exception as e:
             raise Exception("When try to get best score get error: {}".format(e))
 
-    def _get_estimators_score(self, x, y):
+    def _get_estimators_score(self):
         """
         To get whole trained estimator based on data and label for storing
         the result based on each trained grid model best estimator.
@@ -236,7 +243,7 @@ class GridSearchModel(object):
             # here I also need the trained estimator object, so here
             # also with trained object.
             best_estimator = estimator.best_estimator_
-            best_score = estimator.best_score_
+            best_score = round(estimator.best_score_, 6)
 
             # This should based on the trained best score, not based on trained model then score again.
             self.score_dict[best_estimator.__class__.__name__] = (best_estimator, best_score)
@@ -267,7 +274,7 @@ class GridSearchModel(object):
         """
         self.backend.save_model(estimator, estimator_name)
 
-    def list_estimators(self):
+    def print_estimators(self):
         """
         To list whole grid models instances, so that we could check.
         :return:
