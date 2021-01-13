@@ -36,7 +36,7 @@ class FeatureSelect(Process):
 
             # before next step, we should ensure task should be classification
             label_type = check_label(y)
-            if STRING_TO_TASK.get(label_type) not in CLASSIFICTION_TASK:
+            if label_type not in CLASSIFICTION_TASK:
                 raise ValueError("When we want to use model selection logic, task type should just be classification.")
 
             if self.tree_select:

@@ -96,7 +96,9 @@ def check_label(y):
     this is to ensure we have satisfied target label,
     as we only support with CONSTANT type of target.
     :param y: array like
-    :return: raise error not supported
+    :return:
+        Type of the problem that are supported with a number based on the CONSTANT module.
+        raise error not supported
     """
     # we don't support with target value with nan value
     if nan_col_index(y):
@@ -107,6 +109,8 @@ def check_label(y):
     supported_type = TASK_TO_STRING.values()
     if type_y not in supported_type:
         raise NotImplementedError("Don't support: %s type of problem" % type_y)
+
+    type_y = STRING_TO_TASK.get(type_y)
 
     return type_y
 

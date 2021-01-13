@@ -31,7 +31,7 @@ class ModelEnsemble(ClassifierClass):
         """
         Based on different task to do different logic.
         :param task_type: which task to do: classification or regression.
-        :param ensemble_alg: which ensemble logic to use
+        :param ensemble_alg: which ensemble logic to use: `voting` or `stacking`.
         :param voting_logic: whether with `hard` or `soft` voting
         """
         self.task_type = task_type
@@ -48,11 +48,15 @@ class ModelEnsemble(ClassifierClass):
             self.metrics = r2
         self.estimator = None
         # Whole trained model object list, like: [('LogisticRegression', LogisticRegression-9323.pkl),...]
-        self.model_list_without_score = None
+        self.model_list_without_score = self._get_model_list_without_score()
+        # Add attr for `stacking` logic to store the whole models needed to be load
+        # for later step to make new dataset, so here just store the instances don't need to re-load
+        self.stacking_models = [model[1] for model in self.model_list_without_score] \
+            if ensemble_alg == 'stacking' else None
 
     def fit(self, x, y, **kwargs):
         # First we should to get whole trained models no matter for `voting` or `stacking`
-        self.model_list_without_score = self._get_model_list_without_score()
+        # self.model_list_without_score = self._get_model_list_without_score()
 
         if self.ensemble_alg == 'voting':
             self.fit_bagging(x, y, **kwargs)
@@ -109,21 +113,8 @@ class ModelEnsemble(ClassifierClass):
         :param kwargs:
         :return:
         """
-        n_estimators = len(self.model_list_without_score)
-
-        # Whole trained estimator prediction result.
-        pred_array = np.empty((len(x), n_estimators))
-
-        logger.info("Start to get trained model prediction for `stacking`")
-        for i in range(n_estimators):
-            logger.info("To get prediction for estimator: {}".format(self.model_list_without_score[i][0]))
-
-            estimator = self.model_list_without_score[i][1]
-            pred = estimator.predict(x)
-            pred_array[:, i] = pred
-
-        # Then should combined the prediction and original data
-        x_new = np.concatenate([x, pred_array], axis=1)
+        # first should create new dataset.
+        x_new = self.create_stacking_dataset(x)
 
         logger.info("Before stacking we have data dimention: {}, "
                     "after stacking we have :{}".format(x.shape[1], x_new.shape[1]))
@@ -148,6 +139,36 @@ class ModelEnsemble(ClassifierClass):
         logger.info("Stacking model score: {}".format(score))
 
         self.backend.save_model(self.estimator, stacking_model_name)
+        
+    # def create_stacking_dataset(self, x):
+    #     #     """
+    #     #     Add private function to create new dataset for prediction, so not only `fit` but also `prediction`.
+    #     #
+    #     #     As `stacking` will add new features based on trained models.
+    #     #     Should make the attr `stacking_models` with the `models instance`.
+    #     #     :return:
+    #     #     """
+    #     #     # we don't need to care about `model_list_without_score` has instance or not, as parent does this.
+    #     #     n_estimators = len(self.model_list_without_score)
+    #     #
+    #     #     # with model instance
+    #     #     # self.stacking_models = [model[1] for model in self.model_list_without_score]
+    #     #
+    #     #     # Whole trained estimator prediction result.
+    #     #     pred_array = np.empty((len(x), n_estimators))
+    #     #
+    #     #     logger.info("Start to get trained model prediction for `stacking`")
+    #     #     for i in range(n_estimators):
+    #     #         logger.info("To get prediction for estimator: {}".format(self.model_list_without_score[i][0]))
+    #     #
+    #     #         estimator = self.model_list_without_score[i][1]
+    #     #         pred = estimator.predict(x)
+    #     #         pred_array[:, i] = pred
+    #     #
+    #     #     # Then should combined the prediction and original data
+    #     #     x_new = np.concatenate([x, pred_array], axis=1)
+    #     #
+    #     #     return x_new
 
     def _get_best_model_estimator_name_based_on_yaml(self):
         """
@@ -220,6 +241,41 @@ class ModelEnsemble(ClassifierClass):
 
         return model_list_without_score
 
+    @classmethod
+    def create_stacking_dataset(cls, x, task_type='classification', ensemble_alg='stacking'):
+        """
+        What I want is to create the new dataset based on the whole instances for `stacking`.
+
+        We could use the class func to create this.
+        As `stacking` will add new features based on trained models.
+        Should make the attr `stacking_models` with the `models instance`.
+        :param x:
+        :param task_type:
+        :param ensemble_alg:
+        :return:
+        """
+        model_ensemble = cls(task_type=task_type, ensemble_alg=ensemble_alg)
+
+        # we don't need to care about `model_list_without_score` has instance or not, as parent does this.
+        n_estimators = len(model_ensemble.model_list_without_score)
+
+        # Whole trained estimator prediction result.
+        pred_array = np.empty((len(x), n_estimators))
+
+        logger.info("Start to get trained model prediction for `stacking`")
+        model_list_without_score = model_ensemble.model_list_without_score
+        for i in range(n_estimators):
+            logger.info("To get prediction for estimator: {}".format(model_list_without_score[i][0]))
+
+            estimator = model_list_without_score[i][1]
+            pred = estimator.predict(x)
+            pred_array[:, i] = pred
+
+        # Then should combined the prediction and original data
+        x_new = np.concatenate([x, pred_array], axis=1)
+
+        return x_new
+
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
@@ -235,5 +291,6 @@ if __name__ == '__main__':
     #     model = models[1]
     #     print(model)
     #     print(getattr(model, "_estimator_type", None))
+    print(model_ensemble.stacking_models)
 
-
+    print(ModelEnsemble.create_stacking_dataset(x))

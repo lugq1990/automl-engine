@@ -172,21 +172,10 @@ class PipelineTrain(Pipeline):
         self.backend.save_model(self.processing_pipeline, 'processing_pipeline')
 
         # This is to save processed data into disk, so should be in tmp folder.
+        logger.info("Start to save processed data into disk!")
         self.backend.save_dataset(x_processed, 'processed_data', model_file_path=False)
 
         return x_processed
-
-    def _process_data_without_null_value(self, x, y):
-        """
-        As I also want to compare with processed data and original data,
-        but I couldn't just store original data into disk directly as maybe
-        with missing values, so here add this func.
-        :param x:
-        :param y:
-        :return:
-        """
-        imput = imputation.Impution()
-        x_without_null = imput.fit_transform(x)
 
     def fit(self, x, y):
         """
@@ -229,7 +218,11 @@ class PipelineTrain(Pipeline):
 
     def score(self, x, y):
         logger.info("Start to get accuracy score based on test data.")
-        x_processed = self.processing_pipeline.transform(x)
+
+        # Here to test that if we use the `load` processor to do processing logic
+        processor = self.backend.load_model('processing_pipeline')
+        x_processed = processor.transform(x)
+        # x_processed = self.processing_pipeline.transform(x)
 
         acc_score = self.training_pipeline.score(x_processed, y)
         logger.info("Get accuracy score: %.4f" % acc_score)
