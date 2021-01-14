@@ -35,12 +35,13 @@ class PipelineTrain(Pipeline):
                  include_preprocessors=None,
                  exclude_preprocessors=None,
                  use_imputation=True,
-                 use_onehot=False,
+                 use_onehot=True,
                  use_standard=True,
                  use_norm=False,
-                 use_pca=False,
+                 use_pca=True,
                  use_minmax=False,
                  use_feature_seletion=False,
+                 max_feature_num=20,
                  use_ensemble=True,
                  ensemble_alg='stacking',
                  voting_logic='soft'
@@ -56,6 +57,8 @@ class PipelineTrain(Pipeline):
         self.use_pca = use_pca
         self.use_minmax = use_minmax
         self.use_feature_seletion = use_feature_seletion
+        # How many features over our expect, then reduce the feature, default is 20
+        self.max_feature_num = max_feature_num
         self.processing_pipeline = None
         self.training_pipeline = None
         self.algorithms_config = load_yaml_file()
@@ -92,16 +95,19 @@ class PipelineTrain(Pipeline):
         # I add a logic here is: the most less important step should be first added, the most important
         # will be last inserted into 0 index... HERE add with data structure: Stack
         step_stack = []
-        if self.use_feature_seletion or [True if data is not None and data.shape[1] > 20 else False][0]:
+        if self.use_feature_seletion or \
+                any([True if data is not None and data.shape[1] > self.max_feature_num else False]):
             step_stack.append('FeatureSelection')
-        if self.use_pca or [True if data is not None and data.shape[1] > 20 else False][0]:
+        if self.use_pca or \
+                any([True if data is not None and data.shape[1] > self.max_feature_num else False]):
             step_stack.append('PrincipalComponentAnalysis')
         if self.use_minmax:
             step_stack.append('MinMax')
-        if self.use_onehot:
-            step_stack.append('OnehotEncoding')
         if self.use_standard:
             step_stack.append('Standard')
+        if self.use_onehot:
+            # One-hot logic should happen after the imputation logic! As we need numeric data.
+            step_stack.append('OnehotEncoding')
         if self.use_imputation:
             step_stack.append('Imputation')
 
@@ -362,5 +368,11 @@ if __name__ == '__main__':
     # print(process_pipeline)
     # classifier_pipeline._fit_processing_pipeline(x, y)
 
-    classifier_pipeline.fit(x, y)
-    print(classifier_pipeline.score(x, y))
+    from auto_ml.test.get_test_data import get_training_data
+    from sklearn.model_selection import train_test_split
+
+    x, y = get_training_data()
+    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
+
+    classifier_pipeline.fit(xtrain, ytrain)
+    print(classifier_pipeline.score(xtest, ytest))

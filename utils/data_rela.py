@@ -71,7 +71,10 @@ def check_data_and_label(data, label):
     check_label(label)
     # Here is to ensure that the data is 2D
     data = ensure_2d_data(data)
-    data, label = check_X_y(data, label, accept_sparse=True)
+
+    # For `check_X_y` is only used for the numerical data type. So data validation shouldn't happen here.
+    # Should after the processing logic finished.
+    # data, label = check_X_y(data, label, accept_sparse=True)
 
     return data, label
 
@@ -88,7 +91,9 @@ def ensure_2d_data(data):
         # we have to ensure data is 2D
         data = data.reshape(-1, 1)
 
-    return check_array(data)
+    # for `check_array` is only used for `float` type. Here we just want to ensure the data is 2D
+    # return check_array(data)
+    return data
 
 
 def check_label(y):
@@ -144,6 +149,21 @@ def convert_null_to_none(value):
         value = None
 
     return value
+
+
+def is_categorical_type(series):
+    """
+    To check the data type of the series
+    :param series:
+    :return:
+    """
+    # after convert dataframe into array, if there is anything string, then others will be string too.
+    # so we couldn't fit with array data type that has string type....
+    from pandas.api.types import (is_bool_dtype, is_categorical_dtype, is_object_dtype, is_numeric_dtype,
+                                  is_string_dtype, is_datetime64_dtype, is_timedelta64_dtype, is_integer_dtype)
+
+    return is_string_dtype(series) or is_categorical_dtype(series) or \
+           is_object_dtype(series) or is_bool_dtype(series) or is_integer_dtype(series)
 
 
 if __name__ == '__main__':

@@ -4,26 +4,42 @@ This is used to process with categorical data type to convert it into onehot typ
 
 @author: Guangqiang.lu
 """
-from pandas.api.types import (is_bool_dtype, is_categorical_dtype, is_object_dtype, is_numeric_dtype,
-                              is_string_dtype, is_datetime64_dtype,is_timedelta64_dtype, is_integer_dtype)
+import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
 from auto_ml.preprocessing.processing_base import Process
+from auto_ml.utils.data_rela import is_categorical_type
 
 
 class OnehotEncoding(Process):
-    def __init__(self, keep_origin_feature=True, except_feature_indexes=None, except_feature_names_list=None):
+    def __init__(self, keep_origin_feature=False,
+                 except_feature_indexes=None,
+                 except_feature_names_list=None,
+                 drop_ratio=.2,
+                 max_categoric_number=30):
         """
         In case there will be numpy array or pandas DataFrame data type,
         so that we could try to use both of them types.
-        :param keep_origin_feature: when to transform, to keep original feature or not.
-        :param except_feature_indexes: array column indexes
-        :param except_feature_names_list: some features doesn't need to convert even they could.
+        :param keep_origin_feature:
+            when to transform, to keep original feature or not.
+        :param except_feature_indexes:
+            array column indexes
+        :param except_feature_names_list:
+            some features doesn't need to convert even they could.
+        :param drop_ratio:
+            if there are too many categorical features, so we should make a threshould
+            that if there are categorical feature over `drop_ratio`, then we should just
+            drop this feature.
+        :param max_categoric_number:
+            in case there are too many categorical values, even with the `drop_ratio`,
+            we still get too many features, this is not we want.
         """
         super(OnehotEncoding, self).__init__()
         self.keep_origin_feature = keep_origin_feature
         self.except_feature_indexes = except_feature_indexes
         self.except_feature_names_list = except_feature_names_list
+        self.drop_ratio = drop_ratio
+        self.max_categoric_number = max_categoric_number
 
     def fit(self, x, y=None):
         """
@@ -48,22 +64,16 @@ class OnehotEncoding(Process):
         self.feature_list = self._get_category_features_indexes(x)
 
         # As even with dataframe, we will just return array type, so let's just convert feature index into indexes.
-        if self.data_type:
-            feature_name_list = list(x.columns)
-            self.feature_list = [feature_name_list.index(x) for x in self.feature_list]
+        # remove this, just to use the column's name
+        # if self.data_type:
+        #     feature_name_list = list(x.columns)
+        #     self.feature_list = [feature_name_list.index(x) for x in self.feature_list]
 
         # Here I can't use pandas, as if we need to do same logic with test data, we need to store the model.
         # return pd.get_dummies(x, prefix=feature_list)
 
         self.estimator = OneHotEncoder()
-        if self.feature_list:
-            if self.data_type:
-                x = x.iloc[:, self.feature_list]
-                # x = x[self.feature_list]
-            else:
-                x = x[:, self.feature_list]
-                if len(self.feature_list) == 1:
-                    x = x.reshape(-1, 1)
+        x = self._get_feature_data_with_threshold(x)
 
         self.estimator.fit(x)
         return self
@@ -87,20 +97,31 @@ class OnehotEncoding(Process):
             # if we don't have any category features
             return x
 
+        # We will combine `OneHot` result and `original numerical data` into a new dataset
+        # based on `DataFrame` or `Array`
         if isinstance(x, pd.DataFrame):
-            converted_data = self.estimator.transform(x.iloc[:, self.feature_list].values).toarray()
-            # HERE I have convert the columns features to index, so here should just remove these columns by name
-            other_data = x.drop(df.columns[self.feature_list], axis=1)
+            # we have store the feature name list with real name
+            converted_data = self.estimator.transform(x[self.feature_list].values).toarray()
+
+            other_data = x.drop(self.feature_list, axis=1)
+            # the other data should also drop the feature dropped by OneHot logic
+            print(other_data.columns)
+            print(self.drop_feature_list)
+            if self.drop_feature_list:
+                other_data.drop(self.drop_feature_list, axis=1, inplace=True)
+
+
             if self.keep_origin_feature:
                 return np.concatenate([x.values, converted_data], axis=1)
             else:
                 return np.concatenate([other_data.values, converted_data], axis=1)
         else:
             converted_data = self.estimator.transform(x[:, self.feature_list]).toarray()
+
             if self.keep_origin_feature:
                 return np.concatenate([x, converted_data], axis=1)
             else:
-                other_index = list(set(range(x.shape[1])) - set(self.feature_list))
+                other_index = list(set(range(x.shape[1])) - set(self.feature_list) - set(self.drop_feature_list))
                 if not other_index:
                     # in case there isn't any other columns
                     return converted_data
@@ -116,43 +137,101 @@ class OnehotEncoding(Process):
         """
         data_type = isinstance(x, pd.DataFrame)
 
-        def _is_categorical_type(series):
-            # after convert dataframe into array, if there is anything string, then others will be string too.
-            # so we couldn't fit with array data type that has string type....
-            return is_string_dtype(series) or is_categorical_dtype(series) or \
-                   is_object_dtype(series) or is_bool_dtype(series) or is_integer_dtype(series)
+        # def _is_categorical_type(series):
+        #     # after convert dataframe into array, if there is anything string, then others will be string too.
+        #     # so we couldn't fit with array data type that has string type....
+        #     return is_string_dtype(series) or is_categorical_dtype(series) or \
+        #            is_object_dtype(series) or is_bool_dtype(series) or is_integer_dtype(series)
 
         # with dataframe then return feature name list
         cate_feature_list = []
         if data_type:
             for feature_name in x.columns:
-                if _is_categorical_type(x[feature_name]):
+                if is_categorical_type(x[feature_name]):
                     cate_feature_list.append(feature_name)
         else:
             # in case with just one columns with 1D
             if len(x.shape) == 1:
-                if _is_categorical_type(x):
+                if is_categorical_type(x):
                     cate_feature_list.append(0)
             else:
                 # loop for each column
                 for i in range(x.shape[1]):
-                    if _is_categorical_type(x[:, i]):
+                    if is_categorical_type(x[:, i]):
                         cate_feature_list.append(i)
 
         return cate_feature_list
 
+    def _get_feature_data_with_threshold(self, x):
+        if self.feature_list:
+            # drop the feature number over some threshold or over some number
+            self._process_feature_list_under_threshold(x)
+
+            if self.data_type:
+                # if this is a dataframe
+                x = x[self.feature_list]
+                # convert it into a array
+                x = x.values
+            else:
+                x = x[:, self.feature_list]
+                if len(self.feature_list) == 1:
+                    x = x.reshape(-1, 1)
+            return x
+
+    def _process_feature_list_under_threshold(self, x):
+        """
+        To change the feature list that is under the threshold or satisfy requirement.
+        :param x:
+        :return:
+        """
+        if self.data_type:
+            # to decide the feature list that we want
+            # convert to type: `str` to avoid error: TypeError: '<' not supported between instances of 'str' and 'float'
+            keep_feature_list = [self._keep_feature_under_threshold(x[fea].astype('str')) \
+                                 for fea in self.feature_list]
+        else:
+            keep_feature_list = [self._keep_feature_under_threshold(x[:, fea]) \
+                                 for fea in self.feature_list]
+
+        # Don't change it right now, otherwise the later step will fail
+        new_feature_list = [fea for fea, keep in zip(self.feature_list, keep_feature_list) if keep is True]
+        # here should store not used feature, as for the `transform` action, if we drop these feature names
+        # then if we need to get the rest of the data, we will combine the feature we don't want
+        self.drop_feature_list = [fea for fea, keep in zip(self.feature_list, keep_feature_list) if keep is False]
+
+        self.feature_list = new_feature_list
+
+    def _keep_feature_under_threshold(self, data):
+        """
+        Based on each feature to decide to keep the feature or not.
+        :param data:
+        :return:
+        """
+        categorical_feature_num = len(np.unique(data))
+
+        if categorical_feature_num < self.max_categoric_number:
+            return True
+        return False
+
 
 if __name__ == '__main__':
-    import numpy as np
-    import random
+    # import numpy as np
+    # import random
+    #
+    # df = pd.DataFrame()
+    #
+    # df['x'] = np.random.uniform(0, 1, 100)
+    # df['y'] = [np.random.randint(4) for _ in range(len(df))]
+    # df['label'] = [random.choice(['a', 'b']) for _ in range(len(df))]
+    from auto_ml.test.get_test_data import save_processing_data, load_processing_data
 
-    df = pd.DataFrame()
-
-    df['x'] = np.random.uniform(0, 1, 100)
-    df['y'] = [np.random.randint(4) for _ in range(len(df))]
-    df['label'] = [random.choice(['a', 'b']) for _ in range(len(df))]
+    df = load_processing_data('imputation.csv')
 
     onehot = OnehotEncoding(keep_origin_feature=False)
 
     onehot.fit(df)
-    print(onehot.transform(df).shape)
+    onehot_res = onehot.transform(df)
+
+    save_processing_data(onehot_res, 'onehot')
+
+

@@ -186,7 +186,7 @@ class Backend(object):
         :param file_path: Where to save the data.
         :return:
         """
-        if model_file_path is None:
+        if model_file_path:
             file_path = self.output_folder
         else:
             file_path = self.tmp_folder_name
@@ -209,15 +209,19 @@ class Backend(object):
         :return:
         """
         if file_path is None:
-            file_path = self.output_folder
+            file_path = self.tmp_folder_name
+
+        # we should ensure the dataset is endswith 'csv'
+        if not dataset_name.endswith(".csv"):
+            dataset_name += '.csv'
 
         if dataset_name not in os.listdir(file_path):
             raise IOError("When try to load dataset: {} from path:{}, "
                           "we couldn't find it!".format(dataset_name, file_path))
 
         try:
-            dataset_path = os.path.join(file_path, dataset_name + '.csv')
-            dataset = pd.read_csv(dataset_path, index=False, sep='|')
+            dataset_path = os.path.join(file_path, dataset_name)
+            dataset = pd.read_csv(dataset_path, sep='|')
 
             return dataset
         except IOError as e:

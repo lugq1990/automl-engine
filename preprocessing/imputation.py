@@ -11,12 +11,14 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import KNNImputer, SimpleImputer
 from auto_ml.preprocessing.processing_base import Process
+from auto_ml.utils.data_rela import is_categorical_type
 
 
 class Impution(Process):
-    def __init__(self, use_al_to_im=False):
+    def __init__(self, use_al_to_im=False, threshold=.5):
         super(Impution, self).__init__()
         self.use_al_to_im = use_al_to_im
+        self.threshold = threshold
 
     def fit(self, data, y=None):
         """
@@ -42,6 +44,8 @@ class Impution(Process):
         numeric_data = data[:, numeric_index]
         category_data = data[:, category_index]
 
+        print(numeric_data[:2, :])
+        print(category_data[:, :])
         try:
             if self.use_al_to_im:
                 # for KNN, we could only use numerical data
@@ -54,7 +58,7 @@ class Impution(Process):
                 if numeric_index:
                     self.num_estimator = SimpleImputer()
                 if category_index:
-                    self.cate_estimator = SimpleImputer(missing_values='nan', strategy='most_frequent')
+                    self.cate_estimator = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
 
             # we have to check different data type to process.
             if numeric_index:
@@ -67,6 +71,9 @@ class Impution(Process):
             raise Exception("When try to impute data with Imputer with error: {}".format(e))
 
     def transform(self, data, y=None):
+        # # before we do anything, first should keep the data that we want based on training data
+        # data = self._transform_data_without_col_over_threshold(data)
+
         # here just to according to different type data to transform data and combine them
         if self.numeric_index:
             numeric_data = self.num_estimator.transform(data[:, self.numeric_index])
@@ -95,23 +102,38 @@ class Impution(Process):
 
         return self.transform(data, y=None)
 
-    @staticmethod
-    def _remove_cols_up_to_threshold(data, threshold=.1):
+    def _transform_data_without_col_over_threshold(self, data):
+        """
+        To keep the cols that are kept in the training process.
+        :param data:
+        :return:
+        """
+        if isinstance(data, pd.DataFrame):
+            data = data[self.keep_cols]
+        else:
+            data = data[:, self.keep_cols]
+
+        return data
+
+    def _remove_cols_up_to_threshold(self, data):
         """
         As if there are too many missing value, we don't need it, just remove it
+
+        Have to store the column that we want to keep for `transform` use case to remove
+        the column that is over `threshold` NAN values.
         :param threshold: default is 0.5
         :return:
         """
         if isinstance(data, pd.DataFrame):
             null_ratio_series = data.isnull().sum() / len(data)
-            to_remove_cols = list(null_ratio_series[null_ratio_series >= threshold].index)
-            data.drop(to_remove_cols, axis=1, inplace=True)
-            return data
+            self.keep_cols = list(null_ratio_series[null_ratio_series < self.threshold].index)
+            data = data[self.keep_cols]
         else:
             null_ratio_series = pd.isnull(data).sum(axis=0) / len(data)
-            keep_cols = np.array(range(data.shape[1]))[null_ratio_series < threshold]
-            data = data[:, keep_cols]
-            return data
+            self.keep_cols = np.array(range(data.shape[1]))[null_ratio_series < self.threshold]
+            data = data[:, self.keep_cols]
+
+        return data
 
     @staticmethod
     def get_col_data_type(data):
@@ -134,23 +156,48 @@ class Impution(Process):
         for i in range(n_cols):
             sample = data[:, i]
             # currently logic to try to get each value
-            while True:
-                for j in range(len(sample)):
-                    item = sample[j]
-                    if _is_nan(item):
-                        # if face nan value, go to next
-                        continue
-                    else:
-                        # try to convert this data
-                        try:
-                            if isinstance(int(item), int):
-                                numeric_col_index.append(i)
-                        except:
-                            cate_col_index.append(i)
-                        break
-                break
+            # todo: Must be changed, if there is column first as number, the other with string will get error.
+            try:
+                if all([isinstance(int(s), int) for s in sample if not _is_nan(s)]):
+                    # if and only if whole value are number and the value is not NAN
+                    numeric_col_index.append(i)
+            except:
+                cate_col_index.append(i)
+
+            # while True:
+            #     for j in range(len(sample)):
+            #         item = sample[j]
+            #         if _is_nan(item):
+            #             # if face nan value, go to next
+            #             continue
+            #         else:
+            #             # try to convert this data
+            #             try:
+            #                 if isinstance(int(item), int):
+            #                     numeric_col_index.append(i)
+            #             except:
+            #                 cate_col_index.append(i)
+            #             break
+            #     break
 
         return numeric_col_index, cate_col_index
+
+    # @staticmethod
+    # def get_col_data_type(data):
+    #     # with two different types of feature: `numeric` and `category`
+    #     if len(data.shape) == 1:
+    #         data = data.reshape(-1, 1)
+    #     n_cols = data.shape[1]
+    #     numeric_col_index = []
+    #     cate_col_index = []
+    #
+    #     for i in range(data.shape[1]):
+    #         if is_categorical_type(data[:, i]):
+    #             cate_col_index.append(i)
+    #         else:
+    #             numeric_col_index.append(i)
+    #
+    #     return numeric_col_index, cate_col_index
 
 
 if __name__ == '__main__':
@@ -172,3 +219,12 @@ if __name__ == '__main__':
     print(i.transform(data_new))
     print(i.fit_transform(sample_data))
     print(i.name)
+
+    print("*" * 30)
+    from auto_ml.test.get_test_data import get_training_data, save_processing_data
+
+    x, y = get_training_data()
+    i.fit(x, y)
+    x_new = i.transform(x)
+
+    save_processing_data(x_new, 'imputation')

@@ -339,12 +339,18 @@ class ClassificationAutoML(AutoML):
 
 
 if __name__ == '__main__':
-    from sklearn.datasets import load_iris
+    import os
+    import pandas as pd
 
-    x, y = load_iris(return_X_y=True)
+    df = pd.read_csv("train.csv")
+    x = df.drop(['Survived'], axis=1).values
+    y = df['Survived'].values
+    x = x.copy(order='C')
+
+    # x, y = load_diabetes(return_X_y=True)
 
     auto_cl = ClassificationAutoML()
-    # auto_cl.fit(x, y)
+    auto_cl.fit(x, y)
 
     print(auto_cl.models_list)
     print(auto_cl.score(x, y))
