@@ -122,18 +122,9 @@ class AutoML(BaseEstimator):
         :param kwargs:
         :return:
         """
-        self._check_fitted()
-
-        # here I think to get prediction should based on highest score model
-        # for classifiction should `acc` highest as 1th, for regression should `rmse` lowest
-        # as 1th, but any way should use first model
         logger.info("Start to get prediction based on best trained model!")
-        self.best_model = self.models_list[0][1]
-        print(self.models_list[0][0])
 
-        logger.info("Get best trained model name is: {}".format(self.models_list[0][0]))
-
-        logger.info("Start to process data with trained processor pipeline.")
+        # first should to process data
         x_processed = self._process_data_with_trained_processor(x)
 
         logger.info("Start to get prediction based on best trained model.")
@@ -149,10 +140,11 @@ class AutoML(BaseEstimator):
         :param kwargs:
         :return:
         """
-        self._check_fitted()
-
         logger.info("Start to get probability based on best trained model!")
-        self.best_model = self.models_list[0][1]
+
+        # should check the estimator should have function: `predict_proba`!
+        if not hasattr(self.best_model, 'predict_proba'):
+            raise NotImplementedError("Best fitted model:{} doesn't support `predict_proba`".format(self.best_model))
 
         logger.info("Start to process data with trained processor pipeline.")
         x_processed = self._process_data_with_trained_processor(x)
@@ -182,18 +174,30 @@ class AutoML(BaseEstimator):
         return score
 
     def _process_data_with_trained_processor(self, data):
+        """
+        Let this function to do whole processing data logic.
+        :param data: 
+        :return: 
+        """
+        # This func is used only after the model is fitted.
+        self._check_fitted()
+        
         logger.info('Start to load trained processor from disk.')
         processor = self.backend.load_model('processing_pipeline')
 
         try:
+            # here I think to get prediction should based on highest score model
+            # for classifiction should `acc` highest as 1th, for regression should `rmse` lowest
+            # as 1th, but any way should use first model
+            self.best_model = self.models_list[0][1]
+            
             logger.info("Start to process data with `trained processor pipeline`.")
             data_new = processor.transform(data)
 
             # the `stacking` logic should happen here, for upper we could just use it, don't need to care detail
             if "stacking" in self.models_list[0][0].lower():
                 logger.info("Creating new dataset based on trained models with stacking.")
-                # todo: this should be changed, as we will  use a new algorithm to fit the new model.
-                # Added with `stacking_models` for the `ensemble` class.
+                # process data based on the `stacking` model logic.
                 data_new = ModelEnsemble.create_stacking_dataset(data_new)
 
             return data_new
@@ -344,3 +348,7 @@ if __name__ == '__main__':
 
     print(auto_cl.models_list)
     print(auto_cl.score(x, y))
+    print('*' * 20)
+    print(auto_cl.predict(x))
+    print('*'*20)
+    print(auto_cl.predict_proba(x))
