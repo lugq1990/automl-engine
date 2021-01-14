@@ -133,7 +133,23 @@ class GridSearchModel(object):
         """
         best_estimator = self.best_estimator
 
-        return best_estimator.predict(x)
+        if hasattr(best_estimator, 'predict'):
+            return best_estimator.predict(x)
+        else:
+            raise NotImplementedError("For estimator:{} doesn't support `predict` func!".format(best_estimator))
+
+    def predict_proba(self, x):
+        """
+        Get probability of based on best estimator
+        :param x:
+        :return:
+        """
+        best_estimator = self.best_estimator
+
+        if hasattr(best_estimator, 'predict_proba'):
+            return best_estimator.predict_proba(x)
+        else:
+            raise NotImplementedError("For estimator:{} doesn't support `predict_proba` func!".format(best_estimator))
 
     def save_best_model_list(self):
         """
