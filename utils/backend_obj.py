@@ -154,7 +154,7 @@ class Backend(object):
         """
         To load models combined with `model name`, so later could use this
         models based on model score.
-        :return: a list of models: [('LR-0.98.pkl', LogisticRegression())]
+        :return: a list of models: [('LR-0.98.pkl', LogisticRegression-0.982323.pkl)]
         """
         model_with_name_list = []
 

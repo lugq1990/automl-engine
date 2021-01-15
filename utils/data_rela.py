@@ -12,6 +12,7 @@ from sklearn.utils.validation import check_X_y, check_array
 from sklearn.utils.multiclass import type_of_target
 
 from auto_ml.utils.CONSTANT import *
+from auto_ml.metrics.scorer import *
 
 
 def ensure_data_without_nan(data):
@@ -164,6 +165,44 @@ def is_categorical_type(series):
 
     return is_string_dtype(series) or is_categorical_dtype(series) or \
            is_object_dtype(series) or is_bool_dtype(series) or is_integer_dtype(series)
+
+
+def get_type_problem(y):
+    """
+    To check what type of the label dataset.
+    :param y:
+    :return:
+    """
+    label_type = check_label(y)
+
+    if label_type in CLASSIFICTION_TASK:
+        return 'classification'
+    elif label_type in REGRESSION_TASK:
+        return 'regression'
+    else:
+        raise ValueError("When to check label type based label data, "
+                         "get not supported type: {}".format(label_type))
+
+
+def get_scorer_based_on_target(y):
+    """
+    Based on the target to return the type of the problem.
+    :param y:
+    :return:
+    """
+    # for different problem use different scorer
+    # self.type_of_problem = self._get_type_problem(y)
+    type_of_problem = get_type_problem(y)
+
+    if type_of_problem == 'classification':
+        scorer = accuracy
+    elif type_of_problem == 'regression':
+        scorer = mean_squared_error
+    else:
+        raise ValueError("When to score data get not "
+                         "supported type of problem: {}".format(type_of_problme))
+
+    return scorer
 
 
 if __name__ == '__main__':

@@ -10,7 +10,8 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 
 from auto_ml.utils.backend_obj import Backend
-from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name, check_label
+from auto_ml.utils.data_rela import (check_data_and_label, hash_dataset_name,
+                                     check_label, get_type_problem, get_scorer_based_on_target)
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.metrics.scorer import *
 from auto_ml.utils.CONSTANT import *
@@ -164,7 +165,7 @@ class AutoML(BaseEstimator):
         prediction = self.predict(x)
 
         # for different problem use different scorer
-        scorer = self._get_scorer_based_on_target(y)
+        scorer = get_scorer_based_on_target(y)
 
         logger.info("Start to use metrics: {} to get score.".format(scorer))
         score = scorer(y, prediction)
@@ -205,50 +206,6 @@ class AutoML(BaseEstimator):
             raise Exception("When try to process data with "
                             "trained processor pipeline get error: {}".format(e))
 
-    def _get_scorer_based_on_target(self, y):
-        # for different problem use different scorer
-        self.type_of_problem = self._get_type_problem(y)
-        logger.info("Get type of problem: {}".format(str(self.type_of_problem)))
-
-        if self.type_of_problem == 'classification':
-            scorer = accuracy
-        elif self.type_of_problem == 'regression':
-            scorer = mean_squared_error
-        else:
-            raise ValueError("When to score data get not "
-                             "supported type of problem: {}".format(self.type_of_problme))
-
-        return scorer
-
-    @staticmethod
-    def _get_type_problem(y):
-        """
-        To check what type of the label dataset.
-        :param y:
-        :return:
-        """
-        label_type = check_label(y)
-
-        if label_type in CLASSIFICTION_TASK:
-            return 'classification'
-        elif label_type in REGRESSION_TASK:
-            return 'regression'
-        else:
-            raise ValueError("When to check label type based label data, "
-                             "get not supported type: {}".format(label_type))
-
-    @deprecated
-    def _create_ml_object_dir(self):
-        """create a list of object that we need,
-        here is to use the list of names that we need to instant
-        each algorithm class, so that we could start the training
-        step using these algorithms.
-
-        Let subclass to implement.
-        the directory should be {name: instance_obj}.
-        I think to put it into the init func will be better."""
-        raise NotImplementedError
-
     def _load_trained_models_ordered_by_score(self, higher_best=True):
         """
         To load whole trained model from disk and sorted them based on `higher_best`.
@@ -270,6 +227,20 @@ class AutoML(BaseEstimator):
 
         return models_list
 
+    def get_models_list_scores(self, x, y, **kwargs):
+        """
+        Add this func to get whole score based for each trained models, so that
+        we could get the result that we have taken that times and for each models,
+        how about the testing result.
+
+        But this should be implemented by pipeline!
+        :param x:
+        :param y:
+        :param kwargs:
+        :return:
+            a list of tuple: [(model_name, model_score), ...]
+        """
+        pass
 
 class ClassificationAutoML(AutoML):
     def __init__(self):
@@ -339,22 +310,25 @@ class ClassificationAutoML(AutoML):
 
 
 if __name__ == '__main__':
-    import os
-    import pandas as pd
+    from auto_ml.test.get_test_data import get_training_data
 
-    df = pd.read_csv("train.csv")
+    df = get_training_data(return_df=True)
+
     x = df.drop(['Survived'], axis=1).values
     y = df['Survived'].values
+    # needed to be added for the array when we read data from a file.
     x = x.copy(order='C')
 
-    # x, y = load_diabetes(return_X_y=True)
+    from sklearn.model_selection import train_test_split
+
+    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
 
     auto_cl = ClassificationAutoML()
-    auto_cl.fit(x, y)
+    auto_cl.fit(xtrain, ytrain)
 
     print(auto_cl.models_list)
-    print(auto_cl.score(x, y))
+    print(auto_cl.score(xtest, ytest))
     print('*' * 20)
-    print(auto_cl.predict(x))
+    print(auto_cl.predict(xtest)[:10])
     print('*'*20)
-    print(auto_cl.predict_proba(x))
+    print(auto_cl.predict_proba(xtest)[:10])
