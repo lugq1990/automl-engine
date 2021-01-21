@@ -14,19 +14,19 @@ from auto_ml.preprocessing.processing_base import Process
 from auto_ml.utils.data_rela import is_categorical_type
 
 
-class Impution(Process):
+class Imputation(Process):
     def __init__(self, use_al_to_im=False, threshold=.5):
-        super(Impution, self).__init__()
+        super(Imputation, self).__init__()
         self.use_al_to_im = use_al_to_im
         self.threshold = threshold
 
     def fit(self, data, y=None):
         """
-        Impution logic happens here.
+        Imputation logic happens here.
         I have to add a logic to process with different type of columns,
         like for numeric data could use distance based,
         for categorical, we could use most frequent items.
-        #TODO have to check each column type and do separate processing then combine.
+
         :param data: contain missing field data
         :param use_al_to_im: Whether or not to use algorithm to impute data
         :return: fitted estimator
@@ -40,12 +40,12 @@ class Impution(Process):
         self.numeric_index = numeric_index
         self.category_index = category_index
 
-        # get different data
-        numeric_data = data[:, numeric_index]
-        category_data = data[:, category_index]
+        # get different data, there maybe without numeric or category index
+        if self.numeric_index:
+            numeric_data = data[:, self.numeric_index]
+        if self.category_index:
+            category_data = data[:, self.category_index]
 
-        print(numeric_data[:2, :])
-        print(category_data[:, :])
         try:
             if self.use_al_to_im:
                 # for KNN, we could only use numerical data
@@ -55,16 +55,16 @@ class Impution(Process):
                 self.num_estimator = KNNImputer(n_neighbors=5)
             else:
                 # Here just use univariate processing logic for missing values
-                if numeric_index:
+                if self.numeric_index:
                     self.num_estimator = SimpleImputer()
-                if category_index:
+                if self.category_index:
                     self.cate_estimator = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
 
             # we have to check different data type to process.
-            if numeric_index:
+            if self.numeric_index:
                 self.num_estimator.fit(numeric_data)
 
-            if category_index:
+            if self.category_index:
                 self.cate_estimator.fit(category_data.astype(np.object))
 
         except Exception as e:
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     sample_data = np.array([["1", 2], ["3", 6], ["4", 8], [np.nan, 3], ["4", np.nan]])
     data_new = np.array([['good', 1], [np.nan, 2]])
     lable = [1, 2]
-    i = Impution()
+    i = Imputation()
     print(i.get_col_data_type(x))
     # n, c = i.get_col_data_type(x)
     # print(x[:, n])

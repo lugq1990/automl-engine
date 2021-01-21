@@ -26,7 +26,7 @@ class ProcessingFactory:
 
         for processor_name in processor_name_list:
             if processor_name == 'Imputation':
-                processor_tuple.append((processor_name, imputation.Impution()))
+                processor_tuple.append((processor_name, imputation.Imputation()))
             elif processor_name == 'OnehotEncoding':
                 processor_tuple.append((processor_name, onehotencoding.OnehotEncoding()))
             elif processor_name == 'Standard':

@@ -90,9 +90,9 @@ class Backend(object):
 
             return model
         except Exception as e:
-            logger.error("When load %s model with error: %s" %
+            logger.error("When load %s model with error: %s." %
                          (identifier, traceback.format_exc()))
-            raise IOError("When to load %s model, face problem:%s" % (identifier, e))
+            raise IOError("When to load %s model, the file:%s not exist!" % (identifier, e))
 
     def load_models_by_identi_combined_with_model_name(self, identifiers):
         """
@@ -226,6 +226,24 @@ class Backend(object):
             return dataset
         except IOError as e:
             raise IOError("When try to load dataset: {} get error: {}".format(dataset_name, e))
+
+    def clean_folder(self, folder_name=None):
+        """
+        To clean `folder_name` to ensure every time we could get a empty folder.
+        :param folder_name: default is `models`
+        :return:
+        """
+        if folder_name is None:
+            # default is model path
+            folder_name = self.output_folder
+
+        file_list = os.listdir(folder_name)
+        if file_list:
+            for file in file_list:
+                try:
+                    os.remove(os.path.join(folder_name, file))
+                except IOError as e:
+                    raise IOError("When try to remove file: {} in folder:{} get error: {}".format(file, folder_name, e))
     
     @classmethod
     def __new__(cls, *args, **kwargs):

@@ -71,6 +71,10 @@ class PipelineTrain(Pipeline):
         self.ensemble_alg = ensemble_alg
         self.voting_logic = voting_logic
 
+        # before we do anything, let's try to remove the model's folder to ensure there isn't any pre-trained models.
+        if self.backend:
+            self.backend.clean_folder()
+
     def build_preprocessing_pipeline(self, data=None):
         """
         The reason that I want to split the preprocessing pipeline and training pipeline
@@ -201,9 +205,9 @@ class PipelineTrain(Pipeline):
         logger.info("After processing, data shape: %d" % x.shape[1])
 
         self._fit(x, y)
+        logger.info("End Model Pipeline training.")
 
         return self
-        logger.info("End Model Pipeline training.")
 
     def score(self, x, y):
         """
@@ -226,8 +230,6 @@ class PipelineTrain(Pipeline):
         :param x:
         :return:
         """
-        x = self._process_data_with_processor(x)
-
         pred = self._get_model_predict(self.training_pipeline, x)
 
         return pred
@@ -242,7 +244,7 @@ class PipelineTrain(Pipeline):
 
         return prob
 
-    def get_models_list_scores(self, x, y):
+    def get_sorted_models_scores(self, x, y, reverse=True):
         """
         Add this func to get whole score based for each trained models, so that
         we could get the result that we have taken that times and for each models,
@@ -252,40 +254,46 @@ class PipelineTrain(Pipeline):
         score based on each model with different type of problem.
         :param x:
         :param y:
+        :param reverse:
+            Whether or not to order the result based the `reverse`.
         :return:
+            sorted dictionary: {'lr-0.982': 0.87, ...}
         """
+        score_dict = {}
+
         # load whole trained models from disk, [('LR-0.98.pkl', LogisticRegression-0.982323.pkl)]
         models_list = self.backend.load_models_combined_with_model_name()
 
-        print("Get model list: ", models_list)
+        logger.info("Get model list: " + '\t'.join([model[0] for model in models_list]))
         if not models_list:
             logger.warning("There isn't any trained model loaded from model path!")
             return None
 
         scorer = get_scorer_based_on_target(y)
 
+        # first should process this dataset with trained processor, so later step will be easier
+        # x = self._process_dataset_with_processor(x)
+
         # `models_list` also contain `ensemble model`,
         # so if we get `stacking`, we should make new dataset
-        score_list = []
+
         for model_tuple in models_list:
             model_name, model_instance = model_tuple[0], model_tuple[1]
 
-            print("Now is model, ", model_name)
             if model_name.lower().startswith('stacking'):
-                logger.info("Get `Ensemble` processing data to get score.")
-                x_stacking = ModelEnsemble.create_stacking_dataset(x)
-                score = self._get_model_score(model_instance, x_stacking, y, scorer)
+                logger.info("Get `Ensemble` processing data to get score for testing data.")
+                score = self._get_model_score(model_instance, x, y, scorer, model_name=model_name)
             else:
                 score = self._get_model_score(model_instance, x, y, scorer)
 
-            logger.info("Model :{} gets score: {}".format(model_name, score))
+            score_dict[model_name] = score
 
-            score_list.append(score)
+        # based on parameter: `reverse`
+        score_dict ={k: v for k, v in sorted(score_dict.items(),  key=lambda x: x[1], reverse=reverse)}
 
-        # this won't be sorted, let upper func to decide
-        return score_list
+        return score_dict
 
-    def _get_model_score(self, estimator, x, y, scorer):
+    def _get_model_score(self, estimator, x, y, scorer, model_name=None):
         """
         Use for get each `trained` model's score.
         :param estimator:
@@ -295,23 +303,21 @@ class PipelineTrain(Pipeline):
             scorer needed to be provided, as func will be called many times.
         :return:
         """
-        logger.info("Start to get accuracy score based on test data.")
-        prediction = self._get_model_predict(estimator, x)
+        logger.info("Start to get model score for model: {}.".format(estimator))
+        pred = self._get_model_predict(estimator, x, model_name=model_name)
 
-        score = scorer(y, prediction)
-        logger.info("Get score in Pipeline: %.4f" % score)
+        score = scorer(y, pred)
+        logger.info("Model: {} get score: {:.4f}.".format(estimator, score))
 
         return score
 
-    def _get_model_predict(self, estimator, x):
+    def _get_model_predict(self, estimator, x, model_name=None):
         """
         Prediction func should based on this func.
         :param x: data should be processed already!
         :return:
         """
         try:
-            logger.info("Start to get model prediction based on trained model")
-
             if not estimator:
                 logger.warning("When to get model prediction, estimator hasn't been provided, "
                                "use best trained model from disk to get prediction!")
@@ -326,15 +332,21 @@ class PipelineTrain(Pipeline):
                                           "doesn't support `predict` func".format(self.training_pipeline))
 
             # let's just make the processing step with data here!
-            x = self._process_data_with_processor(x)
+            x = self._process_dataset_with_processor(x)
+
+            # When we do real processing for `stacking`, new created dataset should happen here.
+            if model_name is not None:
+                if model_name.lower().startswith('stacking'):
+                    x = ModelEnsemble.create_stacking_dataset(x)
+                else:
+                    raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
 
             pred = estimator.predict(x)
 
             return pred
         except Exception as e:
             logger.error("When try to use pipeline to get prediction with error: {}".format(e))
-            raise RuntimeError("When try to use pipeline to "
-                            "get prediction with error: {}".format(e))
+            raise RuntimeError("When try to use pipeline to get prediction with error: {}".format(e))
 
     def _get_model_predict_proba(self, estimator, x):
         """
@@ -347,7 +359,7 @@ class PipelineTrain(Pipeline):
             logger.info("Start to get model probability prediction based on trained model")
 
             # for probability should also process this data.
-            x = self._process_data_with_processor(x)
+            x = self._process_dataset_with_processor(x)
 
             if not hasattr(estimator, 'predict_proba'):
                 raise NotImplementedError("For estimator:{} "
@@ -374,30 +386,21 @@ class PipelineTrain(Pipeline):
             start_time = time.time()
 
             self.training_pipeline.fit(data, y)
+            logger.info("Training pipeline finished takes: {} seconds.".format(round((time.time() - start_time)), 2))
 
             # Whether or not to use `model_ensemble`
             if self.use_ensemble:
-                logger.info("We are going to use `ensemble` logic to combine models")
+                logger.info("We are going to use `ensemble` logic to combine models!")
                 # so that we could config this based on what we want.
                 kwargs = {"ensemble_alg": self.ensemble_alg, "voting_logic": self.voting_logic}
-                self._fit_ensemble(data, y, **kwargs)
-                logger.info("`Ensemble` training logic has finished.")
 
-            training_time = time.time() - start_time
-            logger.info("Finished Pipeline training step, "
-                        "whole training takes {} seconds.".format(round(training_time, 2)))
+                start_time = time.time()
+                self._fit_ensemble(data, y, **kwargs)
+                logger.info("`Ensemble` training pipeline finished takes: {} seconds.".format(round(time.time() - start_time), 2))
 
         except Exception as e:
             logger.error("When do real pipeline training get error: {}".format(e))
             raise Exception("When do real pipeline training get error: {}".format(e))
-
-    def _process_data_with_processor(self, x):
-        if not self.processing_pipeline:
-            self.processing_pipeline = self.backend.load_model('processing_pipeline')
-
-        x = self.processing_pipeline.transform(x)
-
-        return x
 
     def __repr__(self):
         if self.training_pipeline is None:
@@ -440,6 +443,23 @@ class PipelineTrain(Pipeline):
         except Exception as e:
             raise RuntimeError("When try to use `ModelEnsemble` to do model ensemble logic, "
                                "we get error: {}".format(e))
+
+    def _process_dataset_with_processor(self, x):
+        """
+        To process the data with trained processor, this is used for `pipeline` processing data.
+
+        :param x:
+        :return: processed data with processor object.
+        """
+        processor = self.backend.load_model("processing_pipeline")
+
+        try:
+            x_processed = processor.transform(x)
+
+            return x_processed
+        except Exception as e:
+            logger.error("When to process data in `ensemble`, get error: {}".format(e))
+            raise e
 
 
 class ClassificationPipeline(PipelineTrain):
@@ -513,8 +533,7 @@ if __name__ == '__main__':
     x, y = get_training_data()
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
 
-    # classifier_pipeline.fit(xtrain, ytrain)
-    print(classifier_pipeline.score(xtest, ytest))
+    classifier_pipeline.fit(xtrain, ytrain)
+    print("Model score: ", classifier_pipeline.score(xtest, ytest))
 
-
-    # print(classifier_pipeline.get_models_list_scores(xtest, ytest))
+    print(classifier_pipeline.get_sorted_models_scores(xtest, ytest))

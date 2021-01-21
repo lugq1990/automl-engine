@@ -72,8 +72,13 @@ class OnehotEncoding(Process):
         # Here I can't use pandas, as if we need to do same logic with test data, we need to store the model.
         # return pd.get_dummies(x, prefix=feature_list)
 
-        self.estimator = OneHotEncoder()
+        self.estimator = OneHotEncoder(handle_unknown='ignore')
         x = self._get_feature_data_with_threshold(x)
+
+        if not self.feature_list:
+            # in case that we don't get any of category dataset,
+            # then for the transform should be passed with original data
+            return
 
         self.estimator.fit(x)
         return self
@@ -105,11 +110,8 @@ class OnehotEncoding(Process):
 
             other_data = x.drop(self.feature_list, axis=1)
             # the other data should also drop the feature dropped by OneHot logic
-            print(other_data.columns)
-            print(self.drop_feature_list)
             if self.drop_feature_list:
                 other_data.drop(self.drop_feature_list, axis=1, inplace=True)
-
 
             if self.keep_origin_feature:
                 return np.concatenate([x.values, converted_data], axis=1)

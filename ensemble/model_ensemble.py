@@ -88,7 +88,7 @@ class ModelEnsemble(ClassifierClass):
             # TODO: but how to evaluate current model with score? Use cross-valiation to do score
             # get voting model score based on CV result!
             score = cross_validate(self.estimator, x, y, cv=3)['test_score'].mean()
-            score_str = str(round(score, 6)).split('.')[-1]
+            score_str = str(round(score, 6))
             logger.info("Model ensemble Cross-valiation score: {}".format(score_str))
 
             store_model_name = 'Voting_{}-{}'.format(self.voting_logic, score_str)
@@ -139,36 +139,6 @@ class ModelEnsemble(ClassifierClass):
         logger.info("Stacking model score: {}".format(score))
 
         self.backend.save_model(self.estimator, stacking_model_name)
-        
-    # def create_stacking_dataset(self, x):
-    #     #     """
-    #     #     Add private function to create new dataset for prediction, so not only `fit` but also `prediction`.
-    #     #
-    #     #     As `stacking` will add new features based on trained models.
-    #     #     Should make the attr `stacking_models` with the `models instance`.
-    #     #     :return:
-    #     #     """
-    #     #     # we don't need to care about `model_list_without_score` has instance or not, as parent does this.
-    #     #     n_estimators = len(self.model_list_without_score)
-    #     #
-    #     #     # with model instance
-    #     #     # self.stacking_models = [model[1] for model in self.model_list_without_score]
-    #     #
-    #     #     # Whole trained estimator prediction result.
-    #     #     pred_array = np.empty((len(x), n_estimators))
-    #     #
-    #     #     logger.info("Start to get trained model prediction for `stacking`")
-    #     #     for i in range(n_estimators):
-    #     #         logger.info("To get prediction for estimator: {}".format(self.model_list_without_score[i][0]))
-    #     #
-    #     #         estimator = self.model_list_without_score[i][1]
-    #     #         pred = estimator.predict(x)
-    #     #         pred_array[:, i] = pred
-    #     #
-    #     #     # Then should combined the prediction and original data
-    #     #     x_new = np.concatenate([x, pred_array], axis=1)
-    #     #
-    #     #     return x_new
 
     def _get_best_model_estimator_name_based_on_yaml(self):
         """
@@ -268,6 +238,7 @@ class ModelEnsemble(ClassifierClass):
             logger.info("To get prediction for estimator: {}".format(model_list_without_score[i][0]))
 
             estimator = model_list_without_score[i][1]
+
             pred = estimator.predict(x)
             pred_array[:, i] = pred
 
