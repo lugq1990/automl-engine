@@ -10,13 +10,11 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 
 from auto_ml.utils.backend_obj import Backend
-from auto_ml.utils.data_rela import get_scorer_based_on_target
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.metrics.scorer import *
 from auto_ml.utils.CONSTANT import *
 from auto_ml.pipelines.pipeline_training import ClassificationPipeline
 from auto_ml.utils.logger import logger
-from auto_ml.ensemble.model_ensemble import ModelEnsemble
 
 
 class AutoML(BaseEstimator):
@@ -92,9 +90,6 @@ class AutoML(BaseEstimator):
         :param kwargs:
         :return:
         """
-        # first should to process data
-        # x_processed = self._process_data_with_trained_processor(x)
-
         logger.info("Start to get prediction based on best trained model.")
         prediction = self.estimator.predict(x)
         logger.info("Prediction step finishes.")
@@ -112,9 +107,6 @@ class AutoML(BaseEstimator):
         if not hasattr(self.estimator, 'predict_proba'):
             raise NotImplementedError("Best fitted model:{} doesn't support `predict_proba`".format(self.best_model))
 
-        # logger.info("Start to process data with trained processor pipeline.")
-        # x_processed = self._process_data_with_trained_processor(x)
-
         logger.info("Start to get probability based on best trained model.")
         prob = self.estimator.predict_proba(x)
         logger.info("Prediction step finishes.")
@@ -125,15 +117,6 @@ class AutoML(BaseEstimator):
         self._check_fitted()
 
         logger.info("Start to get prediction based on best trained model!")
-
-        # # first should get prediction, then we could get different score based on the prediction
-        # prediction = self.predict(x)
-        #
-        # # for different problem use different scorer
-        # scorer = get_scorer_based_on_target(y)
-        #
-        # logger.info("Start to use metrics: {} to get score.".format(scorer))
-        # score = scorer(y, prediction)
 
         # Use child func.
         score = self.estimator.score(x, y)
