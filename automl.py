@@ -10,13 +10,11 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 
 from auto_ml.utils.backend_obj import Backend
-from auto_ml.utils.data_rela import (check_data_and_label, hash_dataset_name,
-                                     check_label, get_type_problem, get_scorer_based_on_target)
+from auto_ml.utils.data_rela import get_scorer_based_on_target
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.metrics.scorer import *
 from auto_ml.utils.CONSTANT import *
 from auto_ml.pipelines.pipeline_training import ClassificationPipeline
-from auto_ml.utils.func_utils import deprecated
 from auto_ml.utils.logger import logger
 from auto_ml.ensemble.model_ensemble import ModelEnsemble
 
@@ -62,16 +60,6 @@ class AutoML(BaseEstimator):
         self.keep_models = keep_models
         self.model_dir = model_dir
         self.precision = precision
-
-        # Deprecated: We should ensure the whole thing should happen in pipeline `class`
-        # for whole algorithms should be loaded first
-        # self.algorithm_dir = load_yaml_file("default_algorithms.yml")
-        # this is to save the whole instance object, so here should be in parent logic.
-        # So child just to implement with function: `_create_ml_object_dir`
-        # self.al_obj_dir = dict()
-        # NOTED: this should be replaced with pipeline training step.
-        # self._create_ml_object_dir()
-
         self.estimator = None
 
         # This is used to do testing and prediction.
@@ -84,35 +72,16 @@ class AutoML(BaseEstimator):
 
     def fit(self, xtrain,
             ytrain,
-            metric: Scorer,
-            task=None,
-            xtest=None,
-            ytest=None,
-            batch_size=None,
-            dataset_name=None):
+            n_jobs=None):
         """
         Type of the problem attribute should be added, so that for `score`,
         we could get metrics based on different problem.
         :param xtrain:
         :param ytrain:
-        :param metric:
-        :param task:
-        :param xtest:
-        :param ytest:
-        :param batch_size:
-        :param dataset_name:
+        :param n_jobs:
         :return:
         """
         raise NotImplementedError
-
-    def _check_fitted(self):
-        if not self.models_list:
-            logger.error("When try to get prediction with `automl`, Please"
-                                 "fit the model first")
-            raise NotFittedError("When try to get prediction with `automl`, Please"
-                                 "fit the model first")
-
-        return True
 
     def predict(self, x, **kwargs):
         """
@@ -123,13 +92,11 @@ class AutoML(BaseEstimator):
         :param kwargs:
         :return:
         """
-        logger.info("Start to get prediction based on best trained model!")
-
         # first should to process data
-        x_processed = self._process_data_with_trained_processor(x)
+        # x_processed = self._process_data_with_trained_processor(x)
 
         logger.info("Start to get prediction based on best trained model.")
-        prediction = self.best_model.predict(x_processed)
+        prediction = self.estimator.predict(x)
         logger.info("Prediction step finishes.")
 
         return prediction
@@ -141,17 +108,15 @@ class AutoML(BaseEstimator):
         :param kwargs:
         :return:
         """
-        logger.info("Start to get probability based on best trained model!")
-
         # should check the estimator should have function: `predict_proba`!
-        if not hasattr(self.best_model, 'predict_proba'):
+        if not hasattr(self.estimator, 'predict_proba'):
             raise NotImplementedError("Best fitted model:{} doesn't support `predict_proba`".format(self.best_model))
 
-        logger.info("Start to process data with trained processor pipeline.")
-        x_processed = self._process_data_with_trained_processor(x)
+        # logger.info("Start to process data with trained processor pipeline.")
+        # x_processed = self._process_data_with_trained_processor(x)
 
         logger.info("Start to get probability based on best trained model.")
-        prob = self.best_model.predict_proba(x_processed)
+        prob = self.estimator.predict_proba(x)
         logger.info("Prediction step finishes.")
 
         return prob
@@ -161,50 +126,21 @@ class AutoML(BaseEstimator):
 
         logger.info("Start to get prediction based on best trained model!")
 
-        # first should get prediction, then we could get different score based on the prediction
-        prediction = self.predict(x)
+        # # first should get prediction, then we could get different score based on the prediction
+        # prediction = self.predict(x)
+        #
+        # # for different problem use different scorer
+        # scorer = get_scorer_based_on_target(y)
+        #
+        # logger.info("Start to use metrics: {} to get score.".format(scorer))
+        # score = scorer(y, prediction)
 
-        # for different problem use different scorer
-        scorer = get_scorer_based_on_target(y)
+        # Use child func.
+        score = self.estimator.score(x, y)
 
-        logger.info("Start to use metrics: {} to get score.".format(scorer))
-        score = scorer(y, prediction)
-
-        logger.info("Get score: {} using metrics: {}".format(score, scorer))
+        logger.info("Get score: {} based on best model!".format(score))
 
         return score
-
-    def _process_data_with_trained_processor(self, data):
-        """
-        Let this function to do whole processing data logic.
-        :param data: 
-        :return: 
-        """
-        # This func is used only after the model is fitted.
-        self._check_fitted()
-        
-        logger.info('Start to load trained processor from disk.')
-        processor = self.backend.load_model('processing_pipeline')
-
-        try:
-            # here I think to get prediction should based on highest score model
-            # for classifiction should `acc` highest as 1th, for regression should `rmse` lowest
-            # as 1th, but any way should use first model
-            self.best_model = self.models_list[0][1]
-            
-            logger.info("Start to process data with `trained processor pipeline`.")
-            data_new = processor.transform(data)
-
-            # the `stacking` logic should happen here, for upper we could just use it, don't need to care detail
-            if "stacking" in self.models_list[0][0].lower():
-                logger.info("Creating new dataset based on trained models with stacking.")
-                # process data based on the `stacking` model logic.
-                data_new = ModelEnsemble.create_stacking_dataset(data_new)
-
-            return data_new
-        except Exception as e:
-            raise Exception("When try to process data with "
-                            "trained processor pipeline get error: {}".format(e))
 
     def _load_trained_models_ordered_by_score(self, higher_best=True):
         """
@@ -227,7 +163,7 @@ class AutoML(BaseEstimator):
 
         return models_list
 
-    def get_models_list_scores(self, x, y, **kwargs):
+    def get_sorted_models_scores(self, x, y, **kwargs):
         """
         Add this func to get whole score based for each trained models, so that
         we could get the result that we have taken that times and for each models,
@@ -240,7 +176,15 @@ class AutoML(BaseEstimator):
         :return:
             a list of tuple: [(model_name, model_score), ...]
         """
-        pass
+        raise NotImplementedError
+
+    def _check_fitted(self):
+        if not self.models_list:
+            logger.error("When try to get prediction with `automl`, Please fit the model first")
+            raise NotFittedError("When try to get prediction with `automl`, Please fit the model first")
+
+        return True
+
 
 class ClassificationAutoML(AutoML):
     def __init__(self):
@@ -249,8 +193,7 @@ class ClassificationAutoML(AutoML):
         # action should happen here.
         self.estimator = ClassificationPipeline()
 
-    def fit(self, xtrain, ytrain, task=None, metric=accuracy,
-            xtest=None, ytest=None, batch_size=None, dataset_name=None):
+    def fit(self, xtrain, ytrain, n_jobs=None):
         """
         I think that we could use sub-class to do real training.
         Also I think that for parent could just give the direction,
@@ -258,31 +201,12 @@ class ClassificationAutoML(AutoML):
 
         :param xtrain: train data
         :param ytrain: label data
-        :param task: should be in [0, 1, 2]
-        :param metric: how to evaluate result
-        :param xtest:test data
-        :param ytest: test label
-        :param batch_size: how much data for training
+        :param n_jobs: how many cores to use
         :return:
         """
-        # first we should get the task type, that's for what metrics to use.
-        classification_tasks = [0, 1, 2]
-        if task is None:
-            # we should get the task type by self.
-            task = self._get_task_type(ytrain)
-        elif task not in classification_tasks:
-            raise ValueError("Task should be in [{}]".format(' '.join(classification_tasks)))
-
-        # Type of the problem should happen here.
-        self.type_of_problem = 'classifiction'
-
-        self.dataset_name = hash_dataset_name(xtrain) if dataset_name is None else dataset_name
-        # we should ensure data could be trained like training data should be 2D
-        xtrain, ytrain = check_data_and_label(xtrain, ytrain)
-
         # after the checking process, then we need to create the Pipeline for whole process.
         # Here should use a Pipeline object to do real training, also with `ensemble`
-        self.estimator.fit(xtrain, ytrain)
+        self.estimator.fit(xtrain, ytrain, n_jobs=n_jobs)
 
         # load trained models for prediction and scoring for testing data.
         # after we have fitted the trained models, then next step is to load whole of them from disk
@@ -290,23 +214,19 @@ class ClassificationAutoML(AutoML):
         # WE could get them from parent function, so that we could also use this for `regression`
         self.models_list = self._load_trained_models_ordered_by_score(higher_best=True)
 
-    @staticmethod
-    def _get_task_type(y):
+    def get_sorted_models_scores(self, x, y, **kwargs):
         """
-        This is to get the target type that we want to do.
-        :param y: label data
+        To get some best trained model's score for `test` data with ordered.
+
+        So that we could get the list of the best scores for later front end show case.
+        :param x:
+        :param y:
+        :param kwargs:
         :return:
         """
-        if len(y.shape) == 2:
-            # label with 2D that's multi-label
-            # raise ValueError("Target should be just 1D for sklearn")
-            return 2
-        else:
-            unique_values = np.unique(y)
-            if len(unique_values) == 2:
-                return 0
-            else:
-                return 1
+        score_dict = self.estimator.get_sorted_models_scores(x, y, reverse=True)
+
+        return score_dict
 
 
 if __name__ == '__main__':
@@ -332,3 +252,6 @@ if __name__ == '__main__':
     print(auto_cl.predict(xtest)[:10])
     print('*'*20)
     print(auto_cl.predict_proba(xtest)[:10])
+
+    # get model score
+    print(auto_cl.get_sorted_models_scores(xtest, ytest))

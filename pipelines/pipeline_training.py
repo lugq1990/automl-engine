@@ -25,6 +25,7 @@ from auto_ml.base.classifier_algorithms import ClassifierFactory
 from auto_ml.preprocessing.processing_factory import ProcessingFactory
 from auto_ml.ensemble.model_ensemble import ModelEnsemble
 from auto_ml.utils.data_rela import get_scorer_based_on_target
+from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name
 
 
 class PipelineTrain(Pipeline):
@@ -74,6 +75,9 @@ class PipelineTrain(Pipeline):
         # before we do anything, let's try to remove the model's folder to ensure there isn't any pre-trained models.
         if self.backend:
             self.backend.clean_folder()
+
+        # add `best_model` parameter for upper use case
+        self.best_model = None
 
     def build_preprocessing_pipeline(self, data=None):
         """
@@ -188,7 +192,7 @@ class PipelineTrain(Pipeline):
 
         return x_processed
 
-    def fit(self, x, y):
+    def fit(self, x, y, n_jobs=None):
         """
         Real pipeline training steps happen here.
         :param x:
@@ -204,8 +208,11 @@ class PipelineTrain(Pipeline):
         x = self._fit_processing_pipeline(x, y)
         logger.info("After processing, data shape: %d" % x.shape[1])
 
-        self._fit(x, y)
+        self._fit(x, y, n_jobs=n_jobs)
         logger.info("End Model Pipeline training.")
+
+        # After model has finished training, the best_model should be `training_pipeline`
+        self.best_model = self.training_pipeline
 
         return self
 
@@ -373,19 +380,22 @@ class PipelineTrain(Pipeline):
             raise Exception("When try to use pipeline to "
                             "get probability with error: {}".format(e))
 
-    def _fit(self, data, y):
+    def _fit(self, x, y, n_jobs=None):
         """
         Extract real `fit` logic out side of `fit` func.
         :param data:
         :return:
         """
+        # before we do anything, first should ensure we have proper data and label
+        self._check_data_and_lable(x, y)
+
         try:
             # real training pipeline with Grid search to find best models, also will store the
             # best models.
             logger.info("Start to do pipeline training step.")
             start_time = time.time()
 
-            self.training_pipeline.fit(data, y)
+            self.training_pipeline.fit(x, y, n_jobs=None)
             logger.info("Training pipeline finished takes: {} seconds.".format(round((time.time() - start_time)), 2))
 
             # Whether or not to use `model_ensemble`
@@ -395,7 +405,7 @@ class PipelineTrain(Pipeline):
                 kwargs = {"ensemble_alg": self.ensemble_alg, "voting_logic": self.voting_logic}
 
                 start_time = time.time()
-                self._fit_ensemble(data, y, **kwargs)
+                self._fit_ensemble(x, y, **kwargs)
                 logger.info("`Ensemble` training pipeline finished takes: {} seconds.".format(round(time.time() - start_time), 2))
 
         except Exception as e:
@@ -461,6 +471,15 @@ class PipelineTrain(Pipeline):
             logger.error("When to process data in `ensemble`, get error: {}".format(e))
             raise e
 
+    def _check_data_and_lable(self, x, y):
+        """
+        Let child to do this.
+        :param x:
+        :param y:
+        :return:
+        """
+        raise NotImplementedError
+
 
 class ClassificationPipeline(PipelineTrain):
     """
@@ -487,6 +506,16 @@ class ClassificationPipeline(PipelineTrain):
 
         return self.training_pipeline
 
+    def get_sorted_models_scores(self, x, y, reverse=True):
+        """
+        Use parent function to get the model scores...
+        :param x:
+        :param y:
+        :param reverse:
+        :return:
+        """
+        return super().get_sorted_models_scores(x, y, reverse=True)
+
     def _get_algorithms_instance_list(self):
         """
         To get whole instance object list based on the configuration in the yaml file,
@@ -498,6 +527,47 @@ class ClassificationPipeline(PipelineTrain):
         algorithms_instance_list = ClassifierFactory.get_algorithm_instance(algorithm_name_list)
 
         return algorithms_instance_list
+
+    def _check_data_and_lable(self, x, y, task=None, dataset_name=None):
+        """
+        Check data and label before we do real training.
+        :param x:
+        :param y:
+        :param task:
+        :param dataset_name:
+        :return:
+        """
+        # first we should get the task type, that's for what metrics to use.
+        classification_tasks = [0, 1, 2]
+        if task is None:
+            # we should get the task type by self.
+            task = self._get_task_type(y)
+        if task not in classification_tasks:
+            raise ValueError("Task should be in [{}]".format(' '.join(classification_tasks)))
+
+        # self.dataset_name = hash_dataset_name(x) if dataset_name is None else dataset_name
+        # we should ensure data could be trained like training data should be 2D
+        x, y = check_data_and_label(x, y)
+
+        return x, y
+
+    @staticmethod
+    def _get_task_type(y):
+        """
+        Get the target type that we want to do.
+        :param y: label data
+        :return:
+        """
+        if len(y.shape) == 2:
+            # label with 2D that's multi-label
+            # raise ValueError("Target should be just 1D for sklearn")
+            return 2
+        else:
+            unique_values = np.unique(y)
+            if len(unique_values) == 2:
+                return 0
+            else:
+                return 1
 
 
 class RegressionPipeline(PipelineTrain):
