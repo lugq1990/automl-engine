@@ -247,3 +247,10 @@ if __name__ == '__main__':
     model_name = wide_deep_model.__class__.__name__ + '-' + str(score)
 
     wide_deep_model.save(model_name)
+
+    prob = wide_deep_model.predict_proba(data)
+    pred = wide_deep_model.predict(data)
+
+    print("Sample prob:", prob[:3])
+    print("Sample pred:", pred[:3])
+

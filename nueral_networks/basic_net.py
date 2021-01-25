@@ -63,16 +63,31 @@ class BaseNet(object):
 
         return self.his
 
-    def predict(self, data, batch_size=1024, step=None):
-        pass
+    def predict(self, data, batch_size=1024):
+        """
+        Get max index as prediction
+        :param data:
+        :param batch_size:
+        :param step:
+        :return:
+        """
+        prob = self.predict_proba(data, batch_size)
 
-    def predict_proba(self, data, batch_size=1024, step=None):
+        if len(prob.shape) > 1 and len(prob) > 0:
+            # just to ensure that we have get proper probability
+            pred = np.argmax(prob, axis=1)
+        else:
+            raise ValueError("When to use neural network's `predict` func get error!")
+
+        return pred
+
+    def predict_proba(self, data, batch_size=1024):
         if not hasattr(self.model, 'predict'):
             # by default, keras will use `predict` to return the probability
             logger.error("Neural network's model hasn't been fitted, so please fit model first!")
             raise NotFittedError("Neural network's model hasn't been fitted, so please fit model first!")
 
-        prob = self.model.predict(data, batch_size=batch_size, step=step)
+        prob = self.model.predict(data, batch_size=batch_size)
 
         return prob
 

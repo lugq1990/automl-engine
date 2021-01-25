@@ -112,7 +112,10 @@ if __name__ == '__main__':
 
     x, y = load_iris(return_X_y=True)
 
-    dnn = DnnNet(3, 4, n_layers=2, n_units=128)
+    dnn = DnnNet(3, 4, n_layers=1, n_units=256)
     dnn.fit(x, y)
-    print(dnn.evaluate(x, y))
-    dnn.plot_acc()
+
+    print(dnn.score(x, y))
+    print("Sample prob:", dnn.predict_proba(x)[:5])
+    print("Sample pred:", dnn.predict(x)[:5])
+
