@@ -12,9 +12,10 @@ import pickle
 import shutil
 import pandas as pd
 import traceback
-from auto_ml.utils.logger import logger
+from auto_ml.utils.logger import create_logger
 from auto_ml.utils.CONSTANT import *
 
+logger = create_logger()
 
 class Backend(object):
     """

@@ -5,6 +5,7 @@ we could use for training step.
 
 author: Guangqiang.lu
 """
+
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
@@ -14,7 +15,10 @@ from auto_ml.base.classifier_algorithms import *
 from auto_ml.metrics.scorer import *
 from auto_ml.utils.CONSTANT import *
 from auto_ml.pipelines.pipeline_training import ClassificationPipeline
-from auto_ml.utils.logger import logger
+from auto_ml.utils.logger import create_logger
+
+
+logger = create_logger(__file__)
 
 
 class AutoML(BaseEstimator):

@@ -48,7 +48,7 @@ def load_param_config():
         raise IOError("When try to read config file with error: %s" % e)
 
 
-def load_yaml_file(file_name=None):
+def load_yaml_file(file_name=None, file_path=None):
     """
     To load yaml file from server path.
     :param file_path: where the file exist
@@ -59,7 +59,10 @@ def load_yaml_file(file_name=None):
             # if we don't provide the file_path, try to load root path with file_name: default_algorithms.yaml
             file_name = 'default_algorithms.yml'
 
-        file_path = os.path.join(get_root_path(), file_name)
+        if not file_path:
+            file_path = os.path.join(get_root_path(), file_name)
+        else:
+            file_path = os.path.join(file_path, file_name)
 
         with open(file_path, 'r') as f:
             data = yaml.safe_load(f)
@@ -82,6 +85,6 @@ def get_file_base_name(path):
 
 
 if __name__ == "__main__":
-    print(get_param_config_path())
+    # print(get_param_config_path())
 
     print(get_root_path())

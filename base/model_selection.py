@@ -10,7 +10,10 @@ Here is the classifier real training happens here.
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from auto_ml.utils.backend_obj import Backend
-from auto_ml.utils.logger import logger
+from auto_ml.utils.logger import create_logger
+
+
+logger = create_logger(__file__)
 
 
 class GridSearchModel(object):

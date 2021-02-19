@@ -11,6 +11,9 @@ import shutil
 import os
 from datetime import datetime
 
+# Add with contextlib module to make the log to start and end message auto
+from contextlib import contextmanager
+
 
 class Logger(object):
     def __init__(self, logger_name=None):
@@ -85,17 +88,39 @@ class Logger(object):
             raise IOError("When try to move logger file into {} with error: {}".format(save_file_path, e))
 
 
-def create_logger():
-    logger = Logger()
+# def create_logger():
+#     logger = Logger()
 
-    return logger
+#     return logger
+
+@contextmanager
+def create_logger_context(logger_name):
+    logger = Logger(logger_name)
+
+    logger.info("Start logging for `{}`".format(logger_name))
+    yield logger
+    # logger.info("End logging for {}".format(logger_name))
 
 
-logger = create_logger()
+def create_logger(logger_name=None):
+    """Create a logger obj to log info for starting log"""
+    if logger_name is None:
+        logger_name = "logger"
 
+    if os.path.isfile(logger_name):
+        # in case that we provide with __file__ attr, then just with file name. 
+        # so that we could get better insight.
+        logger_name = os.path.basename(logger_name)
+
+    with create_logger_context(logger_name) as logger:
+        return logger
+
+# logger = create_logger()
 
 if __name__ == '__main__':
     logger = create_logger()
     logger.info("test")
+    logger.warning("This is warning")
 
-    logger.save_log_file('.')
+    logger2 = create_logger("test")
+    logger2.info("new logger")

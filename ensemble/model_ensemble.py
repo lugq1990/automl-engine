@@ -15,8 +15,11 @@ from sklearn.model_selection import cross_validate
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.metrics.scorer import accuracy, r2
 from auto_ml.base.classifier_algorithms import ClassifierClass, ClassifierFactory
-from auto_ml.utils.logger import logger
+from auto_ml.utils.logger import create_logger
 from auto_ml.utils.paths import load_yaml_file
+
+
+logger = create_logger(__file__)
 
 
 class ModelEnsemble(ClassifierClass):
