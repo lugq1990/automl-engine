@@ -200,15 +200,29 @@ def get_scorer_based_on_target(y):
         scorer = mean_squared_error
     else:
         raise ValueError("When to score data get not "
-                         "supported type of problem: {}".format(type_of_problme))
+                         "supported type of problem: {}".format(type_of_problem))
 
     return scorer
+
+
+def get_num_classes_based_on_label(label):
+    if len(label.shape) > 2:
+        if label.shape[1] == 1:
+            return len(np.unique(label[:, 0]))
+        else:
+            # currently is with multi-classes only, for multi-label should change this 
+            return label.shape[1]
+    else:
+        return len(np.unique(label))
 
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
     x, y = load_iris(return_X_y=True)
+    from auto_ml.test.get_test_data import get_training_data
+    x, y = get_training_data()
 
     print(hash_dataset_name(x))
     # print(ensure_no_nan_value(x))
     # print(check_data_and_label(x, y))
+    print(get_num_classes_based_on_label(y))

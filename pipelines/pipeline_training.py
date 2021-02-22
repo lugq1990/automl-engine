@@ -19,7 +19,7 @@ from sklearn.pipeline import Pipeline
 
 from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.backend_obj import Backend
-from auto_ml.utils.logger import logger
+from auto_ml.utils.logger import create_logger
 from auto_ml.base.model_selection import GridSearchModel
 from auto_ml.base.classifier_algorithms import ClassifierFactory
 from auto_ml.preprocessing.processing_factory import ProcessingFactory
@@ -27,6 +27,10 @@ from auto_ml.ensemble.model_ensemble import ModelEnsemble
 from auto_ml.utils.data_rela import get_scorer_based_on_target
 from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name
 
+from auto_ml.neural_networks.neural_network_search import ModelSearch
+
+
+logger = create_logger(__file__)
 
 class PipelineTrain(Pipeline):
     """
@@ -192,7 +196,7 @@ class PipelineTrain(Pipeline):
 
         return x_processed
 
-    def fit(self, x, y, n_jobs=None):
+    def fit(self, x, y, n_jobs=None, use_neural_network=True):
         """
         Real pipeline training steps happen here.
         :param x:
@@ -210,6 +214,17 @@ class PipelineTrain(Pipeline):
 
         self._fit(x, y, n_jobs=n_jobs)
         logger.info("End Model Pipeline training.")
+
+        # Add with neural network search to find with Neural models
+        if use_neural_network:
+            logger.info("Start to use Nueral Network to fit data with `tuner`!")
+
+            # `fit` related func like validation and save models are warpped in `fit` func, 
+            # here just `fit`
+            neural_model = ModelSearch() 
+            neural_model.fit(x, y)  
+
+            logger.info("Finished Nueral Network search logic!") 
 
         # After model has finished training, the best_model should be `training_pipeline`
         self.best_model = self.training_pipeline
@@ -491,6 +506,8 @@ class ClassificationPipeline(PipelineTrain):
 
     def build_training_pipeline(self):
         """
+        Build a container for whole algorithms instance to search.
+
         Based on the `model_selection` module, when we do the fit logic,
         then that module will store the best models list into disk(This is
         based on the model parameters).
@@ -518,6 +535,8 @@ class ClassificationPipeline(PipelineTrain):
 
     def _get_algorithms_instance_list(self):
         """
+        Get algorithm instance by factory class.
+
         To get whole instance object list based on the configuration in the yaml file,
         as we have added with `factory pattern` in classifier class, so here we could
         just use the class to get whole algorithms instance.

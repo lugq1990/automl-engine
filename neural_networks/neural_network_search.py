@@ -3,16 +3,21 @@
 """
 import os
 import traceback
-# This won't work as check in source code that uses `print` to get info...
+import time
+import string
+import random
+import warnings
+warnings.simplefilter("ignore")
 
-# import warnings
-# warnings.simplefilter("ignore")
+from sklearn.model_selection import train_test_split
+
+# This won't work as check `keras-tuner` source code that uses `print` to get info...
 # # This only workable in linux
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
-# This is to filter the warning log
-# tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+# This is to filter tensorflow warning log
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
@@ -22,8 +27,9 @@ from kerastuner.tuners import RandomSearch
 
 
 from auto_ml.utils.paths import load_yaml_file
-from auto_ml.utils.CONSTANT import OUTPUT_FOLDER
+from auto_ml.utils.CONSTANT import OUTPUT_FOLDER, TMP_FOLDER
 from auto_ml.utils.logger import create_logger
+from auto_ml.utils.data_rela import get_num_classes_based_on_label
 
 
 logger = create_logger(__file__)
@@ -127,12 +133,15 @@ class EvaluateNeuralModel:
 
         score_list = []
         for model in self.model_list:
-            score = model.evaluate(self.x, self.y)[1]
-            # score will be with 6 digits
-            score = round(score, 6)
+            try:
+                score = model.evaluate(self.x, self.y)[1]
+                # score will be with 6 digits
+                score = round(score, 6)
 
-            score_list.append(score)
-        
+                score_list.append(score)
+            except ValueError as e:
+                raise ValueError("When try to evaluate model with self data get error: {}".format(e))
+            
         return score_list
     
     def save_models(self, model_path=None, model_name_suffix='.h5'):
@@ -159,6 +168,133 @@ class EvaluateNeuralModel:
                 Current model_list is {}".format(len(self.model_list)))
 
 
+class NeuralNetworkFactory:
+    def __init__(self):
+        self.neural_networks_name_list = []
+    
+    @staticmethod
+    def get_neural_model_instance(neural_networks_name_list, n_classes):
+        """
+        n_classes has to be provided as to init instance needs this.
+        """
+        if isinstance(neural_networks_name_list, str):
+            neural_networks_name_list = [neural_networks_name_list]
+        
+        neural_networks_list = []
+        for name in neural_networks_name_list:
+            if name == 'DNN':
+                neural_networks_list.append(DNNSearch(n_classes))
+            elif name == 'CNN':
+                pass
+
+        return neural_networks_list
+
+
+class ModelSearch:
+    """
+    Main class for caller class to find best models.
+    """
+    def __init__(self, objective='val_accuracy', 
+                    max_trials=10, 
+                    executions_per_trial=1, 
+                    directory=None, 
+                    project_name=None, 
+                    algorithm_list=None, 
+                    tuning_algorithm='RandomSearch', 
+                    num_best_models=5):
+        self.objective = objective
+        self.max_trials = max_trials
+        self.executions_per_trial = executions_per_trial
+        self.directory = directory if directory is not None else TMP_FOLDER
+        # Here change the project name, as if we use same project, then won't re-fit just `reload`
+        # make project name as random string.
+        self.project_name = project_name if project_name is not None else self._generate_project_name() 
+        
+        # based on default hyper yaml file to define which mdoel to use.
+        # Just get key as the algorithm
+        default_keys = list(hyper_yml.keys())
+        default_keys.remove('optimizers')
+        self.algorithm_list = default_keys if algorithm_list is None else algorithm_list
+        self.tuning_algorithm = tuning_algorithm
+        self.num_best_models = num_best_models
+
+    def fit(self, x, y, epochs=10, val_x=None, val_y=None, validation_split=0.2, evaluate=True):
+        # search should be automatically
+        
+        tuner_list = self._get_search_tuner_list(x, y)
+
+        # whether or not to evaluate should base on attribute
+        if evaluate:
+            if (not val_x and not val_y):
+                train_x, val_x, train_y, val_y = train_test_split(x, y, test_size=validation_split)
+        
+        # loop for tuner_list to try to search best model
+        start_time = time.time()
+        for i in range(len(tuner_list)):
+            tuner = tuner_list[i]
+            logger.info("Start to search neural network models.")
+            if not evaluate:
+                tuner.search(x, y, epochs=epochs, validation_split=validation_split)
+            else:
+                tuner.search(train_x, train_y, epochs=epochs, validation_data=(val_x, val_y))
+
+            if evaluate:
+                # get each search best models, evaluate and save it.
+                best_models = tuner.get_best_models(self.num_best_models)
+                
+                if not best_models:
+                    logger.warning("There is no best model found.")
+                    return 
+                
+                print("Get best models: ", best_models)
+                self.evaluate_trained_models(best_models, val_x, val_y)
+
+        logger.info("Whole fitting logic finished used {} seconds.".format(time.time() - start_time))
+
+    @staticmethod
+    def evaluate_trained_models(best_models, x, y):
+        # get each search best models, evaluate and save it.
+        evaluate_model = EvaluateNeuralModel(best_models, x, y)
+
+        best_models_scores = evaluate_model.evaluate_models()
+        logger.info("Get best scores are: [{}]".format('\t'.join([str(score) for score in best_models_scores])))
+
+        logger.info("Start to save best trained nueral networks models into disk.")
+        evaluate_model.save_models()
+    
+    def _get_search_tuner_list(self, x, y):
+        # first should get class number
+        num_classed = get_num_classes_based_on_label(y)
+        logger.info("Get {} classes problem.".format(num_classed))
+
+        logger.info("Start to get model instance for algorithms: [{}]".format('\t'.join(self.algorithm_list)))
+        self.neural_networks_list = NeuralNetworkFactory.get_neural_model_instance(self.algorithm_list, num_classed)
+        
+        logger.info("Start to use search algorithm: {} to find models.".format(self.tuning_algorithm))
+        
+        tuner_list = []
+        if self.tuning_algorithm == 'RandomSearch':
+            for model in self.neural_networks_list:
+                tuner_list.append(RandomSearch(model, 
+                    objective=self.objective, 
+                    max_trials=self.max_trials, 
+                    executions_per_trial=self.executions_per_trial, 
+                    directory=self.directory, 
+                    project_name=self.project_name))
+        else:
+            pass
+        
+        return tuner_list
+
+    @staticmethod
+    def _generate_project_name(project_name_size=10, chars=string.ascii_uppercase + string.ascii_lowercase):
+        """
+        Random generate project name.
+        """
+        random_project_name = ''.join(random.choice(chars) for _ in range(project_name_size))
+        
+        return random_project_name
+        
 
 if __name__ == '__main__':
     model = DNNSearch(3)
@@ -173,19 +309,21 @@ if __name__ == '__main__':
     from sklearn.datasets import load_iris
     x, y = load_iris(return_X_y=True)
 
-    print("Start to search")
-    tuner.search(x, y, epochs=10, validation_split=.2)
-    # tuner.save_best_models(x, y)
+    # print("Start to search")
+    # tuner.search(x, y, epochs=10, validation_split=.2)
+    # # tuner.save_best_models(x, y)
 
-    print("Search step finished.")
-    best_models = tuner.get_best_models(3)
+    # print("Search step finished.")
+    # best_models = tuner.get_best_models(3)
 
-    # print("Best model score:", [model.evaluate(x, y)[1] for model in best_models])
-    # for model in best_models:
-    #     model_name = "DNN" + str(model.evaluate(x, y)[1])
-    #     model.save(os.path.join(OUTPUT_FOLDER, model_name) + '.h5')
+    # # print("Best model score:", [model.evaluate(x, y)[1] for model in best_models])
+    # # for model in best_models:
+    # #     model_name = "DNN" + str(model.evaluate(x, y)[1])
+    # #     model.save(os.path.join(OUTPUT_FOLDER, model_name) + '.h5')
 
-    evaluate_model = EvaluateNeuralModel(best_models, x, y)
-    print(evaluate_model.evaluate_models())
-    evaluate_model.save_models()
+    # evaluate_model = EvaluateNeuralModel(best_models, x, y)
+    # print(evaluate_model.evaluate_models())
+    # evaluate_model.save_models()
 
+    model_search = ModelSearch()
+    model_search.fit(x, y)

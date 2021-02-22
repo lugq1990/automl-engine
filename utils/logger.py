@@ -14,13 +14,15 @@ from datetime import datetime
 # Add with contextlib module to make the log to start and end message auto
 from contextlib import contextmanager
 
+from auto_ml.utils.CONSTANT import TMP_FOLDER
 
 class Logger(object):
     def __init__(self, logger_name=None):
         if logger_name is None:
             logger_name = "logging"   # we could change this.
         self.logger_name = logger_name
-        self._logger_path = os.path.join(tempfile.gettempdir(), 'logging')
+        # self._logger_path = os.path.join(tempfile.gettempdir(), 'logging')
+        self._logger_path = os.path.join(TMP_FOLDER, 'logging')
         if not os.path.exists(self._logger_path):
             try:
                 os.mkdir(self._logger_path)

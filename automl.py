@@ -180,7 +180,7 @@ class ClassificationAutoML(AutoML):
         # action should happen here.
         self.estimator = ClassificationPipeline()
 
-    def fit(self, xtrain, ytrain, n_jobs=None):
+    def fit(self, xtrain, ytrain, n_jobs=None, use_neural_network=True):
         """
         I think that we could use sub-class to do real training.
         Also I think that for parent could just give the direction,
@@ -193,7 +193,7 @@ class ClassificationAutoML(AutoML):
         """
         # after the checking process, then we need to create the Pipeline for whole process.
         # Here should use a Pipeline object to do real training, also with `ensemble`
-        self.estimator.fit(xtrain, ytrain, n_jobs=n_jobs)
+        self.estimator.fit(xtrain, ytrain, n_jobs=n_jobs, use_neural_network=use_neural_network)
 
         # load trained models for prediction and scoring for testing data.
         # after we have fitted the trained models, then next step is to load whole of them from disk

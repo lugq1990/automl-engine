@@ -253,8 +253,10 @@ class ModelEnsemble(ClassifierClass):
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
+    from auto_ml.test.get_test_data import get_training_data
 
     x, y = load_iris(return_X_y=True)
+    x, y = get_training_data()
 
     model_ensemble = ModelEnsemble(ensemble_alg='stacking', voting_logic='soft', )
 
