@@ -10,12 +10,25 @@ author: Guangqiang.lu
 """
 import pickle
 import shutil
+from numpy.lib.arraysetops import isin
 import pandas as pd
 import traceback
+
+from tensorflow.keras.models import load_model as keras_load_model
+
+
 from auto_ml.utils.logger import create_logger
 from auto_ml.utils.CONSTANT import *
+from auto_ml.utils.files import load_yaml_file
+
+
 
 logger = create_logger()
+
+hyper_yml_file_name = 'search_hypers.yml'
+# Load hyperparameters
+hyper_yml = load_yaml_file(hyper_yml_file_name)
+
 
 class Backend(object):
     """
@@ -82,8 +95,16 @@ class Backend(object):
         :param identifier:
         :return:
         """
-        if not identifier.endswith('pkl'):
-            identifier = identifier + '.pkl'
+        # Here has to be changed for different platform
+        default_neural_network_algorithms = hyper_yml['DefaultAlgorithms']
+        identi_name = identifier.split('-')[0]
+        if identi_name in default_neural_network_algorithms:
+            # Keras model.
+            return self.load_keras_model(identifier)
+
+        # Should be changed, not to add defualt extension
+        # if not identifier.endswith('pkl'):
+        #     identifier = identifier + '.pkl'
 
         try:
             with open(os.path.join(self.output_folder, identifier), 'rb') as f:
@@ -94,6 +115,20 @@ class Backend(object):
             logger.error("When load %s model with error: %s." %
                          (identifier, traceback.format_exc()))
             raise IOError("When to load %s model, the file:%s not exist!" % (identifier, e))
+
+    def load_keras_model(self, identifier):
+        if not identifier.endswith('h5'):
+            raise ValueError("To load keras model, model extension must end with `h5`")
+        
+        try:
+            model_path = os.path.join(self.output_folder, identifier)
+            
+            model = keras_load_model(model_path)
+
+            return model
+        except IOError as e:
+            logger.error("When to load keras model, the file:%s not exist!" % identifier)
+            raise IOError("When to load keras model, the file:%s not exist!" % identifier)
 
     def load_models_by_identi_combined_with_model_name(self, identifiers):
         """
@@ -113,14 +148,24 @@ class Backend(object):
 
         return model_list
 
-    def list_models(self, extension='pkl', except_model_list=["processing_pipeline"]):
+    def list_models(self, extension=['pkl', 'h5'], except_model_list=["processing_pipeline"]):
         """
         this is to list whole saved model in local disk,
         model name should be end with `pkl`, should be extended
         to other framework with other extension.
         :return: a list of model list
         """
-        models_list = [x for x in os.listdir(self.output_folder) if x.endswith(extension)]
+        models_list = []
+
+        # change this with keras models.
+        if extension and isinstance(extension, list):
+            for ex in extension:
+                models_list.extend([x for x in os.listdir(self.output_folder) if x.endswith(ex)])
+        # models_list = [x for x in os.listdir(self.output_folder) if x.endswith(extension)]
+        
+        if not models_list:
+            logger.warning("There isn't any trained models in folder: {}".format(self.output_folder))
+        
 
         # Here add logic to ensure we just add algorithm model list
         if except_model_list:

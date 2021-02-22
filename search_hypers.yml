@@ -1,3 +1,6 @@
+DefaultAlgorithms: 
+  - DNN
+
 DNN:
   n_layers: 
     default: 1

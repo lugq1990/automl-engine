@@ -145,7 +145,7 @@ class AutoML(BaseEstimator):
             reverse = False
 
         models_list = sorted(models_list,
-                             key=lambda model: float(model[0].split("-")[1].replace(".pkl", '')),
+                             key=lambda model: float(model[0].split("-")[1].replace(".pkl", '').replace(".h5", '')),
                              reverse=reverse)
 
         return models_list

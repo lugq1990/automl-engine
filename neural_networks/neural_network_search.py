@@ -6,6 +6,7 @@ import traceback
 import time
 import string
 import random
+import shutil
 import warnings
 warnings.simplefilter("ignore")
 
@@ -211,9 +212,11 @@ class ModelSearch:
         self.project_name = project_name if project_name is not None else self._generate_project_name() 
         
         # based on default hyper yaml file to define which mdoel to use.
-        # Just get key as the algorithm
-        default_keys = list(hyper_yml.keys())
-        default_keys.remove('optimizers')
+        # default_keys = list(hyper_yml.keys())
+        # default_keys.remove('optimizers')
+        # Add parameter in yaml file will be better
+        default_keys = hyper_yml['DefaultAlgorithms']
+
         self.algorithm_list = default_keys if algorithm_list is None else algorithm_list
         self.tuning_algorithm = tuning_algorithm
         self.num_best_models = num_best_models
@@ -248,6 +251,9 @@ class ModelSearch:
                 
                 print("Get best models: ", best_models)
                 self.evaluate_trained_models(best_models, val_x, val_y)
+
+        # clean folder
+        self._clean_search_space()
 
         logger.info("Whole fitting logic finished used {} seconds.".format(time.time() - start_time))
 
@@ -294,6 +300,19 @@ class ModelSearch:
         random_project_name = ''.join(random.choice(chars) for _ in range(project_name_size))
         
         return random_project_name
+
+    def _clean_search_space(self):
+        """Call only when `fit` logic finished."""
+        try:
+            logger.info("Try to clean serach model space folder: {}".format(self.project_name))
+
+            search_project_path = os.path.join(self.directory, self.project_name)
+            shutil.rmtree(search_project_path)
+            logger.info("Folder: {} has been deleted!".format(self.project_name))
+
+        except IOError as e:
+            logger.error("To delete search project {} get error: {}".format(self.project_name, e))
+            raise IOError("To delete search project {} get error: {}".format(self.project_name, e))
         
 
 if __name__ == '__main__':

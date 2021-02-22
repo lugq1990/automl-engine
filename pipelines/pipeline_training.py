@@ -476,7 +476,7 @@ class PipelineTrain(Pipeline):
         :param x:
         :return: processed data with processor object.
         """
-        processor = self.backend.load_model("processing_pipeline")
+        processor = self.backend.load_model("processing_pipeline.pkl")
 
         try:
             x_processed = processor.transform(x)

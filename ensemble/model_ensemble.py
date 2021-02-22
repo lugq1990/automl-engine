@@ -174,6 +174,9 @@ class ModelEnsemble(ClassifierClass):
         # ADD logic: we shouldn't include the `Voting` algorithms instance object in fact
         model_list = [x for x in model_list if not x[0].lower().startswith('voting')]
 
+        # Except Neural network models.
+        model_list = [x for x in model_list if not x[0].endswith('.h5')]
+
         # To ensure there should be at least one file for `Ensemble` logic.
         if not model_list:
             raise IOError("There isn't any trained model for `Ensemble`.")
