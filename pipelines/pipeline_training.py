@@ -310,6 +310,10 @@ class PipelineTrain(Pipeline):
 
             score_dict[model_name] = score
 
+        if not score_dict:
+            logger.error("When to get model score, we haven't get any score, please check current func:`get_sorted_models_scores`!")
+            raise ValueError("When to get model score, we haven't get any score, please check current func:`get_sorted_models_scores`!")
+        
         # based on parameter: `reverse`
         score_dict ={k: v for k, v in sorted(score_dict.items(),  key=lambda x: x[1], reverse=reverse)}
 

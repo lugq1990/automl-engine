@@ -19,7 +19,7 @@ from tensorflow.keras.models import load_model as keras_load_model
 
 from auto_ml.utils.logger import create_logger
 from auto_ml.utils.CONSTANT import *
-from auto_ml.utils.files import load_yaml_file
+from auto_ml.utils.paths import load_yaml_file
 
 
 

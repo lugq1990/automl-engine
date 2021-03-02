@@ -41,3 +41,6 @@ import os
 PROJECT_TMP_PATH = "C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder"
 TMP_FOLDER = os.path.join(PROJECT_TMP_PATH, "tmp")
 OUTPUT_FOLDER = os.path.join(PROJECT_TMP_PATH, "models")
+
+# Add validation split threshold
+VALIDATION_THRESHOLD = 10000
