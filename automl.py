@@ -253,14 +253,15 @@ class FileLoad:
 
     Make this class as a container for later use case.
     """
-    def __init__(self, file_name, file_path=None, file_sep=',', label_name='label', service_account_file=None, service_account_file_path=None):
+    def __init__(self, file_name, file_path=None, file_sep=',', label_name='label', 
+            service_account_file_name=None, service_account_file_path=None):
         if not file_name.endswith('csv'):
             raise ValueError("Currently only support CSV file! Please provide with a CSV file.")
         self.file_name = file_name
         self.file_sep = file_sep
         self.file_path = file_path
         self.label_name = label_name
-        self.service_account_file = service_account_file
+        self.service_account_file_name = service_account_file_name
         self.service_account_file_path = service_account_file_path
         self.data, self.label = self._load_data_file()
 
@@ -272,35 +273,44 @@ class FileLoad:
                 return 'local'
 
     def _get_gcs_file(self):
-        if not self.service_account_file:
-            raise ValueError("When try to use GCS, please must provide with service account file to interact with GCS!")
-
-        if not self.service_account_file.endswith('json'):
-            raise ValueError("When try to use GCS, Service acount file must be a JSON file, " +\
-                 "but provided with {}".format(self.service_account_file))
-                
-        if not os.path.exists(os.path.join(self.service_account_file_path, self.service_account_file)):
-            raise FileNotFoundError("When try to find service account file couldn't find file: {} in path: {}, " + 
-                    "please check it.".format(self.service_account_file, self.service_account_file_path))
+        # first service account
+        self._check_service_account()
 
         bucket_name = self.file_path.split('/')[2]
-        if bucket_name.contains('.'):
+        if bucket_name.find(".") > 0:
+            # file_path also contain file name with `.`
+            logger.error("When to get bucket name from file path: {}, couldn't get the bucket name.".format(self.file_path))
             raise ValueError("When to get bucket name from file path: {}, couldn't get the bucket name.".format(self.file_path))
 
         from google.cloud import storage
         
         # init client with service account file
-        client = storage.Client.from_service_account_json(os.path.join(self.service_account_file_path, self.service_account_file))
+        client = storage.Client.from_service_account_json(os.path.join(self.service_account_file_path, self.service_account_file_name))
 
         bucket = client.bucket(bucket_name)
         blob = bucket.blob(self.file_name)
 
         try:
             # download as a file into temperate folder
-            blob.download_to_file(os.path.join(TMP_FOLDER, self.file_name))
+            blob.download_to_filename(os.path.join(TMP_FOLDER, self.file_name))
+            logger.info("File: {} has been downloaded from GCS to local.".format(self.file_name))
+
         except Exception as e:
-            logger.error("Error downloading file with service account: {}".format(self.service_account_file))
+            logger.error("Error downloading file with service account: {}".format(self.service_account_file_name))
             raise e
+    
+    def _check_service_account(self):
+        # Check service account related
+        if not self.service_account_file_name:
+            raise ValueError("When try to use GCS, please must provide with service account file to interact with GCS!")
+
+        if not self.service_account_file_name.endswith('json'):
+            raise ValueError("When try to use GCS, Service acount file must be a JSON file, " +\
+                 "but provided with {}".format(self.service_account_file_name))
+                
+        if not os.path.exists(os.path.join(self.service_account_file_path, self.service_account_file_name)):
+            raise FileNotFoundError("When try to find service account file couldn't find file: {} in path: {}, " + 
+                    "please check it.".format(self.service_account_file_name, self.service_account_file_path))
     
     def _load_data_file(self):
         file_location = self._get_file_location()
@@ -308,13 +318,13 @@ class FileLoad:
         file_path = self.file_path
 
         if file_location == 'gcs':
+            logger.info("Start to download file from GCS.")
             self._get_gcs_file()
             file_path = TMP_FOLDER 
+            logger.info("Download file from GCS has finished.")
         
         try:
             df = pd.read_csv(os.path.join(file_path, self.file_name), sep=self.file_sep)
-
-            print(df.head())
 
             # let's inference data and label from DataFrame
             df_cols = df.columns
@@ -351,13 +361,16 @@ if __name__ == '__main__':
 
     # Test with `FileLoad` class
     file_name = 'train.csv'
-    file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\test"
+    # file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\test"
+    file_path = "gs://cloud_sch_test"
+    service_account_file_path = r"C:\Users\guangqiiang.lu\Downloads"
+    service_account_name = "buoyant-sum-302208-4542dcd74629.json"
 
-    file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
+    file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived', 
+        service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
     data, label = file_load.data, file_load.label
 
     print("data shape and label shape:", data.shape, label.shape)
-    print("Label sample: ", label[:10])
 
     auto_cl = ClassificationAutoML()
     auto_cl.fit(file_load)
