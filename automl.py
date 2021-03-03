@@ -233,7 +233,7 @@ class ClassificationAutoML(AutoML):
             logger.warning("No need to validation!")
             pass
 
-    def get_sorted_models_scores(self, xtest, ytest, **kwargs):
+    def get_sorted_models_scores(self, file_load=None, xtest=None, ytest=None, **kwargs):
         """
         To get some best trained model's score for `test` data with ordered.
 
@@ -243,26 +243,94 @@ class ClassificationAutoML(AutoML):
         :param kwargs:
         :return:
         """
+        self._check_param(file_load, xtest, ytest)
+
+        if file_load is not None:
+            xtest, ytest = file_load.data, file_load.label
+
         score_dict = self.estimator.get_sorted_models_scores(xtest, ytest, reverse=True)
 
         return score_dict
 
+    def predict(self, file_load=None, x=None, **kwargs):
+        """To support with file_load obj with super func."""
+        self._check_param(file_load, x)
+
+        if file_load is not None:
+            x, _ = self.__get_file_load_data_label(file_load)
+
+        pred = super().predict(x)
+
+        return pred
+
+    def predict_proba(self, file_load=None, x=None, **kwargs):
+        self._check_param(file_load, x)
+
+        if file_load is not None:
+            x, _ = self.__get_file_load_data_label(file_load)
+
+        prob = super().predict_proba(x)
+
+        return prob
+
+    def score(self, file_load=None, x=None, y=None, **kwargs):
+        self._check_param(file_load, x, y)
+
+        if file_load is not None:
+            x, y = self.__get_file_load_data_label(file_load, use_for_pred=False)
+
+        print("Get data", x[:10])
+        print("get label:", y[:10])
+        
+        score = super().score(x, y)
+
+        return score
+
+    @staticmethod
+    def _check_param(*args):
+        all_None = all([arg is None for arg in args])
+
+        if all_None:
+            raise ValueError("Please provide at least one parameter!")
+
+    @staticmethod
+    def __get_file_load_data_label(file_load, use_for_pred=True):
+        """
+        Get data and label for prediction data.
+        """
+        data, label = file_load.data, file_load.label
+
+        if use_for_pred:
+            if label is not None:
+                raise ValueError("When to `predict` with `file_load` obj, have you set parameter: `use_for_pred=True`?" + 
+                        "As we have get label data from file_load obj.")
+        
+        return data, label
+
+        
 
 class FileLoad:
     """Load data from file, support with local file also with GCS.
 
     Make this class as a container for later use case.
     """
-    def __init__(self, file_name, file_path=None, file_sep=',', label_name='label', 
-            service_account_file_name=None, service_account_file_path=None):
+    def __init__(self, file_name, file_path=None, file_sep=',', label_name='label', use_for_pred=False,
+            service_account_file_name=None, service_account_file_path=None, except_columns=None):
+        """
+        Support with prediction data load. If true, have to set parameter: `use_for_pred=True`
+        """
         if not file_name.endswith('csv'):
             raise ValueError("Currently only support CSV file! Please provide with a CSV file.")
         self.file_name = file_name
         self.file_sep = file_sep
         self.file_path = file_path
         self.label_name = label_name
+        self.use_for_pred = use_for_pred
         self.service_account_file_name = service_account_file_name
         self.service_account_file_path = service_account_file_path
+        if except_columns is not None and isinstance(except_columns, str):
+            except_columns = [except_columns]
+        self.except_columns = except_columns 
         self.data, self.label = self._load_data_file()
 
     def _get_file_location(self):
@@ -326,8 +394,26 @@ class FileLoad:
         try:
             df = pd.read_csv(os.path.join(file_path, self.file_name), sep=self.file_sep)
 
-            # let's inference data and label from DataFrame
             df_cols = df.columns
+
+            # In case that we don't need some columns and these cols should be in DF columns
+            if self.except_columns is not None:
+                except_common_cols = set(self.except_columns).intersection(list(df.columns))
+                
+                logger.info("Need to delete columns:{}  from original DataFrame.".format('\t'.join(list(except_common_cols))))
+
+                if except_common_cols:
+                    df.drop(except_common_cols, axis=1, inplace=True)
+
+            if self.use_for_pred:
+                # if just for prediction, then we don't get label data
+                data = df.values
+                label = None
+
+                return data, label
+
+            # let's inference data and label from DataFrame
+           
             if self.label_name not in df_cols:
                 # if `label` col not in the original file, then make let first column as `label` column
                 label = df.iloc[:, 0]
@@ -385,12 +471,18 @@ if __name__ == '__main__':
     # # get model score
     # print(auto_cl.get_sorted_models_scores(xtest, ytest))
 
-    print(auto_cl.models_list)
-    # print(auto_cl.score(xtest, ytest))
-    # print('*' * 20)
-    # print(auto_cl.predict(xtest)[:10])
-    # print('*'*20)
-    # print(auto_cl.predict_proba(xtest)[:10])
+    file_load_pred = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived', use_for_pred=True,
+        service_account_file_name=service_account_name, service_account_file_path=service_account_file_path, except_columns='Survived')
 
-    # # get model score
-    # print(auto_cl.get_sorted_models_scores(xtest, ytest))
+    print(auto_cl.models_list)
+    # print(auto_cl.score(file_load_pred))
+    print('*' * 20)
+    print(auto_cl.predict(file_load_pred)[:10])
+    print('*'*20)
+    print(auto_cl.predict_proba(file_load_pred)[:10])
+
+    print('*' * 20)
+    print(auto_cl.score(file_load))
+
+    # get model score
+    print(auto_cl.get_sorted_models_scores(file_load))
