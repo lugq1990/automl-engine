@@ -5,6 +5,7 @@ here so that we could change or do something change could be easier.
 
 @author: Guangqiang.lu
 """
+import numpy as np
 import warnings
 from sklearn.base import BaseEstimator
 
@@ -43,6 +44,18 @@ class ClassifierFactory:
                 algorithm_instance_list.append(SupportVectorMachine())
             elif alg_name == 'GradientBoostingTree':
                 algorithm_instance_list.append(GradientBoostingTree())
+            elif alg_name == 'RandomForestClassifier':
+                algorithm_instance_list.append(RandomForestClassifier())
+            elif alg_name == 'KNNClassifier':
+                algorithm_instance_list.append(KNNClassifier())
+            elif alg_name == 'DecisionTreeClassifier':
+                algorithm_instance_list.append(DecisionTreeClassifier())
+            elif alg_name == 'AdaboostClassifier':
+                algorithm_instance_list.append(AdaboostClassifier())
+            elif alg_name == 'LightGBMClassifier':
+                algorithm_instance_list.append(LightGBMClassifier())
+            elif alg_name == 'XGBClassifier':
+                algorithm_instance_list.append(XGBClassifier())
 
         if len(alg_name_list) == 1:
             # if we just provide with name, then return with one instance.
@@ -120,15 +133,6 @@ class LogisticRegression(ClassifierClass):
         self.estimator.fit(x, y)
         return self
 
-    def predict(self, x):
-        return super().predict(x)
-
-    def score(self, x, y):
-        return super().score(x, y)
-
-    def predict_proba(self, x):
-        return super().predict_proba(x)
-
     @staticmethod
     def get_search_space():
         config = ConfigSpace()
@@ -170,15 +174,6 @@ class SupportVectorMachine(ClassifierClass):
         self.estimator.fit(x, y)
         return self
 
-    def predict(self, x):
-        return super().predict(x)
-
-    def score(self, x, y):
-        return super().score(x, y)
-
-    def predict_proba(self, x):
-        return super().predict_proba(x)
-
     @staticmethod
     def get_search_space():
         config = ConfigSpace()
@@ -213,15 +208,6 @@ class RandomForestClassifier(ClassifierClass):
         self.estimator.fit(x, y)
         return self
 
-    def predict(self, x):
-        return super().predict(x)
-
-    def score(self, x, y):
-        return super(RandomForestClassifier, self).score(x, y)
-
-    def predict_proba(self, x):
-        return super(RandomForestClassifier, self).predict_proba(x)
-
     @staticmethod
     def get_search_space():
         config = ConfigSpace()
@@ -255,15 +241,6 @@ class GradientBoostingTree(ClassifierClass):
         self.estimator.fit(x, y)
         return self
 
-    def predict_proba(self, x):
-        return super(GradientBoostingTree, self).predict_proba(x)
-
-    def predict(self, x):
-        return super(GradientBoostingTree, self).predict(x)
-
-    def score(self, x, y):
-        return super(GradientBoostingTree, self).score(x, y)
-
     @staticmethod
     def get_search_space():
         config = ConfigSpace()
@@ -276,13 +253,178 @@ class GradientBoostingTree(ClassifierClass):
         return config.get_hypers()
 
 
+class KNNClassifier(ClassifierClass):
+    def __init__(self, n_neighbors=5):
+        super().__init__()
+        self.n_neighbors = n_neighbors
+
+    def fit(self, x, y, **kwargs):
+        from sklearn.neighbors import KNeighborsClassifier
+
+        self.estimator = KNeighborsClassifier(n_neighbors=self.n_neighbors)
+
+        self.estimator.fit(x, y)
+        return self
+
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        n_neighbors = GridHyperparameter(name='n_neighbors', values=[5, 7, 10])
+
+        config.add_hyper([n_neighbors])
+
+        return config.get_hypers()
+
+
+class DecisionTreeClassifier(ClassifierClass):
+    def __init__(self, criterion='gini', max_depth=None, max_leaf_nodes=None):
+        super().__init__()
+        self.criterion = criterion
+        self.max_depth = max_depth
+        self.max_leaf_nodes = max_leaf_nodes
+
+    def fit(self, x, y, **kwargs):
+        from sklearn.tree import DecisionTreeClassifier
+
+        self.estimator = DecisionTreeClassifier(criterion=self.criterion, 
+                                                max_depth=self.max_depth,
+                                                max_leaf_nodes=self.max_leaf_nodes)
+        self.estimator.fit(x, y, **kwargs)
+
+        return self
+
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        max_depth = GridHyperparameter(name='max_depth', values=[3, 5, 10, None])
+
+        config.add_hyper([max_depth])
+
+        return config.get_hypers()                                                
+
+
+class AdaboostClassifier(ClassifierClass):
+    def __init__(self, learning_rate=1.0, n_estimators=50):
+        super().__init__()
+        self.learning_rate = learning_rate
+        self.n_estimators = n_estimators
+
+    def fit(self, x, y, **kwargs):
+        from sklearn.ensemble import AdaBoostClassifier
+
+        self.estimator = AdaBoostClassifier(learning_rate=self.learning_rate, n_estimators=self.n_estimators)
+        
+        self.estimator.fit(x, y, **kwargs)
+        return self
+    
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        n_estimators = GridHyperparameter(name='n_estimators', values=[50, 70, 100])
+        learning_rate = UniformHyperparameter(name='learning_rate', low=0.01, high=1.0, size=2)
+
+        config.add_hyper([n_estimators, learning_rate])
+
+        return config.get_hypers()     
+
+    
+class LightGBMClassifier(ClassifierClass):
+    def __init__(self, n_estimators=100, 
+            boosting_type='gbdt', 
+            num_leaves=31, 
+            max_depth=-1, 
+            class_weight=None, 
+            learning_rate=.1, 
+            n_jobs=-1, 
+            random_state=None):
+        super().__init__()
+        self.n_estimators = n_estimators
+        self.boosting_type = boosting_type
+        self.num_leaves = num_leaves
+        self.max_depth = max_depth
+        self.class_weight = class_weight
+        self.learning_rate = learning_rate
+        self.n_jobs = n_jobs
+        self.random_state = random_state if random_state is not None else np.random.seed(1234)
+    
+    def fit(self, x, y, **kwargs):
+        from lightgbm import LGBMClassifier
+
+        self.estimator = LGBMClassifier(n_estimators=self.n_estimators,
+                                            boosting_type=self.boosting_type, 
+                                            num_leaves=self.num_leaves,
+                                            max_depth=self.max_depth,
+                                            class_weight=self.class_weight,
+                                            learning_rate=self.learning_rate,
+                                            n_jobs=self.n_jobs,
+                                            random_state=self.random_state)
+
+        self.estimator.fit(x, y, **kwargs)
+
+        return self
+
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        n_estimators = GridHyperparameter(name='n_estimators', values=[100, 300, 500])
+        learning_rate = UniformHyperparameter(name='learning_rate', low=0.01, high=1.0, size=2)
+
+        config.add_hyper([n_estimators, learning_rate])
+
+        return config.get_hypers()
+
+
+class XGBClassifier(ClassifierClass):
+    def __init__(self, n_estimators=100, 
+                    learning_rate=0.1,
+                    objective='binary:logistic',
+                    reg_lambda=1, 
+                    reg_alpha=0, 
+                    gamma=0):
+        super().__init__()
+        self.n_estimators = n_estimators
+        self.learning_rate = learning_rate
+        self.objective = objective
+        self.reg_lambda = reg_lambda
+        self.reg_alpha = reg_alpha
+        self.gamma = gamma
+    
+    def fit(self, x, y, **kwargs):
+        from xgboost import XGBClassifier
+
+        self.estimator = XGBClassifier(n_estimators=self.n_estimators, 
+                                        learning_rate=self.learning_rate, 
+                                        reg_lambda=self.reg_lambda,
+                                        objective=self.objective,
+                                        gamma=self.gamma,
+                                        reg_alpha=self.reg_alpha)
+
+        self.estimator.fit(x, y, **kwargs)
+        return self
+
+    @staticmethod
+    def get_search_space():
+        config = ConfigSpace()
+
+        n_estimators = GridHyperparameter(name='n_estimators', values=[100, 300, 500])
+        learning_rate = UniformHyperparameter(name='learning_rate', low=0.01, high=1.0, size=2)
+
+        config.add_hyper([n_estimators, learning_rate])
+
+        return config.get_hypers()                                 
+
+
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
     from sklearn.model_selection import GridSearchCV
 
     x, y = load_iris(return_X_y=True)
 
-    lr = GradientBoostingTree()
+    lr = XGBClassifier()
 
     print(lr.get_search_space())
 

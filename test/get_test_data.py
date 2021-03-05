@@ -15,8 +15,8 @@ root_path = get_root_path()
 cur_path = os.path.join(root_path, 'test')
 
 
-def get_training_data(return_df=False):
-    df = pd.read_csv(os.path.join(cur_path, "train.csv"))
+def get_training_data(return_df=False, file_name='train.csv'):
+    df = pd.read_csv(os.path.join(cur_path, file_name))
 
     if return_df:
         return df

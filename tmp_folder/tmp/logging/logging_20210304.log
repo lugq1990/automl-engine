@@ -1,0 +1,1030 @@
+2021-03-04 14:49:36 - logger - INFO - Start logging for `logger`
+2021-03-04 14:49:36 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 14:49:36 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 14:49:37 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 14:49:37 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 14:49:37 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 14:49:38 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 14:49:38 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 14:49:38 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 14:49:38 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 14:50:01 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 14:50:01 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 14:50:01 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.794627
+2021-03-04 14:50:01 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.777798
+2021-03-04 14:50:01 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.793516
+2021-03-04 14:50:01 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 14:50:01 - model_selection.py - INFO - Start to save model: LogisticRegression-0.794627
+2021-03-04 14:50:01 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.793516
+2021-03-04 14:50:01 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.777798
+2021-03-04 14:50:01 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.793516.pkl	LogisticRegression-0.794627.pkl	SupportVectorMachine-0.777798.pkl
+2021-03-04 14:50:01 - pipeline_training.py - INFO - Training pipeline finished takes: 23 seconds.
+2021-03-04 14:50:01 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 14:50:01 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 14:50:01 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 14:50:01 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 14:50:01 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 14:50:01 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 14:50:02 - model_ensemble.py - INFO - Stacking model score: 0.787709
+2021-03-04 14:50:02 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 14:50:02 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 14:50:02 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 14:50:02 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 14:50:02 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 14:50:02 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 14:50:03 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 14:50:30 - neural_network_search.py - INFO - Get best scores are: [0.75419	0.715084	0.698324	0.687151	0.648045]
+2021-03-04 14:50:30 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 14:50:31 - neural_network_search.py - INFO - Try to clean serach model space folder: rfRyhxwOLH
+2021-03-04 14:50:31 - neural_network_search.py - INFO - Folder: rfRyhxwOLH has been deleted!
+2021-03-04 14:50:31 - neural_network_search.py - INFO - Whole fitting logic finished used 28.2251033782959 seconds.
+2021-03-04 14:50:31 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 14:50:31 - automl.py - WARNING - No need to validation!
+2021-03-04 14:53:14 - logger - INFO - Start logging for `logger`
+2021-03-04 14:53:14 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 14:53:15 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 14:53:15 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 14:53:15 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 14:53:15 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 14:53:15 - automl.py - ERROR - Error load data file: train.csv from path: .
+2021-03-04 14:54:00 - logger - INFO - Start logging for `logger`
+2021-03-04 14:54:00 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 14:54:01 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 14:54:01 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 14:54:01 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 14:54:01 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 14:54:02 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 14:54:02 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 14:54:02 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 14:54:02 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 14:54:25 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 14:54:25 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 14:54:25 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.794627
+2021-03-04 14:54:25 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.778922
+2021-03-04 14:54:25 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.790158
+2021-03-04 14:54:25 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 14:54:25 - model_selection.py - INFO - Start to save model: LogisticRegression-0.794627
+2021-03-04 14:54:25 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.790158
+2021-03-04 14:54:25 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.778922
+2021-03-04 14:54:25 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.790158.pkl	LogisticRegression-0.794627.pkl	SupportVectorMachine-0.778922.pkl
+2021-03-04 14:54:25 - pipeline_training.py - INFO - Training pipeline finished takes: 23 seconds.
+2021-03-04 14:54:25 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 14:54:25 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 14:54:25 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 14:54:25 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 14:54:25 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 14:54:25 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 14:54:26 - model_ensemble.py - INFO - Stacking model score: 0.782123
+2021-03-04 14:54:26 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 14:54:26 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 14:54:26 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 14:54:26 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 14:54:26 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 14:54:26 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 14:54:26 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 14:54:57 - neural_network_search.py - INFO - Get best scores are: [0.687151	0.675978	0.670391	0.653631	0.653631]
+2021-03-04 14:54:57 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 14:54:57 - neural_network_search.py - INFO - Try to clean serach model space folder: OZcTNdCTvX
+2021-03-04 14:54:57 - neural_network_search.py - INFO - Folder: OZcTNdCTvX has been deleted!
+2021-03-04 14:54:57 - neural_network_search.py - INFO - Whole fitting logic finished used 31.01482582092285 seconds.
+2021-03-04 14:54:57 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 14:54:58 - automl.py - WARNING - No need to validation!
+2021-03-04 14:59:49 - logger - INFO - Start logging for `logger`
+2021-03-04 14:59:49 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 14:59:49 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 14:59:50 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 14:59:50 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 14:59:50 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 14:59:53 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 14:59:53 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 14:59:53 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 14:59:53 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 15:01:00 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 15:01:00 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 15:01:00 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.783798
+2021-03-04 15:01:00 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.806235
+2021-03-04 15:01:00 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.807663
+2021-03-04 15:01:00 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 15:01:00 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.807663
+2021-03-04 15:01:00 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.806235
+2021-03-04 15:01:00 - model_selection.py - INFO - Start to save model: LogisticRegression-0.783798
+2021-03-04 15:01:00 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.807663.pkl	LogisticRegression-0.783798.pkl	SupportVectorMachine-0.806235.pkl
+2021-03-04 15:01:00 - pipeline_training.py - INFO - Training pipeline finished takes: 67 seconds.
+2021-03-04 15:01:00 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 15:01:00 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 15:01:00 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 15:01:00 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 15:01:00 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 15:01:00 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 15:01:04 - model_ensemble.py - INFO - Stacking model score: 0.825175
+2021-03-04 15:01:04 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 4 seconds.
+2021-03-04 15:01:05 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 15:01:05 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 15:01:05 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 15:01:05 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 15:01:05 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 15:01:05 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 15:02:15 - neural_network_search.py - INFO - Get best scores are: [0.762238	0.741259	0.727273	0.636364	0.636364]
+2021-03-04 15:02:15 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 15:02:16 - neural_network_search.py - INFO - Try to clean serach model space folder: dnSsqGyZhi
+2021-03-04 15:02:16 - neural_network_search.py - ERROR - To delete search project dnSsqGyZhi get error: [WinError 145] The directory is not empty: 'C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\\tmp\\dnSsqGyZhi\\trial_de02e4238f44cc49d3178ae4d3138dd8'
+2021-03-04 15:11:03 - logger - INFO - Start logging for `logger`
+2021-03-04 15:11:03 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 15:11:04 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 15:11:04 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 15:11:04 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 15:11:04 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 15:11:05 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 15:11:05 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 15:11:05 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 15:11:05 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 15:11:05 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 15:11:05 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 15:11:06 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 15:11:06 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 15:11:06 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 15:11:06 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 15:11:06 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 15:11:44 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 15:11:44 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 15:11:44 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.796267
+2021-03-04 15:11:44 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.768216
+2021-03-04 15:11:44 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.778066
+2021-03-04 15:11:44 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 15:11:44 - model_selection.py - INFO - Start to save model: LogisticRegression-0.796267
+2021-03-04 15:11:44 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.778066
+2021-03-04 15:11:44 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.768216
+2021-03-04 15:11:44 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.778066.pkl	LogisticRegression-0.796267.pkl	SupportVectorMachine-0.768216.pkl
+2021-03-04 15:11:44 - pipeline_training.py - INFO - Training pipeline finished takes: 38 seconds.
+2021-03-04 15:11:44 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 15:11:44 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 15:11:44 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 15:11:44 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 15:11:44 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 15:11:44 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 15:11:47 - model_ensemble.py - INFO - Stacking model score: 0.783217
+2021-03-04 15:11:47 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 2 seconds.
+2021-03-04 15:11:47 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 15:11:47 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 15:11:47 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 15:11:47 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 15:11:47 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 15:11:47 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 15:12:37 - neural_network_search.py - INFO - Get best scores are: [0.769231	0.769231	0.692308	0.685315	0.636364]
+2021-03-04 15:12:38 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 15:12:39 - neural_network_search.py - INFO - Try to clean serach model space folder: oXhTbPMdXx
+2021-03-04 15:12:39 - neural_network_search.py - INFO - Folder: oXhTbPMdXx has been deleted!
+2021-03-04 15:12:39 - neural_network_search.py - INFO - Whole fitting logic finished used 52.29614472389221 seconds.
+2021-03-04 15:12:39 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 15:12:40 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.778066.pkl	LogisticRegression-0.796267.pkl	Stacking-0.783217.pkl	SupportVectorMachine-0.768216.pkl	DNN-0.636364.h5	DNN-0.685315.h5	DNN-0.692308.h5	DNN-0.769231.h5
+2021-03-04 15:12:40 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.4561978007618659).
+2021-03-04 15:12:40 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.4561978007618659) get score: 0.8101.
+2021-03-04 15:12:40 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=2.327069216788742).
+2021-03-04 15:12:40 - pipeline_training.py - INFO - Model: LogisticRegression(C=2.327069216788742) get score: 0.8045.
+2021-03-04 15:12:41 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 15:12:41 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 15:12:41 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 15:12:41 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 15:12:41 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 15:12:41 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 15:12:41 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.8045.
+2021-03-04 15:12:41 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=7.004701728798).
+2021-03-04 15:12:41 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=7.004701728798) get score: 0.7989.
+2021-03-04 15:12:41 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000026149D4FD68>.
+2021-03-04 15:12:42 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000026149D4FD68> get score: 0.6536.
+2021-03-04 15:12:42 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000026149D77B70>.
+2021-03-04 15:12:42 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000026149D77B70> get score: 0.6592.
+2021-03-04 15:12:42 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000002614F2F8F60>.
+2021-03-04 15:12:42 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000002614F2F8F60> get score: 0.6872.
+2021-03-04 15:12:42 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000002614F301BE0>.
+2021-03-04 15:12:42 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000002614F301BE0> get score: 0.7486.
+2021-03-04 15:12:42 - automl.py - INFO - Get validation score: 	GradientBoostingTree-0.778066.pkl : 0.8100558659217877	LogisticRegression-0.796267.pkl : 0.8044692737430168	Stacking-0.783217.pkl : 0.8044692737430168	SupportVectorMachine-0.768216.pkl : 0.7988826815642458	DNN-0.769231.h5 : 0.7486033519553073	DNN-0.692308.h5 : 0.6871508379888268	DNN-0.685315.h5 : 0.659217877094972	DNN-0.636364.h5 : 0.6536312849162011
+2021-03-04 15:12:42 - automl.py - INFO - Whole training pipeline takes: 96.73 seconds!
+2021-03-04 15:23:24 - logger - INFO - Start logging for `logger`
+2021-03-04 15:23:24 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 15:23:24 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 15:23:24 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 15:23:24 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 15:23:24 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 15:23:25 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 15:23:25 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 15:23:25 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 15:23:25 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 15:23:47 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 15:23:47 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 15:23:47 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.786526
+2021-03-04 15:23:47 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.779513
+2021-03-04 15:23:47 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.779484
+2021-03-04 15:23:47 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 15:23:47 - model_selection.py - INFO - Start to save model: LogisticRegression-0.786526
+2021-03-04 15:23:47 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.779513
+2021-03-04 15:23:47 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.779484
+2021-03-04 15:23:47 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.779484.pkl	LogisticRegression-0.786526.pkl	SupportVectorMachine-0.779513.pkl
+2021-03-04 15:23:47 - pipeline_training.py - INFO - Training pipeline finished takes: 22 seconds.
+2021-03-04 15:23:47 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 15:23:47 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 15:23:47 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 15:23:47 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 15:23:47 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 15:23:47 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 15:23:48 - model_ensemble.py - INFO - Stacking model score: 0.818182
+2021-03-04 15:23:49 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 15:23:49 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 15:23:49 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 15:23:49 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 15:23:49 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 15:23:49 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 15:23:49 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 15:24:20 - neural_network_search.py - INFO - Get best scores are: [0.818182	0.748252	0.706294	0.671329	0.657343]
+2021-03-04 15:24:20 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 15:24:20 - neural_network_search.py - INFO - Try to clean serach model space folder: EmlFZfKBeB
+2021-03-04 15:24:20 - neural_network_search.py - INFO - Folder: EmlFZfKBeB has been deleted!
+2021-03-04 15:24:20 - neural_network_search.py - INFO - Whole fitting logic finished used 31.59665274620056 seconds.
+2021-03-04 15:24:20 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 15:24:21 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.779484.pkl	LogisticRegression-0.786526.pkl	Stacking-0.818182.pkl	SupportVectorMachine-0.779513.pkl	DNN-0.657343.h5	DNN-0.671329.h5	DNN-0.706294.h5	DNN-0.748252.h5	DNN-0.818182.h5
+2021-03-04 15:24:21 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.6948822166693318, n_estimators=500).
+2021-03-04 15:24:21 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.6948822166693318, n_estimators=500) get score: 0.7877.
+2021-03-04 15:24:21 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=5.333738474030446).
+2021-03-04 15:24:21 - pipeline_training.py - INFO - Model: LogisticRegression(C=5.333738474030446) get score: 0.8045.
+2021-03-04 15:24:21 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 15:24:21 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 15:24:22 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 15:24:22 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 15:24:22 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 15:24:22 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.7821.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=3.128846906065016).
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=3.128846906065016) get score: 0.7765.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x00000171FC2FBAC8>.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x00000171FC2FBAC8> get score: 0.6425.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001718112FB70>.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001718112FB70> get score: 0.6313.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001718109DF98>.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001718109DF98> get score: 0.6760.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000017181167320>.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000017181167320> get score: 0.7877.
+2021-03-04 15:24:22 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x00000171822309E8>.
+2021-03-04 15:24:23 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x00000171822309E8> get score: 0.7542.
+2021-03-04 16:04:59 - logger - INFO - Start logging for `logger`
+2021-03-04 16:04:59 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:04:59 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:05:00 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:05:00 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:05:00 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:05:00 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:05:00 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:05:01 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:05:01 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:05:01 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:05:01 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:05:01 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:05:01 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:05:01 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 16:05:01 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:05:01 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:05:18 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:05:18 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:05:18 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.79217
+2021-03-04 16:05:18 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.790742
+2021-03-04 16:05:18 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.786516
+2021-03-04 16:05:18 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:05:18 - model_selection.py - INFO - Start to save model: LogisticRegression-0.79217
+2021-03-04 16:05:18 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.790742
+2021-03-04 16:05:18 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.786516
+2021-03-04 16:05:18 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.786516.pkl	LogisticRegression-0.79217.pkl	SupportVectorMachine-0.790742.pkl
+2021-03-04 16:05:18 - pipeline_training.py - INFO - Training pipeline finished takes: 17 seconds.
+2021-03-04 16:05:18 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:05:18 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:05:18 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:05:18 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:05:18 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:05:18 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 16:05:19 - model_ensemble.py - INFO - Stacking model score: 0.804196
+2021-03-04 16:05:19 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:05:19 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:05:19 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:05:19 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:05:19 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:05:19 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:05:19 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:05:42 - neural_network_search.py - INFO - Get best scores are: [0.804196	0.804196	0.741259	0.734266	0.636364]
+2021-03-04 16:05:42 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:05:42 - neural_network_search.py - INFO - Try to clean serach model space folder: wCkgGXAchf
+2021-03-04 16:05:42 - neural_network_search.py - INFO - Folder: wCkgGXAchf has been deleted!
+2021-03-04 16:05:42 - neural_network_search.py - INFO - Whole fitting logic finished used 22.815783739089966 seconds.
+2021-03-04 16:05:42 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.786516.pkl	LogisticRegression-0.79217.pkl	Stacking-0.804196.pkl	SupportVectorMachine-0.790742.pkl	DNN-0.636364.h5	DNN-0.734266.h5	DNN-0.741259.h5	DNN-0.804196.h5
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.49211559538482613).
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.49211559538482613) get score: 0.8101.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=6.0443209379193314).
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: LogisticRegression(C=6.0443209379193314) get score: 0.8436.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:05:43 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:05:43 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:05:43 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:05:43 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.8045.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=0.7576756781084645).
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=0.7576756781084645) get score: 0.8156.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A67BC88>.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A67BC88> get score: 0.6760.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A6BA9E8>.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A6BA9E8> get score: 0.6872.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A614518>.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A614518> get score: 0.7654.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A62CDD8>.
+2021-03-04 16:05:43 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000025A5A62CDD8> get score: 0.8045.
+2021-03-04 16:17:19 - logger - INFO - Start logging for `logger`
+2021-03-04 16:17:19 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:17:20 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:17:20 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:17:20 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:17:20 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:17:21 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:17:21 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 16:17:21 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:17:21 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:17:39 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:17:39 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:17:39 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.785039
+2021-03-04 16:17:39 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.766788
+2021-03-04 16:17:39 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.75557
+2021-03-04 16:17:39 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:17:39 - model_selection.py - INFO - Start to save model: LogisticRegression-0.785039
+2021-03-04 16:17:39 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.766788
+2021-03-04 16:17:40 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.75557
+2021-03-04 16:17:40 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.75557.pkl	LogisticRegression-0.785039.pkl	SupportVectorMachine-0.766788.pkl
+2021-03-04 16:17:40 - pipeline_training.py - INFO - Training pipeline finished takes: 19 seconds.
+2021-03-04 16:17:40 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:17:40 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:17:40 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:17:40 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:17:40 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:17:40 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 16:17:41 - model_ensemble.py - INFO - Stacking model score: 0.811189
+2021-03-04 16:17:41 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:17:41 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:17:41 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:17:41 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:17:41 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:17:41 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:17:41 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:18:10 - neural_network_search.py - INFO - Get best scores are: [0.713287	0.692308	0.692308	0.671329	0.671329]
+2021-03-04 16:18:10 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:18:10 - neural_network_search.py - INFO - Try to clean serach model space folder: FSBKVEXBOp
+2021-03-04 16:18:10 - neural_network_search.py - INFO - Folder: FSBKVEXBOp has been deleted!
+2021-03-04 16:18:10 - neural_network_search.py - INFO - Whole fitting logic finished used 29.645517826080322 seconds.
+2021-03-04 16:18:10 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.75557.pkl	LogisticRegression-0.785039.pkl	Stacking-0.811189.pkl	SupportVectorMachine-0.766788.pkl	DNN-0.671329.h5	DNN-0.692308.h5	DNN-0.713287.h5
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.6234496141442758).
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.6234496141442758) get score: 0.8324.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=1).
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Model: LogisticRegression(C=1) get score: 0.8436.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:18:11 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:18:11 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:18:11 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:18:11 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.8212.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=1.9692041203409492).
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=1.9692041203409492) get score: 0.8156.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001D85DB84B70>.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001D85DB84B70> get score: 0.7374.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001D863279518>.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001D863279518> get score: 0.6872.
+2021-03-04 16:18:11 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001D85DBA3D68>.
+2021-03-04 16:18:12 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001D85DBA3D68> get score: 0.7263.
+2021-03-04 16:20:29 - logger - INFO - Start logging for `logger`
+2021-03-04 16:20:29 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:20:29 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:20:29 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:20:29 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:20:29 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:20:30 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:20:30 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 16:20:30 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:20:30 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:20:51 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:20:51 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:20:51 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.782252
+2021-03-04 16:20:51 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.789284
+2021-03-04 16:20:51 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.772442
+2021-03-04 16:20:51 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:20:51 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.789284
+2021-03-04 16:20:51 - model_selection.py - INFO - Start to save model: LogisticRegression-0.782252
+2021-03-04 16:20:51 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.772442
+2021-03-04 16:20:51 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.772442.pkl	LogisticRegression-0.782252.pkl	SupportVectorMachine-0.789284.pkl
+2021-03-04 16:20:51 - pipeline_training.py - INFO - Training pipeline finished takes: 21 seconds.
+2021-03-04 16:20:51 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:20:51 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:20:51 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:20:51 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:20:51 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:20:51 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 16:20:52 - model_ensemble.py - INFO - Stacking model score: 0.811189
+2021-03-04 16:20:52 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 2 seconds.
+2021-03-04 16:20:52 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:20:52 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:20:52 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:20:52 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:20:52 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:20:52 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:20:59 - neural_network_search.py - INFO - Get best scores are: [0.566434]
+2021-03-04 16:20:59 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:20:59 - neural_network_search.py - INFO - Try to clean serach model space folder: wTzomWeMih
+2021-03-04 16:20:59 - neural_network_search.py - INFO - Folder: wTzomWeMih has been deleted!
+2021-03-04 16:20:59 - neural_network_search.py - INFO - Whole fitting logic finished used 6.8719563484191895 seconds.
+2021-03-04 16:20:59 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.772442.pkl	LogisticRegression-0.782252.pkl	Stacking-0.811189.pkl	SupportVectorMachine-0.789284.pkl	DNN-0.566434.h5
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.7797031642787939, n_estimators=300).
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.7797031642787939, n_estimators=300) get score: 0.8212.
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=0.4446068905084931).
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Model: LogisticRegression(C=0.4446068905084931) get score: 0.8212.
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:21:00 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:21:00 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:21:00 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:21:00 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.8156.
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=0.33529582862644225).
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=0.33529582862644225) get score: 0.8324.
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001ACD0BC8F98>.
+2021-03-04 16:21:00 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001ACD0BC8F98> get score: 0.5251.
+2021-03-04 16:27:47 - logger - INFO - Start logging for `logger`
+2021-03-04 16:27:47 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:27:48 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:27:48 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:27:48 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:27:48 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:27:49 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:27:49 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 16:27:49 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:27:49 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:28:06 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:28:06 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:28:06 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.792091
+2021-03-04 16:28:06 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.776657
+2021-03-04 16:28:06 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.782261
+2021-03-04 16:28:06 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:28:06 - model_selection.py - INFO - Start to save model: LogisticRegression-0.792091
+2021-03-04 16:28:06 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.782261
+2021-03-04 16:28:06 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.776657
+2021-03-04 16:28:06 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.782261.pkl	LogisticRegression-0.792091.pkl	SupportVectorMachine-0.776657.pkl
+2021-03-04 16:28:06 - pipeline_training.py - INFO - Training pipeline finished takes: 18 seconds.
+2021-03-04 16:28:06 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:28:06 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:28:06 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:28:06 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:28:06 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:28:06 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 16:28:07 - model_ensemble.py - INFO - Stacking model score: 0.804196
+2021-03-04 16:28:07 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:28:07 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:28:07 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:28:07 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:28:07 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:28:07 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:28:08 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:28:15 - neural_network_search.py - INFO - Get best scores are: [0.678322]
+2021-03-04 16:28:15 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:28:15 - neural_network_search.py - INFO - Try to clean serach model space folder: pVLSViqrVB
+2021-03-04 16:28:15 - neural_network_search.py - INFO - Folder: pVLSViqrVB has been deleted!
+2021-03-04 16:28:15 - neural_network_search.py - INFO - Whole fitting logic finished used 7.170913457870483 seconds.
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.782261.pkl	LogisticRegression-0.792091.pkl	Stacking-0.804196.pkl	SupportVectorMachine-0.776657.pkl	DNN-0.678322.h5
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.24515963608604416, n_estimators=500).
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.24515963608604416, n_estimators=500) get score: 0.7654.
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=0.34518086467790887).
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Model: LogisticRegression(C=0.34518086467790887) get score: 0.7933.
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:28:15 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:28:15 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:28:15 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:28:15 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.7765.
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=8.130529477524641).
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=8.130529477524641) get score: 0.7933.
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000023D256C1320>.
+2021-03-04 16:28:15 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000023D256C1320> get score: 0.7151.
+2021-03-04 16:34:34 - logger - INFO - Start logging for `logger`
+2021-03-04 16:34:34 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:34:35 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:34:35 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:34:35 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:34:35 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:34:36 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:34:36 - pipeline_training.py - INFO - After processing, data shape: 16
+2021-03-04 16:34:36 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:34:36 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:34:53 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:34:53 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:34:53 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.806195
+2021-03-04 16:34:53 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.804836
+2021-03-04 16:34:53 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.803418
+2021-03-04 16:34:53 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:34:53 - model_selection.py - INFO - Start to save model: LogisticRegression-0.806195
+2021-03-04 16:34:53 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.804836
+2021-03-04 16:34:53 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.803418
+2021-03-04 16:34:53 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.803418.pkl	LogisticRegression-0.806195.pkl	SupportVectorMachine-0.804836.pkl
+2021-03-04 16:34:53 - pipeline_training.py - INFO - Training pipeline finished takes: 17 seconds.
+2021-03-04 16:34:53 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:34:53 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:34:53 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:34:53 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:34:53 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:34:53 - model_ensemble.py - INFO - Before stacking we have data dimention: 16, after stacking we have :19
+2021-03-04 16:34:54 - model_ensemble.py - INFO - Stacking model score: 0.818182
+2021-03-04 16:34:54 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:34:54 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:34:54 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:34:54 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:34:54 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:34:54 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:34:54 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:35:01 - neural_network_search.py - INFO - Get best scores are: [0.65035]
+2021-03-04 16:35:01 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:35:01 - neural_network_search.py - INFO - Try to clean serach model space folder: aYOWYUcWet
+2021-03-04 16:35:01 - neural_network_search.py - INFO - Folder: aYOWYUcWet has been deleted!
+2021-03-04 16:35:01 - neural_network_search.py - INFO - Whole fitting logic finished used 7.1968183517456055 seconds.
+2021-03-04 16:35:01 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.803418.pkl	LogisticRegression-0.806195.pkl	Stacking-0.818182.pkl	SupportVectorMachine-0.804836.pkl	DNN-0.65035.h5
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.38257895538492553, n_estimators=300).
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.38257895538492553, n_estimators=300) get score: 0.7263.
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=4.400517798638183).
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Model: LogisticRegression(C=4.400517798638183) get score: 0.7542.
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:35:02 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:35:02 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:35:02 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:35:02 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.7263.
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=0.5130043862921899).
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=0.5130043862921899) get score: 0.7486.
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x00000249908F52B0>.
+2021-03-04 16:35:02 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x00000249908F52B0> get score: 0.6983.
+2021-03-04 16:39:24 - logger - INFO - Start logging for `logger`
+2021-03-04 16:39:24 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:39:24 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:39:24 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:39:24 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:39:24 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:39:25 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:39:25 - pipeline_training.py - INFO - After processing, data shape: 16
+2021-03-04 16:39:25 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:39:25 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:39:45 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:39:45 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:39:45 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.789333
+2021-03-04 16:39:45 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.780912
+2021-03-04 16:39:45 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.775298
+2021-03-04 16:39:45 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:39:45 - model_selection.py - INFO - Start to save model: LogisticRegression-0.789333
+2021-03-04 16:39:45 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.780912
+2021-03-04 16:39:45 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.775298
+2021-03-04 16:39:45 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.775298.pkl	LogisticRegression-0.789333.pkl	SupportVectorMachine-0.780912.pkl
+2021-03-04 16:39:45 - pipeline_training.py - INFO - Training pipeline finished takes: 19 seconds.
+2021-03-04 16:39:45 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:39:45 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:39:45 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:39:45 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:39:45 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:39:45 - model_ensemble.py - INFO - Before stacking we have data dimention: 16, after stacking we have :19
+2021-03-04 16:39:46 - model_ensemble.py - INFO - Stacking model score: 0.818182
+2021-03-04 16:39:46 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:39:46 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:39:46 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:39:46 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:39:46 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:39:46 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:39:46 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:39:53 - neural_network_search.py - INFO - Get best scores are: [0.433566]
+2021-03-04 16:39:53 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:39:53 - neural_network_search.py - INFO - Try to clean serach model space folder: PnrWowilJQ
+2021-03-04 16:39:53 - neural_network_search.py - INFO - Folder: PnrWowilJQ has been deleted!
+2021-03-04 16:39:53 - neural_network_search.py - INFO - Whole fitting logic finished used 7.000601053237915 seconds.
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.775298.pkl	LogisticRegression-0.789333.pkl	Stacking-0.818182.pkl	SupportVectorMachine-0.780912.pkl	DNN-0.433566.h5
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.7142926264857996, n_estimators=500).
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.7142926264857996, n_estimators=500) get score: 0.7877.
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=1.4559588884567827).
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Model: LogisticRegression(C=1.4559588884567827) get score: 0.8045.
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:39:53 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:39:53 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:39:53 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:39:53 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.7877.
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=0.9699868238487872).
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=0.9699868238487872) get score: 0.7933.
+2021-03-04 16:39:53 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001DFCDB7AEB8>.
+2021-03-04 16:39:54 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001DFCDB7AEB8> get score: 0.4413.
+2021-03-04 16:39:54 - automl.py - INFO - Whole training pipeline takes: 28.37 seconds!
+2021-03-04 16:42:42 - logger - INFO - Start logging for `logger`
+2021-03-04 16:42:42 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:42:43 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:42:43 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:42:43 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:42:43 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:42:44 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:42:44 - pipeline_training.py - INFO - After processing, data shape: 16
+2021-03-04 16:42:44 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:42:44 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:43:02 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:43:02 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:43:02 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.807584
+2021-03-04 16:43:02 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.806205
+2021-03-04 16:43:02 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.809042
+2021-03-04 16:43:02 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:43:02 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.809042
+2021-03-04 16:43:02 - model_selection.py - INFO - Start to save model: LogisticRegression-0.807584
+2021-03-04 16:43:02 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.806205
+2021-03-04 16:43:02 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.809042.pkl	LogisticRegression-0.807584.pkl	SupportVectorMachine-0.806205.pkl
+2021-03-04 16:43:02 - pipeline_training.py - INFO - Training pipeline finished takes: 18 seconds.
+2021-03-04 16:43:02 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:43:02 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:43:02 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:43:02 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:43:02 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:43:02 - model_ensemble.py - INFO - Before stacking we have data dimention: 16, after stacking we have :19
+2021-03-04 16:43:03 - model_ensemble.py - INFO - Stacking model score: 0.825175
+2021-03-04 16:43:03 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:43:03 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:43:03 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:43:03 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:43:03 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:43:03 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:43:03 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:43:11 - neural_network_search.py - INFO - Get best scores are: [0.797203]
+2021-03-04 16:43:11 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:43:11 - neural_network_search.py - INFO - Try to clean serach model space folder: hohNfuyBLh
+2021-03-04 16:43:11 - neural_network_search.py - ERROR - To delete search project hohNfuyBLh get error: [WinError 145] The directory is not empty: 'C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\\tmp\\hohNfuyBLh\\trial_797fa4b2ad0a4249b6eb55117411b67e\\checkpoints'
+2021-03-04 16:43:40 - logger - INFO - Start logging for `logger`
+2021-03-04 16:43:40 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:43:41 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:43:41 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:43:41 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:43:41 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:43:42 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:43:42 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 16:43:42 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:43:42 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:44:00 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:44:00 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:44:00 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.800522
+2021-03-04 16:44:00 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.808953
+2021-03-04 16:44:00 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.797715
+2021-03-04 16:44:00 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:44:00 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.808953
+2021-03-04 16:44:00 - model_selection.py - INFO - Start to save model: LogisticRegression-0.800522
+2021-03-04 16:44:00 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.797715
+2021-03-04 16:44:00 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.797715.pkl	LogisticRegression-0.800522.pkl	SupportVectorMachine-0.808953.pkl
+2021-03-04 16:44:00 - pipeline_training.py - INFO - Training pipeline finished takes: 18 seconds.
+2021-03-04 16:44:00 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:44:00 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:44:00 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:44:00 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:44:00 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:44:00 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 16:44:01 - model_ensemble.py - INFO - Stacking model score: 0.825175
+2021-03-04 16:44:01 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:44:01 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:44:01 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:44:01 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:44:01 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:44:01 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:44:01 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:44:08 - neural_network_search.py - INFO - Get best scores are: [0.678322]
+2021-03-04 16:44:08 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:44:08 - neural_network_search.py - INFO - Try to clean serach model space folder: GFdRRxHbgK
+2021-03-04 16:44:08 - neural_network_search.py - INFO - Folder: GFdRRxHbgK has been deleted!
+2021-03-04 16:44:08 - neural_network_search.py - INFO - Whole fitting logic finished used 7.22869873046875 seconds.
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.797715.pkl	LogisticRegression-0.800522.pkl	Stacking-0.825175.pkl	SupportVectorMachine-0.808953.pkl	DNN-0.678322.h5
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.3619271777815047).
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.3619271777815047) get score: 0.7542.
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=6.113923674248892).
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Model: LogisticRegression(C=6.113923674248892) get score: 0.7374.
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:44:08 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:44:08 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:44:08 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:44:08 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.7598.
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=0.6675493662664529).
+2021-03-04 16:44:08 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=0.6675493662664529) get score: 0.7486.
+2021-03-04 16:44:09 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000020D055D7320>.
+2021-03-04 16:44:09 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000020D055D7320> get score: 0.5810.
+2021-03-04 16:44:09 - automl.py - INFO - Whole training pipeline takes: 26.9 seconds!
+2021-03-04 16:45:32 - logger - INFO - Start logging for `logger`
+2021-03-04 16:45:33 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:45:33 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:45:33 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:45:33 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:45:33 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:45:34 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:45:34 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 16:45:34 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:45:34 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:45:53 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:45:53 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:45:53 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.785108
+2021-03-04 16:45:53 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.794918
+2021-03-04 16:45:53 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.783699
+2021-03-04 16:45:53 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:45:53 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.794918
+2021-03-04 16:45:53 - model_selection.py - INFO - Start to save model: LogisticRegression-0.785108
+2021-03-04 16:45:53 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.783699
+2021-03-04 16:45:53 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.783699.pkl	LogisticRegression-0.785108.pkl	SupportVectorMachine-0.794918.pkl
+2021-03-04 16:45:53 - pipeline_training.py - INFO - Training pipeline finished takes: 18 seconds.
+2021-03-04 16:45:53 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:45:53 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:45:53 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:45:53 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:45:53 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:45:53 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 16:45:54 - model_ensemble.py - INFO - Stacking model score: 0.825175
+2021-03-04 16:45:54 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:45:54 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:45:54 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:45:54 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:45:54 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:45:54 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:45:54 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:46:01 - neural_network_search.py - INFO - Get best scores are: [0.713287]
+2021-03-04 16:46:01 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:46:01 - neural_network_search.py - INFO - Try to clean serach model space folder: ZsjnwaOMyn
+2021-03-04 16:46:01 - neural_network_search.py - INFO - Folder: ZsjnwaOMyn has been deleted!
+2021-03-04 16:46:01 - neural_network_search.py - INFO - Whole fitting logic finished used 7.3374083042144775 seconds.
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.783699.pkl	LogisticRegression-0.785108.pkl	Stacking-0.825175.pkl	SupportVectorMachine-0.794918.pkl	DNN-0.713287.h5
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.922727151688871, n_estimators=300).
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.922727151688871, n_estimators=300) get score: 0.7765.
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=2.9567251778371464).
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Model: LogisticRegression(C=2.9567251778371464) get score: 0.8045.
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:46:01 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:46:02 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:46:02 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:46:02 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:46:02 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:46:02 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.7765.
+2021-03-04 16:46:02 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=0.16987023433198134).
+2021-03-04 16:46:02 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=0.16987023433198134) get score: 0.7877.
+2021-03-04 16:46:02 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000016DAEBC2A90>.
+2021-03-04 16:46:02 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000016DAEBC2A90> get score: 0.6145.
+2021-03-04 16:46:02 - automl.py - INFO - Model name                         |Train score                        |Validation score                   
+2021-03-04 16:46:02 - automl.py - INFO - LogisticRegression-0.785108.pkl    |0.785108                           |0.804469                           
+2021-03-04 16:46:02 - automl.py - INFO - SupportVectorMachine-0.794918.pkl  |0.794918                           |0.787709                           
+2021-03-04 16:46:02 - automl.py - INFO - GradientBoostingTree-0.783699.pkl  |0.783699                           |0.776536                           
+2021-03-04 16:46:02 - automl.py - INFO - Stacking-0.825175.pkl              |0.825175                           |0.776536                           
+2021-03-04 16:46:02 - automl.py - INFO - DNN-0.713287.h5                    |0.713287                           |0.614525                           
+2021-03-04 16:46:02 - automl.py - INFO - Whole training pipeline takes: 27.71 seconds!
+2021-03-04 16:47:29 - logger - INFO - Start logging for `logger`
+2021-03-04 16:47:29 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:47:29 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:47:30 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:47:30 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:47:30 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:47:31 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:47:31 - pipeline_training.py - INFO - After processing, data shape: 16
+2021-03-04 16:47:31 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:47:31 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:47:50 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:47:50 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:47:50 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.792229
+2021-03-04 16:47:50 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.795065
+2021-03-04 16:47:50 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.776805
+2021-03-04 16:47:50 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:47:50 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.795065
+2021-03-04 16:47:50 - model_selection.py - INFO - Start to save model: LogisticRegression-0.792229
+2021-03-04 16:47:50 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.776805
+2021-03-04 16:47:50 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.776805.pkl	LogisticRegression-0.792229.pkl	SupportVectorMachine-0.795065.pkl
+2021-03-04 16:47:50 - pipeline_training.py - INFO - Training pipeline finished takes: 19 seconds.
+2021-03-04 16:47:50 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:47:50 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:47:50 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:47:50 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:47:50 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:47:50 - model_ensemble.py - INFO - Before stacking we have data dimention: 16, after stacking we have :19
+2021-03-04 16:47:51 - model_ensemble.py - INFO - Stacking model score: 0.755245
+2021-03-04 16:47:51 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:47:51 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:47:51 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:47:51 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:47:51 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:47:51 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:47:51 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:47:59 - neural_network_search.py - INFO - Get best scores are: [0.552448]
+2021-03-04 16:47:59 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:48:00 - neural_network_search.py - INFO - Try to clean serach model space folder: wMvmDGbplh
+2021-03-04 16:48:00 - neural_network_search.py - INFO - Folder: wMvmDGbplh has been deleted!
+2021-03-04 16:48:00 - neural_network_search.py - INFO - Whole fitting logic finished used 8.753616094589233 seconds.
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.776805.pkl	LogisticRegression-0.792229.pkl	Stacking-0.755245.pkl	SupportVectorMachine-0.795065.pkl	DNN-0.552448.h5
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.8189201272211881, n_estimators=300).
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.8189201272211881, n_estimators=300) get score: 0.7989.
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=0.15043492273778475).
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Model: LogisticRegression(C=0.15043492273778475) get score: 0.7821.
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:48:00 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:48:00 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:48:00 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:48:00 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.7877.
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=3.8130037062859126).
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=3.8130037062859126) get score: 0.7821.
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001F3289F51D0>.
+2021-03-04 16:48:00 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x000001F3289F51D0> get score: 0.6816.
+2021-03-04 16:48:00 - automl.py - INFO - Model name                         |Train score                        |Validation score                   
+2021-03-04 16:48:00 - automl.py - INFO - GradientBoostingTree-0.776805.pkl  |0.776805                           |0.798883                           
+2021-03-04 16:48:00 - automl.py - INFO - Stacking-0.755245.pkl              |0.755245                           |0.787709                           
+2021-03-04 16:48:00 - automl.py - INFO - LogisticRegression-0.792229.pkl    |0.792229                           |0.782123                           
+2021-03-04 16:48:00 - automl.py - INFO - SupportVectorMachine-0.795065.pkl  |0.795065                           |0.782123                           
+2021-03-04 16:48:00 - automl.py - INFO - DNN-0.552448.h5                    |0.552448                           |0.681564                           
+2021-03-04 16:48:00 - automl.py - INFO - Whole training pipeline takes: 29.77 seconds!
+2021-03-04 16:48:49 - logger - INFO - Start logging for `logger`
+2021-03-04 16:48:49 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:48:49 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:48:49 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:48:49 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:48:49 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:48:49 - automl.py - ERROR - Error load data file: train.csv from path: .\auto_ml\test
+2021-03-04 16:49:58 - logger - INFO - Start logging for `logger`
+2021-03-04 16:49:58 - model_selection.py - INFO - Start logging for `model_selection.py`
+2021-03-04 16:49:59 - model_ensemble.py - INFO - Start logging for `model_ensemble.py`
+2021-03-04 16:49:59 - neural_network_search.py - INFO - Start logging for `neural_network_search.py`
+2021-03-04 16:49:59 - pipeline_training.py - INFO - Start logging for `pipeline_training.py`
+2021-03-04 16:49:59 - automl.py - INFO - Start logging for `automl.py`
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Start Model Pipeline training!
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Before processing, data shape: 11
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Whole process pipeline steps: Imputation	OnehotEncoding	Standard	PrincipalComponentAnalysis
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Start to do pre-processing step.
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Start to transform training data.
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Start to save the processor object and processed data into disk.
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Start to save processed data into disk!
+2021-03-04 16:50:00 - logger - INFO - Dataset: processed_data has been saved into: C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder\tmp\processed_data.csv
+2021-03-04 16:50:00 - pipeline_training.py - INFO - After processing, data shape: 17
+2021-03-04 16:50:00 - pipeline_training.py - INFO - Start to do pipeline training step.
+2021-03-04 16:50:00 - model_selection.py - INFO - Start to train model based on whole cores.
+2021-03-04 16:50:18 - model_selection.py - INFO - Model selection training has finished.
+2021-03-04 16:50:18 - model_selection.py - INFO - Get some best model scores information based on model_selection module.
+2021-03-04 16:50:18 - model_selection.py - INFO - Algorithm: LogisticRegression with score: 0.786457
+2021-03-04 16:50:18 - model_selection.py - INFO - Algorithm: SupportVectorMachine with score: 0.790702
+2021-03-04 16:50:18 - model_selection.py - INFO - Algorithm: GradientBoostingTree with score: 0.799123
+2021-03-04 16:50:18 - model_selection.py - INFO - Start to save best selected models into disk.
+2021-03-04 16:50:18 - model_selection.py - INFO - Start to save model: GradientBoostingTree-0.799123
+2021-03-04 16:50:18 - model_selection.py - INFO - Start to save model: SupportVectorMachine-0.790702
+2021-03-04 16:50:18 - model_selection.py - INFO - Start to save model: LogisticRegression-0.786457
+2021-03-04 16:50:18 - model_selection.py - INFO - Already have saved models: GradientBoostingTree-0.799123.pkl	LogisticRegression-0.786457.pkl	SupportVectorMachine-0.790702.pkl
+2021-03-04 16:50:18 - pipeline_training.py - INFO - Training pipeline finished takes: 18 seconds.
+2021-03-04 16:50:18 - pipeline_training.py - INFO - We are going to use `ensemble` logic to combine models!
+2021-03-04 16:50:18 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:50:18 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:50:18 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:50:18 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:50:18 - model_ensemble.py - INFO - Before stacking we have data dimention: 17, after stacking we have :20
+2021-03-04 16:50:19 - model_ensemble.py - INFO - Stacking model score: 0.846154
+2021-03-04 16:50:19 - pipeline_training.py - INFO - `Ensemble` training pipeline finished takes: 1 seconds.
+2021-03-04 16:50:19 - pipeline_training.py - INFO - End Model Pipeline training.
+2021-03-04 16:50:19 - pipeline_training.py - INFO - Start to use Nueral Network to fit data with `tuner`!
+2021-03-04 16:50:19 - neural_network_search.py - INFO - Get 2 classes problem.
+2021-03-04 16:50:19 - neural_network_search.py - INFO - Start to get model instance for algorithms: [DNN]
+2021-03-04 16:50:19 - neural_network_search.py - INFO - Start to use search algorithm: RandomSearch to find models.
+2021-03-04 16:50:19 - neural_network_search.py - INFO - Start to search neural network models.
+2021-03-04 16:50:46 - neural_network_search.py - INFO - Get best scores are: [0.755245	0.643357	0.629371	0.629371	0.622378]
+2021-03-04 16:50:46 - neural_network_search.py - INFO - Start to save best trained nueral networks models into disk.
+2021-03-04 16:50:46 - neural_network_search.py - INFO - Try to clean serach model space folder: iVoPhgPnfX
+2021-03-04 16:50:47 - neural_network_search.py - INFO - Folder: iVoPhgPnfX has been deleted!
+2021-03-04 16:50:47 - neural_network_search.py - INFO - Whole fitting logic finished used 27.239858865737915 seconds.
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Finished Nueral Network search logic!
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Get model list: GradientBoostingTree-0.799123.pkl	LogisticRegression-0.786457.pkl	Stacking-0.846154.pkl	SupportVectorMachine-0.790702.pkl	DNN-0.622378.h5	DNN-0.629371.h5	DNN-0.643357.h5	DNN-0.755245.h5
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree(learning_rate=0.29363525080363245).
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Model: GradientBoostingTree(learning_rate=0.29363525080363245) get score: 0.8101.
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Start to get model score for model: LogisticRegression(C=0.6926653226469012).
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Model: LogisticRegression(C=0.6926653226469012) get score: 0.8045.
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Get `Ensemble` processing data to get score for testing data.
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Start to get model score for model: GradientBoostingTree().
+2021-03-04 16:50:47 - model_ensemble.py - INFO - Start to get trained model prediction for `stacking`
+2021-03-04 16:50:47 - model_ensemble.py - INFO - To get prediction for estimator: GradientBoostingTree
+2021-03-04 16:50:47 - model_ensemble.py - INFO - To get prediction for estimator: LogisticRegression
+2021-03-04 16:50:47 - model_ensemble.py - INFO - To get prediction for estimator: SupportVectorMachine
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Model: GradientBoostingTree() get score: 0.8045.
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Start to get model score for model: SupportVectorMachine(C=0.6114583911894057).
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Model: SupportVectorMachine(C=0.6114583911894057) get score: 0.7877.
+2021-03-04 16:50:47 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E90680898>.
+2021-03-04 16:50:48 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E90680898> get score: 0.6816.
+2021-03-04 16:50:48 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E906755F8>.
+2021-03-04 16:50:48 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E906755F8> get score: 0.6089.
+2021-03-04 16:50:48 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E906860B8>.
+2021-03-04 16:50:48 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E906860B8> get score: 0.6648.
+2021-03-04 16:50:48 - pipeline_training.py - INFO - Start to get model score for model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E95CF50F0>.
+2021-03-04 16:50:48 - pipeline_training.py - INFO - Model: <tensorflow.python.keras.engine.sequential.Sequential object at 0x0000018E95CF50F0> get score: 0.7765.
+2021-03-04 16:50:48 - automl.py - INFO - Model name                         |Train score                        |Validation score                   
+2021-03-04 16:50:48 - automl.py - INFO - GradientBoostingTree-0.799123.pkl  |0.799123                           |0.810056                           
+2021-03-04 16:50:48 - automl.py - INFO - LogisticRegression-0.786457.pkl    |0.786457                           |0.804469                           
+2021-03-04 16:50:48 - automl.py - INFO - Stacking-0.846154.pkl              |0.846154                           |0.804469                           
+2021-03-04 16:50:48 - automl.py - INFO - SupportVectorMachine-0.790702.pkl  |0.790702                           |0.787709                           
+2021-03-04 16:50:48 - automl.py - INFO - DNN-0.755245.h5                    |0.755245                           |0.776536                           
+2021-03-04 16:50:48 - automl.py - INFO - DNN-0.622378.h5                    |0.622378                           |0.681564                           
+2021-03-04 16:50:48 - automl.py - INFO - DNN-0.643357.h5                    |0.643357                           |0.664804                           
+2021-03-04 16:50:48 - automl.py - INFO - DNN-0.629371.h5                    |0.629371                           |0.608939                           
+2021-03-04 16:50:48 - automl.py - INFO - Whole training pipeline takes: 47.96 seconds!

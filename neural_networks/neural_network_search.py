@@ -196,7 +196,7 @@ class ModelSearch:
     Main class for caller class to find best models.
     """
     def __init__(self, objective='val_accuracy', 
-                    max_trials=1, 
+                    max_trials=10, 
                     executions_per_trial=1, 
                     directory=None, 
                     project_name=None, 

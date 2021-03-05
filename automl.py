@@ -8,6 +8,7 @@ author: Guangqiang.lu
 
 import numpy as np
 import pandas as pd
+import time
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import train_test_split
@@ -194,6 +195,8 @@ class ClassificationAutoML(AutoML):
         :param n_jobs: how many cores to use
         :return:
         """
+        start_time = time.time()
+
         if file_load is None and xtrain is None and ytrain is None:
             raise ValueError("When do real training, please provide at least a " +
                  "`file_load` or train data with `xtrain, ytrain`!")
@@ -202,8 +205,11 @@ class ClassificationAutoML(AutoML):
             # with container, then just query the attribute then we could keep other as same.
             xtrain, ytrain = file_load.data, file_load.label
 
-        if val_split is None:
-            # Here I think if and only if the data length is over a threashold, then to do validation.
+        if val_split is not None:
+            # if do need to do validation based on current train data, then just split current data into validation as well
+            xtrain, xval, ytrain, yval = train_test_split(xtrain, ytrain, test_size=val_split)
+        else:
+            # Here I think if and only if the data length is over a threashold, then to do validation,even user haven't provided val data.
             if len(xtrain) > VALIDATION_THRESHOLD:
                 val_split = .2
                 # if do need to do validation based on current train data, then just split current data into validation as well
@@ -220,18 +226,43 @@ class ClassificationAutoML(AutoML):
         self.models_list = self._load_trained_models_ordered_by_score(higher_best=True)
 
         self._validation_models(xval, yval)
+
+        logger.info("Whole training pipeline takes: {} seconds!".format(round(time.time() - start_time, 2)))
     
     def _validation_models(self, xval, yval):
         if xval is not None and yval is not None:
             score_dict = self.estimator.get_sorted_models_scores(xval, yval)
+            print(score_dict)
             
-            score_log_str = ""
-            for model_name, model_score in score_dict.items():
-                score_log_str += ''.join(['\t', model_name, " : ", str(model_score)])
-            logger.info("Get validation score: {}".format(score_log_str))
+            score_log_str = self.__format_trained_model_scores(score_dict)
+            print(score_log_str)
         else:
             logger.warning("No need to validation!")
             pass
+
+    @staticmethod
+    def __format_trained_model_scores(score_dict, n_space=35):
+        out_str_format = '{{0:{0}}}|{{1:{0}}}|{{2:{0}}}'.format(n_space)
+
+        score_log_str = out_str_format.format("Model name", "Train score", "Validation score")
+        logger.info(score_log_str)
+
+        for model_name, test_score in score_dict.items():
+            model_name_split = model_name.split('-')
+            # model_name = model_name_split[0]
+            train_score = model_name_split[1]
+            train_score = train_score[:train_score.rindex(".")]
+            # must convert to str, otherwise with not wanted result.
+            test_score = str(test_score)
+            
+            log_str = out_str_format.format(model_name, train_score, test_score)
+            score_log_str += '\n' + log_str
+
+            logger.info(log_str)
+        
+        return score_log_str
+            
+
 
     def get_sorted_models_scores(self, file_load=None, xtest=None, ytest=None, **kwargs):
         """
@@ -323,7 +354,7 @@ class FileLoad:
             raise ValueError("Currently only support CSV file! Please provide with a CSV file.")
         self.file_name = file_name
         self.file_sep = file_sep
-        self.file_path = file_path
+        self.file_path = file_path if file_path is not None else '.'
         self.label_name = label_name
         self.use_for_pred = use_for_pred
         self.service_account_file_name = service_account_file_name
@@ -386,7 +417,7 @@ class FileLoad:
         file_path = self.file_path
 
         if file_location == 'gcs':
-            logger.info("Start to download file from GCS.")
+            logger.info("Start to download file:{} from GCS.".format(self.file_name))
             self._get_gcs_file()
             file_path = TMP_FOLDER 
             logger.info("Download file from GCS has finished.")
@@ -447,13 +478,16 @@ if __name__ == '__main__':
 
     # Test with `FileLoad` class
     file_name = 'train.csv'
-    # file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\test"
-    file_path = "gs://cloud_sch_test"
+    file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\test"
+    # file_path = "gs://cloud_sch_test"
     service_account_file_path = r"C:\Users\guangqiiang.lu\Downloads"
     service_account_name = "buoyant-sum-302208-4542dcd74629.json"
 
-    file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived', 
-        service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
+    # file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived', 
+    #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
+        
+    file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
+
     data, label = file_load.data, file_load.label
 
     print("data shape and label shape:", data.shape, label.shape)
@@ -471,8 +505,13 @@ if __name__ == '__main__':
     # # get model score
     # print(auto_cl.get_sorted_models_scores(xtest, ytest))
 
-    file_load_pred = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived', use_for_pred=True,
+    test_file_name = 'test.csv'
+
+    file_load_pred = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', use_for_pred=True,
         service_account_file_name=service_account_name, service_account_file_path=service_account_file_path, except_columns='Survived')
+
+    # file_load_score = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', 
+    #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
 
     print(auto_cl.models_list)
     # print(auto_cl.score(file_load_pred))
@@ -481,8 +520,21 @@ if __name__ == '__main__':
     print('*'*20)
     print(auto_cl.predict_proba(file_load_pred)[:10])
 
-    print('*' * 20)
-    print(auto_cl.score(file_load))
+    # print('*' * 20)
+    # print(auto_cl.score(file_load_score))
 
-    # get model score
-    print(auto_cl.get_sorted_models_scores(file_load))
+    # # get model score
+    # print(auto_cl.get_sorted_models_scores(file_load_score))
+
+    # This is used for the submition for Kaggle
+    pred_data = pd.read_csv(os.path.join(file_path, test_file_name))
+
+    pass_id_df = pred_data[['PassengerId']]
+
+    prediction = auto_cl.predict(file_load_pred)
+    pred_df = pd.DataFrame(prediction, columns=['Survived'])
+
+    pred_df = pd.concat([pass_id_df, pred_df], axis=1)
+
+    pred_df.to_csv(os.path.join(file_path,"Submition_with_automl.csv"), index=False)
+

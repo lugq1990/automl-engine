@@ -8,6 +8,7 @@ Here is the classifier real training happens here.
 @author: Guangqiang.lu
 """
 import numpy as np
+import time
 from sklearn.model_selection import GridSearchCV
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import create_logger
@@ -90,7 +91,14 @@ class GridSearchModel(object):
             # to do training sequence for each training estimator
             logger.info("Start to train model based on whole cores.")
             for estimator in self.estimator_list:
+                start_time = time.time()
+
                 estimator.fit(x, y)
+
+                # Add training info, so that we could get better understanding while training happens.
+                # Must be `estimator.estimator.name` as estimator is s warpper for each instance.
+                logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator.estimator.name, round(time.time() - start_time, 2)))
+
         elif n_jobs:
             # here couldn't use multiprocessing here, just to set
             # estimator `n_job`

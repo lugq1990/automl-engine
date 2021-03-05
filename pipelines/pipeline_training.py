@@ -308,12 +308,14 @@ class PipelineTrain(Pipeline):
             else:
                 score = self._get_model_score(model_instance, x, y, scorer)
 
+            score = round(score, 6)
+
             score_dict[model_name] = score
 
         if not score_dict:
             logger.error("When to get model score, we haven't get any score, please check current func:`get_sorted_models_scores`!")
             raise ValueError("When to get model score, we haven't get any score, please check current func:`get_sorted_models_scores`!")
-        
+
         # based on parameter: `reverse`
         score_dict ={k: v for k, v in sorted(score_dict.items(),  key=lambda x: x[1], reverse=reverse)}
 
@@ -522,6 +524,9 @@ class ClassificationPipeline(PipelineTrain):
         self.training_pipeline = GridSearchModel()
 
         algorithms_instance_list = self._get_algorithms_instance_list()
+
+        logger.info("Get training algorithms: {}".format([al_instance.name for al_instance in algorithms_instance_list]))
+
         for algorithm_instance in algorithms_instance_list:
             self.training_pipeline.add_estimator(algorithm_instance)
 
@@ -625,6 +630,8 @@ if __name__ == '__main__':
 
     x, y = get_training_data()
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
+
+    train_df = pd.read_csv("")
 
     classifier_pipeline.fit(xtrain, ytrain)
     print("Model score: ", classifier_pipeline.score(xtest, ytest))
