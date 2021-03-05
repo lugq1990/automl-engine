@@ -39,6 +39,8 @@ Then we could get whole trained models' evaluation score for each trained model 
 If we want to use GCP cloud storage as a data source for train and test data, what needed is just get the service account file with proper authority, last is just provide with parameter: `service_account_name` and file local path: `service_account_file_path` to `FileLoad` object, then training will start automatically.
 
 ```python
+file_name="train.csv"
+file_path = "gs://bucket_name"
 service_account_name = "service_account.json"
 service_account_file_path = r"C:\auto_ml\test"
 
@@ -46,7 +48,7 @@ file_load = FileLoad(file_name, file_path, label_name='Survived',
     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
 ```
 
-If we have data in memory, we could also use memory objects to train, test and predict with `auto_ml` object, just like `scikit-learn`.
+If we have data `in memory`, we could also use memory objects to train, test and predict with `auto_ml` object, just like `scikit-learn`.
 
 ```python
 from sklearn.datasets import load_iris

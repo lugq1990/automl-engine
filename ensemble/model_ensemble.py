@@ -29,7 +29,7 @@ class ModelEnsemble(ClassifierClass):
     regression: weight multiple)
     stacking(add trained model prediction into training data)
     """
-    def __init__(self, task_type='classification', ensemble_alg='voting',
+    def __init__(self, backend, task_type='classification', ensemble_alg='voting',
                  voting_logic='soft'):
         """
         Based on different task to do different logic.
@@ -37,11 +37,16 @@ class ModelEnsemble(ClassifierClass):
         :param ensemble_alg: which ensemble logic to use: `voting` or `stacking`.
         :param voting_logic: whether with `hard` or `soft` voting
         """
+        super().__init__()
         self.task_type = task_type
         self.ensemble_alg = ensemble_alg
         self.voting_logic = voting_logic
         # To load and save models
-        self.backend = Backend()
+        # self.backend = backend if backend is not None else Backend()
+        if backend is None:
+            raise ValueError("When to use Model Ensemble class, we get a None `backend` object! Please check!")
+        self.backend = backend
+
         self.model_list = self._load_trained_models()
         # define matrics based on task
         self.metrics = None
@@ -117,7 +122,7 @@ class ModelEnsemble(ClassifierClass):
         :return:
         """
         # first should create new dataset.
-        x_new = self.create_stacking_dataset(x)
+        x_new = self.create_stacking_dataset(x, backend=self.backend)
 
         logger.info("Before stacking we have data dimention: {}, "
                     "after stacking we have :{}".format(x.shape[1], x_new.shape[1]))
@@ -128,10 +133,11 @@ class ModelEnsemble(ClassifierClass):
         # as we want to avoid to load the pipeline instance...
         best_estimator_name = self._get_best_model_estimator_name_based_on_yaml()
 
-        print("estaimator name:", best_estimator_name)
-        self.estimator = ClassifierFactory.get_algorithm_instance(best_estimator_name)
+        logger.info("Get estaimator {} for stacking logic.".format(best_estimator_name))
+        # As return is a list, but here we just need `one instance` for combined dataset
+        self.estimator = ClassifierFactory.get_algorithm_instance(best_estimator_name)[0]
 
-        print("get estimator ", self.estimator)
+        logger.info("Loaded {} instance for `stacking` training.".format(best_estimator_name))
         # start training step for `stacking`
         self.estimator.fit(x_new, y)
 
@@ -218,7 +224,7 @@ class ModelEnsemble(ClassifierClass):
         return model_list_without_score
 
     @classmethod
-    def create_stacking_dataset(cls, x, task_type='classification', ensemble_alg='stacking'):
+    def create_stacking_dataset(cls, x, backend, task_type='classification', ensemble_alg='stacking'):
         """
         What I want is to create the new dataset based on the whole instances for `stacking`.
 
@@ -230,7 +236,7 @@ class ModelEnsemble(ClassifierClass):
         :param ensemble_alg:
         :return:
         """
-        model_ensemble = cls(task_type=task_type, ensemble_alg=ensemble_alg)
+        model_ensemble = cls(backend=backend, task_type=task_type, ensemble_alg=ensemble_alg)
 
         # we don't need to care about `model_list_without_score` has instance or not, as parent does this.
         n_estimators = len(model_ensemble.model_list_without_score)

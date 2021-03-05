@@ -23,7 +23,7 @@ class GridSearchModel(object):
     of estimators and their parameters list.
     I want to make this class to do real training part.
     """
-    def __init__(self):
+    def __init__(self, backend, n_best_model=None):
         """
         self.estimator_list is like: [GridSearchCV(lr, params), ...]
         self.score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
@@ -31,10 +31,12 @@ class GridSearchModel(object):
         super(GridSearchModel, self).__init__()
         # as we need to do training, so here will just store the trained best model
         # for later step ensemble
-        self.backend = Backend()
+        if backend is None:
+            raise ValueError("When to use Model Ensemble class, we get a None `backend` object! Please check!")
+        self.backend = backend 
         self.estimator_list = []
         self.score_dict = {}
-        self.n_best_model = 10
+        self.n_best_model = 10 if n_best_model is not None else n_best_model
 
     def add_estimator(self, estimator, estimator_params=None):
         """

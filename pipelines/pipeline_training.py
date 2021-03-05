@@ -15,7 +15,9 @@ dump whole trained models.
 """
 import time
 import numpy as np
+import pandas as pd
 from sklearn.pipeline import Pipeline
+from tensorflow.keras import models
 
 from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.backend_obj import Backend
@@ -51,7 +53,8 @@ class PipelineTrain(Pipeline):
                  max_feature_num=20,
                  use_ensemble=True,
                  ensemble_alg='stacking',
-                 voting_logic='soft'
+                 voting_logic='soft',
+                 backend=None
                  ):
         self.include_estimators = include_estimators
         self.exclude_estimators = exclude_estimators
@@ -70,7 +73,10 @@ class PipelineTrain(Pipeline):
         self.training_pipeline = None
         self.algorithms_config = load_yaml_file()
         self.processor_config = load_yaml_file('default_processor.yml')['default']
-        self.backend = Backend()
+
+        # self.backend = backend if backend is not None else Backend()
+        self.backend = backend
+
         # `ensemble` related
         self.use_ensemble = use_ensemble
         self.ensemble_alg = ensemble_alg
@@ -188,6 +194,7 @@ class PipelineTrain(Pipeline):
 
         # To save the trained model and transformed dataset into disk.
         logger.info("Start to save the processor object and processed data into disk.")
+
         self.backend.save_model(self.processing_pipeline, 'processing_pipeline')
 
         # This is to save processed data into disk, so should be in tmp folder.
@@ -221,7 +228,7 @@ class PipelineTrain(Pipeline):
 
             # `fit` related func like validation and save models are warpped in `fit` func, 
             # here just `fit`
-            neural_model = ModelSearch() 
+            neural_model = ModelSearch(models_path=self.backend.output_folder) 
             neural_model.fit(x, y)  
 
             logger.info("Finished Nueral Network search logic!") 
@@ -365,7 +372,7 @@ class PipelineTrain(Pipeline):
             # When we do real processing for `stacking`, new created dataset should happen here.
             if model_name is not None:
                 if model_name.lower().startswith('stacking'):
-                    x = ModelEnsemble.create_stacking_dataset(x)
+                    x = ModelEnsemble.create_stacking_dataset(x, backend=self.backend)
                 else:
                     raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
 
@@ -447,8 +454,7 @@ class PipelineTrain(Pipeline):
 
             return steps_str
 
-    @staticmethod
-    def _fit_ensemble(data, label, **kwargs):
+    def _fit_ensemble(self, data, label, **kwargs):
         """
         Based on trained models to do model ensemble logic to try to get better model.
 
@@ -465,7 +471,7 @@ class PipelineTrain(Pipeline):
             ensemble_alg = 'stacking'
             voting_logic = 'soft'
 
-        model_ensemble = ModelEnsemble(ensemble_alg=ensemble_alg, voting_logic=voting_logic)
+        model_ensemble = ModelEnsemble(backend=self.backend, ensemble_alg=ensemble_alg, voting_logic=voting_logic)
 
         try:
             # in fact with `training`, then the model will be saved into disk directly.
@@ -507,8 +513,8 @@ class ClassificationPipeline(PipelineTrain):
     Classification pipeline class that we could use as a `pipeline`,
     also the `ensemble` logic should happen here.
     """
-    def __init__(self):
-        super(ClassificationPipeline, self).__init__()
+    def __init__(self, backend=None):
+        super(ClassificationPipeline, self).__init__(backend=backend)
 
     def build_training_pipeline(self):
         """
@@ -521,7 +527,7 @@ class ClassificationPipeline(PipelineTrain):
         :return:
         """
         # This should be lazy part.
-        self.training_pipeline = GridSearchModel()
+        self.training_pipeline = GridSearchModel(backend=self.backend)
 
         algorithms_instance_list = self._get_algorithms_instance_list()
 
@@ -613,7 +619,12 @@ if __name__ == '__main__':
 
     x, y = load_iris(return_X_y=True)
 
-    classifier_pipeline = ClassificationPipeline()
+    from auto_ml.utils.backend_obj import Backend
+
+    models_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\tmp_folder\tmp\models_folder_test"
+    backend = Backend(output_folder=models_path)
+
+    classifier_pipeline = ClassificationPipeline(backend=backend)
     # print(classifier_pipeline)
 
     # grid_models = classifier_pipeline.build_training_pipeline()
@@ -631,7 +642,7 @@ if __name__ == '__main__':
     x, y = get_training_data()
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
 
-    train_df = pd.read_csv("")
+    # train_df = pd.read_csv("")
 
     classifier_pipeline.fit(xtrain, ytrain)
     print("Model score: ", classifier_pipeline.score(xtest, ytest))

@@ -107,21 +107,6 @@ class DNNSearch(SearchModel):
         return model
 
 
-def save_keras_model(model, model_name, model_path=None, model_name_suffix='.h5'):
-    if not model_name.endswith(model_name_suffix):
-        model_name += model_name_suffix
-
-    if not model_path:
-        # let's try to save the model into default folder.
-        model_path = OUTPUT_FOLDER
-
-    try:
-        model.save(os.path.join(model_path, model_name))
-
-    except Exception as e:
-        raise IOError("When try to save model: {} get error: {}".format(model_name, e))
-
-
 class EvaluateNeuralModel:
     def __init__(self, model_list, x, y, algorithm_name='DNN'):
         self.model_list= model_list if isinstance(model_list, list) else [model_list]
@@ -145,7 +130,7 @@ class EvaluateNeuralModel:
             
         return score_list
     
-    def save_models(self, model_path=None, model_name_suffix='.h5'):
+    def save_models(self, model_path, model_name_suffix='.h5'):
         score_list = self.evaluate_models()
 
         if len(self.model_list) != len(score_list):
@@ -159,6 +144,8 @@ class EvaluateNeuralModel:
             model_name = self.algorithm_name + '-' + str(model_score) + model_name_suffix
             try:
                 model.save(os.path.join(model_path, model_name))
+
+                logger.info("Model: {} bas been save into folder: {}".format(model_name, model_path))
             except Exception as e:
                 traceback.print_exc()
                 raise IOError("When try to save model: {} into disk with error:{}".format(model, e))
@@ -196,13 +183,14 @@ class ModelSearch:
     Main class for caller class to find best models.
     """
     def __init__(self, objective='val_accuracy', 
-                    max_trials=10, 
+                    max_trials=1, 
                     executions_per_trial=1, 
                     directory=None, 
                     project_name=None, 
                     algorithm_list=None, 
                     tuning_algorithm='RandomSearch', 
-                    num_best_models=5):
+                    num_best_models=5,
+                    models_path=None):
         self.objective = objective
         self.max_trials = max_trials
         self.executions_per_trial = executions_per_trial
@@ -220,6 +208,9 @@ class ModelSearch:
         self.algorithm_list = default_keys if algorithm_list is None else algorithm_list
         self.tuning_algorithm = tuning_algorithm
         self.num_best_models = num_best_models
+        
+        # add with models_path for storing the models into path we want.
+        self.models_path = models_path
 
     def fit(self, x, y, epochs=10, val_x=None, val_y=None, validation_split=0.2, evaluate=True):
         # search should be automatically
@@ -257,8 +248,7 @@ class ModelSearch:
 
         logger.info("Whole fitting logic finished used {} seconds.".format(time.time() - start_time))
 
-    @staticmethod
-    def evaluate_trained_models(best_models, x, y):
+    def evaluate_trained_models(self, best_models, x, y):
         # get each search best models, evaluate and save it.
         evaluate_model = EvaluateNeuralModel(best_models, x, y)
 
@@ -266,7 +256,7 @@ class ModelSearch:
         logger.info("Get best scores are: [{}]".format('\t'.join([str(score) for score in best_models_scores])))
 
         logger.info("Start to save best trained nueral networks models into disk.")
-        evaluate_model.save_models()
+        evaluate_model.save_models(self.models_path)
     
     def _get_search_tuner_list(self, x, y):
         # first should get class number

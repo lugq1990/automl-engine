@@ -57,11 +57,13 @@ class ClassifierFactory:
             elif alg_name == 'XGBClassifier':
                 algorithm_instance_list.append(XGBClassifier())
 
-        if len(alg_name_list) == 1:
-            # if we just provide with name, then return with one instance.
-            return algorithm_instance_list[0]
-        else:
-            return algorithm_instance_list
+        # if len(alg_name_list) == 1:
+        #     # if we just provide with name, then return with one instance.
+        #     return algorithm_instance_list[0]
+        # else:
+        #     return algorithm_instance_list
+    
+        return algorithm_instance_list
 
 
 class ClassifierClass(BaseEstimator):

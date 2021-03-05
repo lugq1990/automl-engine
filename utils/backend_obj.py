@@ -22,11 +22,10 @@ from auto_ml.utils.CONSTANT import *
 from auto_ml.utils.paths import load_yaml_file
 
 
-
-logger = create_logger()
+logger = create_logger(__file__)
 
 hyper_yml_file_name = 'search_hypers.yml'
-# Load hyperparameters
+# Load hyperparametersload_model
 hyper_yml = load_yaml_file(hyper_yml_file_name)
 
 
@@ -40,20 +39,14 @@ class Backend(object):
     instance = None
 
     def __init__(self,
-                 # tmp_folder_name=None,
-                 # output_folder=None,
+                 tmp_folder_name=None,
+                 output_folder=None,
                  delete_tmp_folder_after_terminate=True,
                  delete_output_folder_after_terminate=True):
-        # self.tmp_folder_name = os.path.join(tempfile.gettempdir(), 'tmp') \
-        #     if tmp_folder_name is None else tmp_folder_name
-        #
-        # self.output_folder = os.path.join(tempfile.gettempdir(), 'models') \
-        #     if output_folder is None else output_folder
-
         # This is to ensure we could use same folder for whole project.
         # but one more thing is if we face any problems, then we will lose whole
-        self.tmp_folder_name = TMP_FOLDER
-        self.output_folder = OUTPUT_FOLDER
+        self.tmp_folder_name = TMP_FOLDER if tmp_folder_name is None else tmp_folder_name
+        self.output_folder = OUTPUT_FOLDER if output_folder is None else output_folder
 
         self.delete_tmp_folder_after_terminate = delete_tmp_folder_after_terminate
         self.delete_output_folder_after_terminate = delete_output_folder_after_terminate
@@ -83,11 +76,17 @@ class Backend(object):
 
     def save_model(self, model, identifier):
         try:
-            with open(os.path.join(self.output_folder, identifier + '.pkl'), 'wb') as f:
+            if not identifier.endswith(".pkl"):
+                identifier += '.pkl'
+
+            with open(os.path.join(self.output_folder, identifier), 'wb') as f:
                 pickle.dump(model, f)
 
+                logger.info("Model: {} has been saved into disk!".format(identifier))
+
         except Exception as e:
-           raise IOError("When try to save model: %s, face problem: %s" % (identifier, e))
+            logger.error("When try to save model: %s, face problem: %s" % (identifier, e))
+            raise IOError("When try to save model: %s, face problem: %s" % (identifier, e))
 
     def load_model(self, identifier):
         """
@@ -301,17 +300,19 @@ class Backend(object):
         :return:
         """
         if not cls.instance:
-            cls.instance = super(Backend, cls).__new__(*args, **kwargs)
-
+            # we should avoid to use __new__(cls, *args, **kwargs) as with error need to fix, just with __new__(cls) will be fine.
+            # https://stackoverflow.com/questions/34777773/typeerror-object-takes-no-parameters-after-defining-new
+            cls.instance = super(Backend, cls).__new__(cls)
+            
         return cls.instance
 
 
-if __name__ == "__main__":
-    backend = Backend()
-    print(backend.output_folder)
-    print(backend.tmp_folder_name)
+# if __name__ == "__main__":
+#     backend = Backend()
+#     print(backend.output_folder)
+#     print(backend.tmp_folder_name)
 
-    print(backend.load_models_combined_with_model_name())
+#     print(backend.load_models_combined_with_model_name())
 
-    # To test there is just one instance.
-    print(backend == Backend())
+#     # To test there is just one instance.
+#     print(backend == Backend())

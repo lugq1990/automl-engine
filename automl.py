@@ -27,7 +27,8 @@ logger = create_logger(__file__)
 
 
 class AutoML(BaseEstimator):
-    def __init__(self, backend=None,
+    def __init__(self, models_path=None,
+                 backend=None,
                  time_left_for_this_task=3600,
                  n_ensemble=10,
                  n_best_model=5,
@@ -56,7 +57,13 @@ class AutoML(BaseEstimator):
         :param precision: precision of data, to save memory
         """
         super(AutoML, self).__init__()
-        self.backend = Backend() if backend is None else backend
+        # Change backend object creation as this class is entry class also Backend class support singleton, so output_folder will work.
+        models_path = OUTPUT_FOLDER if models_path is None else models_path
+        # Add with `models_path` parameters, as the only output for the framework is only models files, so to store models into
+        # folder that we would like will be nice!
+        self.models_path = models_path
+
+        self.backend = Backend(output_folder=models_path) 
         self.time_left_for_this_taks = 3600 if time_left_for_this_task is None else time_left_for_this_task
         self.n_ensemble = n_ensemble
         self.n_best_model = n_best_model
@@ -67,6 +74,7 @@ class AutoML(BaseEstimator):
         self.keep_models = keep_models
         self.model_dir = model_dir
         self.precision = precision
+
         self.estimator = None
 
         # This is used to do testing and prediction.
@@ -177,11 +185,12 @@ class AutoML(BaseEstimator):
 
 
 class ClassificationAutoML(AutoML):
-    def __init__(self):
-        super(ClassificationAutoML, self).__init__()
+    def __init__(self, models_path=None):
+        super(ClassificationAutoML, self).__init__(models_path=models_path)
         # after pipeline has finished, then we should use `ensemble` to combine these models
         # action should happen here.
-        self.estimator = ClassificationPipeline()
+        print("Here to test backend:", self.backend.output_folder)
+        self.estimator = ClassificationPipeline(backend=self.backend)
 
     def fit(self, file_load=None, x=None, y=None, \
              xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True):
@@ -309,9 +318,6 @@ class ClassificationAutoML(AutoML):
 
         if file_load is not None:
             x, y = self.__get_file_load_data_label(file_load, use_for_pred=False)
-
-        print("Get data", x[:10])
-        print("get label:", y[:10])
         
         score = super().score(x, y)
 
@@ -492,8 +498,12 @@ if __name__ == '__main__':
 
     print("data shape and label shape:", data.shape, label.shape)
 
-    auto_cl = ClassificationAutoML()
-    auto_cl.fit(file_load)
+    models_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\tmp_folder\tmp\models_folder_test"
+    # backend = Backend(output_folder=models_path)
+    # print("*****" + backend.output_folder)
+
+    auto_cl = ClassificationAutoML(models_path=models_path)
+    auto_cl.fit(file_load, val_split=.2)
 
     # print(auto_cl.models_list)
     # print(auto_cl.score(xtest, ytest))
