@@ -4,7 +4,7 @@ How to create a machine learning and deep learning models with just a few lines 
 will get best trained models based on the data we have? We don't need to care about `feature engineering`, `model selection`, 
 `model evaluation` and `model sink`, this is **automl** comes in.
 
-This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with few lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine.
+This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with few lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine. But currently this repository is only support with `classification` problem.
 
 Key features highlights:
  - `machine learning` and `neural network models` are supported.
@@ -30,7 +30,7 @@ auto_cl.fit(file_load, val_split=0.2)
 
 # Get prediction based on best trained models
 test_file_name = 'test.csv'
-file_load_test = FileLoad(test_file_name, file_path=file_path, label_name='Survived')
+file_load_test = FileLoad(test_file_name, file_path=file_path)
 
 pred = auto_cl.predict(file_load_test)
 ```
