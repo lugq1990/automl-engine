@@ -183,7 +183,7 @@ class ClassificationAutoML(AutoML):
         # action should happen here.
         self.estimator = ClassificationPipeline()
 
-    def fit(self, file_load=None, xtrain=None, ytrain=None, \
+    def fit(self, file_load=None, x=None, y=None, \
              xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True):
         """
         Real training logic happen here, also store trained models.
@@ -197,27 +197,27 @@ class ClassificationAutoML(AutoML):
         """
         start_time = time.time()
 
-        if file_load is None and xtrain is None and ytrain is None:
+        if file_load is None and x is None and y is None:
             raise ValueError("When do real training, please provide at least a " +
                  "`file_load` or train data with `xtrain, ytrain`!")
 
         if file_load is not None:
             # with container, then just query the attribute then we could keep other as same.
-            xtrain, ytrain = file_load.data, file_load.label
+            x, y = file_load.data, file_load.label
 
         if val_split is not None:
             # if do need to do validation based on current train data, then just split current data into validation as well
-            xtrain, xval, ytrain, yval = train_test_split(xtrain, ytrain, test_size=val_split)
+            x, xval, y, yval = train_test_split(x, y, test_size=val_split)
         else:
             # Here I think if and only if the data length is over a threashold, then to do validation,even user haven't provided val data.
-            if len(xtrain) > VALIDATION_THRESHOLD:
+            if len(x) > VALIDATION_THRESHOLD:
                 val_split = .2
                 # if do need to do validation based on current train data, then just split current data into validation as well
-                xtrain, xval, ytrain, yval = train_test_split(xtrain, ytrain, test_size=val_split)
+                x, xval, y, yval = train_test_split(x, y, test_size=val_split)
 
         # after the checking process, then we need to create the Pipeline for whole process.
         # Here should use a Pipeline object to do real training, also with `ensemble`
-        self.estimator.fit(xtrain, ytrain, n_jobs=n_jobs, use_neural_network=use_neural_network)
+        self.estimator.fit(x, y, n_jobs=n_jobs, use_neural_network=use_neural_network)
 
         # load trained models for prediction and scoring for testing data.
         # after we have fitted the trained models, then next step is to load whole of them from disk
