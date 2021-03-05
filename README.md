@@ -14,9 +14,7 @@ Key features highlights:
  - `Cloud files` are supported like: `Cloud storage` for GCP or local files.
  - `Logging` different process information into one date file for future reference.
 
-Training files are also supported stored in Cloud like: GCP's GCS with only a service account to interact with Cloud
-
-Sample code to use `auto_ml` package.
+Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle competion, as this dataset contain different kinds of data types also contain some missing values with different threasholds.
 ```python
 
 from auto_ml.automl import ClassificationAutoML, FileLoad
