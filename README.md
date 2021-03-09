@@ -35,7 +35,7 @@ pred = auto_cl.predict(file_load_test)
 
 Then we could get whole trained models' evaluation score for each trained model score, we could get best trained model based on validation score if we would love to use trained model for production, one important thing is that these models are stored in local server, we could use them any time with RESTFul API calls.
 ![Evalution result](https://github.com/lugq1990/auto_ml/blob/master/test/diff_model_score.png)
-
+    
 If we want to use GCP cloud storage as a data source for train and test data, what needed is just get the service account file with proper authority, last is just provide with parameter: `service_account_name` and file local path: `service_account_file_path` to `FileLoad` object, then training will start automatically.
 
 ```python
@@ -46,6 +46,9 @@ service_account_file_path = r"C:\auto_ml\test"
 
 file_load = FileLoad(file_name, file_path, label_name='Survived', 
     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
+
+auto_cl = ClassificationAutoML()
+auto_cl.fit(file_load)
 ```
 
 If we have data `in memory`, we could also use memory objects to train, test and predict with `auto_ml` object, just like `scikit-learn`.
@@ -97,11 +100,17 @@ Insight for logics to `auto` machine learning training steps.
     
 1. Load data from file or memory for both training and testinig with class `FileLoad`, support with GCP's `GCS` files as source file.
 2. Build processing pipeline object based on data.
+    
     (1). `Imputation` for both categorical and numerical data with different logic, if data missing column is over a threshold, will delete that column. Support with algorithm `KNNImputer` to impute data or `SimpleImputer` to fill missing data.
+    
     (2). `OneHot Encoding` for categorical columns and add created columns into original data.
+    
     (3). `Standardize` data to avoid data range, also benefit for some algorithms like `SVM` etc.
+    
     (4). `MinMax` data to keep data into a 0-1 range.
+    
     (5). `FeatureSelection` to keep features with a default threshold or using algorithm with `ExtraTree` or `LinearRegreesion` to select features.
+    
     (6). `PCA` to reduce dimenssion if feature variance over a threshold and just keep satisfied features.
 3. Build a `Singleton` backend object to do file or data related functions.
 4. Build training pipeline to instant each algorithm with a `factory` class based on pre-defined used algorithms.
