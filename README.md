@@ -78,7 +78,6 @@ Current supported algorithms:
  - Deep nueral network
  - Convelutional nueral network
  - LSTM
- - etc.
 
 Also supported with `Ensemble` logic to combine different models to build more powerful model by adding model diversity:
  - Voting
@@ -95,6 +94,7 @@ For raw data file, will try with some common pre-procesing steps to create datas
 
 
 Insight for logics to `auto` machine learning training steps.
+    
     1. Load data from file or memory for both training and testinig with class `FileLoad`, support with GCP's `GCS` files as source file.
     2. Build processing pipeline object based on data.
         1. `Imputation` for both categorical and numerical data with different logic, if data missing column is over a threshold, will delete that column. Support with algorithm `KNNImputer` to impute data or `SimpleImputer` to fill missing data.
