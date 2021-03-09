@@ -93,22 +93,21 @@ For raw data file, will try with some common pre-procesing steps to create datas
  - Feature selection with variance or LinearRegression or ExtraTree
 
 
-Insight for logics to `auto` machine learning training steps.
+Insight for logics to `auto` machine learning training steps.    
     
-    1. Load data from file or memory for both training and testinig with class `FileLoad`, support with GCP's `GCS` files as source file.
-    2. Build processing pipeline object based on data.
-        1. `Imputation` for both categorical and numerical data with different logic, if data missing column is over a threshold, will delete that column. Support with algorithm `KNNImputer` to impute data or `SimpleImputer` to fill missing data.
-        2. `OneHot Encoding` for categorical columns and add created columns into original data.
-        3. `Standardize` data to avoid data range, also benefit for some algorithms like `SVM` etc.
-        4. `MinMax` data to keep data into a 0-1 range.
-        5. `FeatureSelection` to keep features with a default threshold or using algorithm with `ExtraTree` or `LinearRegreesion` to select features.
-        6. `PCA` to reduce dimenssion if feature variance over a threshold and just keep satisfied features.
-    3. Build a `Singleton` backend object to do file or data related functions.
-    4. Build training pipeline to instant each algorithm with a `factory` class based on pre-defined used algorithms.
-    5. Build a `SearchModel` class for each algorithm to find best parameters based on `RandomSearch` or `GridSearch`.
-    6. Pre-processing pipeline `fit` and `tranform`, save trained pipeline into disk for future use.
-    7. Start `training` with training pipeline with processed data with doing parameters search to find `best parameter's model`, also combined with Neural network search to find best neural models, if need `validation` will use some data to do validation that will reduce training data size, or could use trainded `auto_ml` object to do validation will also be fine.
-    8. Use `Ensemble` logic to do `voting` or `stacking` to combine trained models as a new more diverse model based on best trained model.
-    9. `Evaluate` each trained models based on validation data and return a ditionary with `training model name`, `training score` and `validation score`.
-    10. Support to `export trained models into a new folder` that we want.
-   
+1. Load data from file or memory for both training and testinig with class `FileLoad`, support with GCP's `GCS` files as source file.
+2. Build processing pipeline object based on data.
+    (1). `Imputation` for both categorical and numerical data with different logic, if data missing column is over a threshold, will delete that column. Support with algorithm `KNNImputer` to impute data or `SimpleImputer` to fill missing data.
+    (2). `OneHot Encoding` for categorical columns and add created columns into original data.
+    (3). `Standardize` data to avoid data range, also benefit for some algorithms like `SVM` etc.
+    (4). `MinMax` data to keep data into a 0-1 range.
+    (5). `FeatureSelection` to keep features with a default threshold or using algorithm with `ExtraTree` or `LinearRegreesion` to select features.
+    (6). `PCA` to reduce dimenssion if feature variance over a threshold and just keep satisfied features.
+3. Build a `Singleton` backend object to do file or data related functions.
+4. Build training pipeline to instant each algorithm with a `factory` class based on pre-defined used algorithms.
+5. Build a `SearchModel` class for each algorithm to find best parameters based on `RandomSearch` or `GridSearch`.
+6. Pre-processing pipeline `fit` and `tranform`, save trained pipeline into disk for future use.
+7. Start `training` with training pipeline with processed data with doing parameters search to find `best parameter's model`, also combined with Neural network search to find best neural models. If need `validation` will use some data to do validation that will reduce training data size, or could use trainded `auto_ml` object to do validation will also be fine.
+8. Use `Ensemble` logic to do `voting` or `stacking` to combine trained models as a new more diverse model based on best trained model.
+9.  `Evaluate` each trained models based on validation data and return a ditionary with `training model name`, `training score` and `validation score`.
+10.  Support to `export trained models into a new folder` that we want.
