@@ -8,11 +8,12 @@ This repository is based on **scikit-learn** and **TensorFlow** to create both m
 
 Key features highlights:
  - `machine learning` and `neural network models` are supported.
- - `Automatically process` data with missing, unstable, categorical string combined data.
+ - `Automatically data pre-processing` with missing, unstable, categorical various data types.
  - `Ensemble logic` to combine models to build more powerful models.
- - `Nueral network models search` with `kerastunner`.
+ - `Nueral network models search` with `kerastunner` to find best hyper-parameter for specific type of algorithm.
  - `Cloud files` are supported like: `Cloud storage` for GCP or local files.
- - `Logging` different process information into one date file for future reference.
+ - `Logging` different processing information into one date file for future reference.
+ - `RESTful API` for API call to get prediction based on best trained model.
 
 Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle competion, as this dataset contain different kinds of data types also contain some missing values with different threasholds.
 ```python
@@ -79,8 +80,6 @@ Current supported algorithms:
  - XGBoost
  - LightGBM
  - Deep nueral network
- - Convelutional nueral network
- - LSTM
 
 Also supported with `Ensemble` logic to combine different models to build more powerful model by adding model diversity:
  - Voting
