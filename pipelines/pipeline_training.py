@@ -83,9 +83,7 @@ class PipelineTrain(Pipeline):
         self.ensemble_alg = ensemble_alg
         self.voting_logic = voting_logic
 
-        # before we do anything, let's try to remove the model's folder to ensure there isn't any pre-trained models.
-        if self.backend and delete_tmp_folder:
-            self.backend.clean_folder()
+        
 
         # add `best_model` parameter for upper use case
         self.best_model = None

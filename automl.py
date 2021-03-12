@@ -36,6 +36,7 @@ class AutoML(BaseEstimator):
                  keep_models=True,
                  model_dir=None,
                  precision=32,
+                 delete_models=True
                  ):
         """
         this is to init automl class, whole thing should be ininstanted
@@ -79,6 +80,8 @@ class AutoML(BaseEstimator):
 
         # Add with what type of the problem
         self.type_of_problem = None
+
+        self.delete_models = delete_models
 
     def fit(self, *args, **kwargs):
         """
@@ -201,6 +204,10 @@ class ClassificationAutoML(AutoML):
         :return:
         """
         start_time = time.time()
+
+        # Add logic here is that we should clean models' folder, so that every time we could get a clean folder for next time running!
+        if self.backend and self.delete_models:
+            self.backend.clean_folder()
 
         x, y = self._get_data_and_label(file_load, x, y)
 
