@@ -57,19 +57,20 @@ class Backend(object):
     def _create_tmp_and_output_folder(self):
         if not (os.path.exists(self.tmp_folder_name) or os.path.exists(self.output_folder)):
             try:
-                os.makedirs(self.tmp_folder_name)
-                os.makedirs(self.output_folder)
+                os.makedirs(self.tmp_folder_name, exist_ok=True)
+                os.makedirs(self.output_folder, exist_ok=True)
             except Exception as e:
                 logger.error("When create tmp and model folder with error: %s"
                              % traceback.format_exc())
                 raise IOError("When create tmp and model folder with error: %s" % e)
 
-    def delete_tmp_and_output_folder(self):
+    def delete_tmp_and_output_folder(self, delete_models=False):
+        """As maybe we don't want to delete our trained model"""
         try:
             if self.delete_tmp_folder_after_terminate:
                 shutil.rmtree(self.tmp_folder_name)
 
-            if self.delete_output_folder_after_terminate:
+            if self.delete_output_folder_after_terminate and delete_models:
                 shutil.rmtree(self.output_folder)
         except Exception as e:
             logger.exception("When try to remove temperate folder with error: %s" % e)
@@ -246,9 +247,9 @@ class Backend(object):
         except IOError as e:
             raise IOError("When try to save dataset: {} get error: {}".format(dataset_name, e))
 
-    def load_dataset(self, dataset_name, file_path=None):
+    def load_dataset(self, dataset_name, file_path=None, sep="|"):
         """
-        To load data again from disk.
+        To load csv data again from disk.
         :param dataset_name:
         :param file_path:
         :return:
@@ -266,7 +267,7 @@ class Backend(object):
 
         try:
             dataset_path = os.path.join(file_path, dataset_name)
-            dataset = pd.read_csv(dataset_path, sep='|')
+            dataset = pd.read_csv(dataset_path, sep=sep)
 
             return dataset
         except IOError as e:
@@ -288,12 +289,13 @@ class Backend(object):
                 try:
                     os.remove(os.path.join(folder_name, file))
                 except IOError as e:
+                    # in case if need with many trials couldn't delete these files, not good idea, so raise will be a solution
                     raise IOError("When try to remove file: {} in folder:{} get error: {}".format(file, folder_name, e))
     
     @classmethod
     def __new__(cls, *args, **kwargs):
         """
-        Used to ensure there will be just one instance in
+        `Singleton` is used to ensure there will be just one instance in
         whole running process.
         :param args:
         :param kwargs:

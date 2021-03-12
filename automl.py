@@ -13,8 +13,6 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import train_test_split
 
-import tensorflow as tf
-
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.metrics.scorer import *
@@ -28,7 +26,6 @@ logger = create_logger(__file__)
 
 class AutoML(BaseEstimator):
     def __init__(self, models_path=None,
-                 backend=None,
                  time_left_for_this_task=3600,
                  n_ensemble=10,
                  n_best_model=5,
@@ -77,8 +74,6 @@ class AutoML(BaseEstimator):
 
         self.estimator = None
 
-        # This is used to do testing and prediction.
-        self.models_list = self._load_trained_models_ordered_by_score()
         # as we will use `ensemble` to combine models so the last will just be one model
         self.best_model = None
 
@@ -155,6 +150,7 @@ class AutoML(BaseEstimator):
         else:
             reverse = False
 
+        # sort models by `training` score with diff type of problem
         models_list = sorted(models_list,
                              key=lambda model: float(model[0].split("-")[1].replace(".pkl", '').replace(".h5", '')),
                              reverse=reverse)
@@ -206,13 +202,7 @@ class ClassificationAutoML(AutoML):
         """
         start_time = time.time()
 
-        if file_load is None and x is None and y is None:
-            raise ValueError("When do real training, please provide at least a " +
-                 "`file_load` or train data with `xtrain, ytrain`!")
-
-        if file_load is not None:
-            # with container, then just query the attribute then we could keep other as same.
-            x, y = file_load.data, file_load.label
+        x, y = self._get_data_and_label(file_load, x, y)
 
         if val_split is not None:
             # if do need to do validation based on current train data, then just split current data into validation as well
@@ -237,6 +227,23 @@ class ClassificationAutoML(AutoML):
         self._validation_models(xval, yval)
 
         logger.info("Whole training pipeline takes: {} seconds!".format(round(time.time() - start_time, 2)))
+
+    def _get_data_and_label(file_load, x, y):
+        """
+        Ensure could get data and label.
+        """
+        if file_load is None and x is None and y is None:
+            raise ValueError("When do real training, please provide at least a " +
+                 "`file_load` or train data with `xtrain, ytrain`!")
+
+        if file_load is not None:
+            # with container, then just query the attribute then we could keep other as same.
+            x, y = file_load.data, file_load.label
+        else:
+            if x is None or y is None:
+                raise ValueError("When to do training, please provide both `x` and `y`!")
+        
+        return x, y
     
     def _validation_models(self, xval, yval):
         if xval is not None and yval is not None:
@@ -270,8 +277,6 @@ class ClassificationAutoML(AutoML):
             logger.info(log_str)
         
         return score_log_str
-            
-
 
     def get_sorted_models_scores(self, file_load=None, xtest=None, ytest=None, **kwargs):
         """

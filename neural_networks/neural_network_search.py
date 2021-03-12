@@ -178,7 +178,7 @@ class NeuralNetworkFactory:
         return neural_networks_list
 
 
-class ModelSearch:
+class NeuralModelSearch:
     """
     Main class for caller class to find best models.
     """
@@ -334,5 +334,5 @@ if __name__ == '__main__':
     # print(evaluate_model.evaluate_models())
     # evaluate_model.save_models()
 
-    model_search = ModelSearch()
+    model_search = NeuralModelSearch()
     model_search.fit(x, y)

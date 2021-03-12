@@ -29,7 +29,7 @@ from auto_ml.ensemble.model_ensemble import ModelEnsemble
 from auto_ml.utils.data_rela import get_scorer_based_on_target
 from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name
 
-from auto_ml.neural_networks.neural_network_search import ModelSearch
+from auto_ml.neural_networks.neural_network_search import NeuralModelSearch
 
 
 logger = create_logger(__file__)
@@ -172,7 +172,19 @@ class PipelineTrain(Pipeline):
             so here don't need a list of pipeline objects.
         :return: a list of instance algorithm object.
         """
-        raise NotImplementedError
+        # This should be lazy part.
+        self.training_pipeline = GridSearchModel(backend=self.backend)
+
+        # This is based on diff type of problem to get each algorithm's instance! 
+        # Tips: Parent class could call Child private function!
+        algorithms_instance_list = self._get_algorithms_instance_list()
+
+        logger.info("Get training algorithms: {}".format([al_instance.name for al_instance in algorithms_instance_list]))
+
+        for algorithm_instance in algorithms_instance_list:
+            self.training_pipeline.add_estimator(algorithm_instance)
+
+        return self.training_pipeline
 
     def _fit_processing_pipeline(self, x, y=None):
         """
@@ -228,7 +240,7 @@ class PipelineTrain(Pipeline):
 
             # `fit` related func like validation and save models are warpped in `fit` func, 
             # here just `fit`
-            neural_model = ModelSearch(models_path=self.backend.output_folder) 
+            neural_model = NeuralModelSearch(models_path=self.backend.output_folder) 
             neural_model.fit(x, y)  
 
             logger.info("Finished Nueral Network search logic!") 
@@ -348,7 +360,8 @@ class PipelineTrain(Pipeline):
 
     def _get_model_predict(self, estimator, x, model_name=None):
         """
-        Prediction func should based on this func.
+        Prediction func should based on best trained model score instance.
+        
         :param x: data should be processed already!
         :return:
         """
@@ -516,27 +529,27 @@ class ClassificationPipeline(PipelineTrain):
     def __init__(self, backend=None):
         super(ClassificationPipeline, self).__init__(backend=backend)
 
-    def build_training_pipeline(self):
-        """
-        Build a container for whole algorithms instance to search.
+    # def build_training_pipeline(self):
+    #     """
+    #     Build a container for whole algorithms instance to search.
 
-        Based on the `model_selection` module, when we do the fit logic,
-        then that module will store the best models list into disk(This is
-        based on the model parameters).
-        So we don't need to care about the best model logic here.
-        :return:
-        """
-        # This should be lazy part.
-        self.training_pipeline = GridSearchModel(backend=self.backend)
+    #     Based on the `model_selection` module, when we do the fit logic,
+    #     then that module will store the best models list into disk(This is
+    #     based on the model parameters).
+    #     So we don't need to care about the best model logic here.
+    #     :return:
+    #     """
+    #     # This should be lazy part.
+    #     self.training_pipeline = GridSearchModel(backend=self.backend)
 
-        algorithms_instance_list = self._get_algorithms_instance_list()
+    #     algorithms_instance_list = self._get_algorithms_instance_list()
 
-        logger.info("Get training algorithms: {}".format([al_instance.name for al_instance in algorithms_instance_list]))
+    #     logger.info("Get training algorithms: {}".format([al_instance.name for al_instance in algorithms_instance_list]))
 
-        for algorithm_instance in algorithms_instance_list:
-            self.training_pipeline.add_estimator(algorithm_instance)
+    #     for algorithm_instance in algorithms_instance_list:
+    #         self.training_pipeline.add_estimator(algorithm_instance)
 
-        return self.training_pipeline
+    #     return self.training_pipeline
 
     def get_sorted_models_scores(self, x, y, reverse=True):
         """
