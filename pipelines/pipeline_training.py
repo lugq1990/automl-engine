@@ -54,7 +54,8 @@ class PipelineTrain(Pipeline):
                  use_ensemble=True,
                  ensemble_alg='stacking',
                  voting_logic='soft',
-                 backend=None
+                 backend=None,
+                 delete_tmp_folder=False
                  ):
         self.include_estimators = include_estimators
         self.exclude_estimators = exclude_estimators
@@ -83,7 +84,7 @@ class PipelineTrain(Pipeline):
         self.voting_logic = voting_logic
 
         # before we do anything, let's try to remove the model's folder to ensure there isn't any pre-trained models.
-        if self.backend:
+        if self.backend and delete_tmp_folder:
             self.backend.clean_folder()
 
         # add `best_model` parameter for upper use case
@@ -528,28 +529,6 @@ class ClassificationPipeline(PipelineTrain):
     """
     def __init__(self, backend=None):
         super(ClassificationPipeline, self).__init__(backend=backend)
-
-    # def build_training_pipeline(self):
-    #     """
-    #     Build a container for whole algorithms instance to search.
-
-    #     Based on the `model_selection` module, when we do the fit logic,
-    #     then that module will store the best models list into disk(This is
-    #     based on the model parameters).
-    #     So we don't need to care about the best model logic here.
-    #     :return:
-    #     """
-    #     # This should be lazy part.
-    #     self.training_pipeline = GridSearchModel(backend=self.backend)
-
-    #     algorithms_instance_list = self._get_algorithms_instance_list()
-
-    #     logger.info("Get training algorithms: {}".format([al_instance.name for al_instance in algorithms_instance_list]))
-
-    #     for algorithm_instance in algorithms_instance_list:
-    #         self.training_pipeline.add_estimator(algorithm_instance)
-
-    #     return self.training_pipeline
 
     def get_sorted_models_scores(self, x, y, reverse=True):
         """

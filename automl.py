@@ -228,6 +228,7 @@ class ClassificationAutoML(AutoML):
 
         logger.info("Whole training pipeline takes: {} seconds!".format(round(time.time() - start_time, 2)))
 
+    @staticmethod
     def _get_data_and_label(file_load, x, y):
         """
         Ensure could get data and label.
@@ -348,6 +349,13 @@ class ClassificationAutoML(AutoML):
                         "As we have get label data from file_load obj.")
         
         return data, label
+
+    @classmethod
+    def reconstruct(cls, models_path=None, *args, **kwargs):
+        """
+        Used for Restful API to create object.
+        """
+        return cls(models_path, *args, **kwargs)
 
         
 
@@ -504,6 +512,7 @@ if __name__ == '__main__':
     print("data shape and label shape:", data.shape, label.shape)
 
     models_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\tmp_folder\tmp\models_folder_test"
+    models_path = None
     # backend = Backend(output_folder=models_path)
     # print("*****" + backend.output_folder)
 
