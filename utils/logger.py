@@ -22,6 +22,11 @@ class Logger(object):
             logger_name = "logging"   # we could change this.
         self.logger_name = logger_name
         # self._logger_path = os.path.join(tempfile.gettempdir(), 'logging')
+        if not os.path.exists(TMP_FOLDER):
+            try:
+                os.makedirs(TMP_FOLDER)
+            except Exception as e: 
+                raise IOError("When try to create TMP folder: {} get error: {}".format(TMP_FOLDER, e))
         self._logger_path = os.path.join(TMP_FOLDER, 'logging')
         if not os.path.exists(self._logger_path):
             try:

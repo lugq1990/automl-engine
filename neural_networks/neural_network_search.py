@@ -301,8 +301,9 @@ class NeuralModelSearch:
             logger.info("Folder: {} has been deleted!".format(self.project_name))
 
         except IOError as e:
+            # if we couldn't delete this folder, then OK pass, but should log
             logger.error("To delete search project {} get error: {}".format(self.project_name, e))
-            raise IOError("To delete search project {} get error: {}".format(self.project_name, e))
+            
         
 
 if __name__ == '__main__':

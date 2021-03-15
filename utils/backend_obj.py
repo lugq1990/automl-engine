@@ -51,18 +51,27 @@ class Backend(object):
         self.delete_tmp_folder_after_terminate = delete_tmp_folder_after_terminate
         self.delete_output_folder_after_terminate = delete_output_folder_after_terminate
 
+
         # I think when we init instance,then we should create the tmp folder first
         self._create_tmp_and_output_folder()
 
     def _create_tmp_and_output_folder(self):
-        if not (os.path.exists(self.tmp_folder_name) or os.path.exists(self.output_folder)):
-            try:
-                os.makedirs(self.tmp_folder_name, exist_ok=True)
-                os.makedirs(self.output_folder, exist_ok=True)
-            except Exception as e:
-                logger.error("When create tmp and model folder with error: %s"
-                             % traceback.format_exc())
-                raise IOError("When create tmp and model folder with error: %s" % e)
+        def __create_folder(folder_name):
+            if not os.path.exists(folder_name):
+                logger.info("Temp folder:{} don't exist, now try to create it.".format(folder_name))
+                try:
+                    os.makedirs(folder_name, exist_ok=True)
+                except Exception as e:
+                    logger.error("When create tmp and model folder with error: %s"
+                                % traceback.format_exc())
+                    raise IOError("When create tmp and model folder with error: %s" % e)
+            else:
+                logger.info("Folder: {} already exists.".format(folder_name))
+
+        folder_list = [self.tmp_folder_name, self.output_folder]
+
+        for folder in folder_list:
+            __create_folder(folder)
 
     def delete_tmp_and_output_folder(self, delete_models=False):
         """As maybe we don't want to delete our trained model"""
@@ -282,16 +291,17 @@ class Backend(object):
         if folder_name is None:
             # default is model path
             folder_name = self.output_folder
-
-        file_list = os.listdir(folder_name)
-        if file_list:
-            for file in file_list:
-                try:
-                    os.remove(os.path.join(folder_name, file))
-                except IOError as e:
-                    # in case if need with many trials couldn't delete these files, not good idea, so raise will be a solution
-                    raise IOError("When try to remove file: {} in folder:{} get error: {}".format(file, folder_name, e))
-    
+        
+        if os.path.exists(folder_name):
+            file_list = os.listdir(folder_name)
+            if file_list:
+                for file in file_list:
+                    try:
+                        os.remove(os.path.join(folder_name, file))
+                    except IOError as e:
+                        # in case if need with many trials couldn't delete these files, not good idea, so raise will be a solution
+                        raise IOError("When try to remove file: {} in folder:{} get error: {}".format(file, folder_name, e))
+        
     @classmethod
     def __new__(cls, *args, **kwargs):
         """

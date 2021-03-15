@@ -60,7 +60,7 @@ class AutoML(BaseEstimator):
         # Add with `models_path` parameters, as the only output for the framework is only models files, so to store models into
         # folder that we would like will be nice!
         self.models_path = models_path
-
+        
         self.backend = Backend(output_folder=models_path) 
         self.time_left_for_this_taks = 3600 if time_left_for_this_task is None else time_left_for_this_task
         self.n_ensemble = n_ensemble
@@ -188,7 +188,6 @@ class ClassificationAutoML(AutoML):
         super(ClassificationAutoML, self).__init__(models_path=models_path)
         # after pipeline has finished, then we should use `ensemble` to combine these models
         # action should happen here.
-        print("Here to test backend:", self.backend.output_folder)
         self.estimator = ClassificationPipeline(backend=self.backend)
 
     def fit(self, file_load=None, x=None, y=None, \

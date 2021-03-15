@@ -5,13 +5,13 @@ import sys
 
 
 # Package meta-data.
-NAME = 'auto-ml-cl'
+NAME = 'auto_ml_cl'
 DESCRIPTION = 'Auto machine learning with scikit-learn and TensorFlow framework.'
-URL = 'https://github.com/lugq1990/auto_ml'
+URL = 'https://github.com/lugq1990/auto-ml-cl'
 EMAIL = 'gqianglu@outlook.com'
 AUTHOR = 'guangqiang.lu'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.1.2'
+VERSION = '0.0.2'
 
 REQUIRED = [
         'scikit-learn',

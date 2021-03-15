@@ -55,7 +55,6 @@ class PipelineTrain(Pipeline):
                  ensemble_alg='stacking',
                  voting_logic='soft',
                  backend=None,
-                 delete_tmp_folder=False
                  ):
         self.include_estimators = include_estimators
         self.exclude_estimators = exclude_estimators
@@ -82,8 +81,6 @@ class PipelineTrain(Pipeline):
         self.use_ensemble = use_ensemble
         self.ensemble_alg = ensemble_alg
         self.voting_logic = voting_logic
-
-        
 
         # add `best_model` parameter for upper use case
         self.best_model = None
