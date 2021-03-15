@@ -5,17 +5,17 @@ import sys
 
 
 # Package meta-data.
-NAME = 'auto_ml'
+NAME = 'auto-ml-cl'
 DESCRIPTION = 'Auto machine learning with scikit-learn and TensorFlow framework.'
 URL = 'https://github.com/lugq1990/auto_ml'
 EMAIL = 'gqianglu@outlook.com'
 AUTHOR = 'guangqiang.lu'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.1.0'
+VERSION = '0.1.2'
 
 REQUIRED = [
         'scikit-learn',
-        'yaml',
+        'pyyaml',
         'tensorflow >= 2.1.0',
         'keras-tuner',
         'google-cloud-storage',
@@ -96,13 +96,10 @@ setup(
     include_package_data=True,
     license='MIT',
     classifiers=[
-        # Trove classifiers
-        # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
     # $ setup.py publish support.
@@ -113,38 +110,3 @@ setup(
 
 
 
-setup(
-    author="guangqiang.lu",
-    author_email="gqianglu@outlook.com",
-    name="auto_ml",
-    packages=find_packages(exclude=["test", "test.*"]),
-    version='0.0.1',
-    description="Auto machine learning with scikit-learn and TensorFlow framework.",
-    long_description=README,
-    long_description_content_type='text/markdown',
-    python_requires=">=3.6",
-    url="https://github.com/lugq1990/auto_ml",
-    install_requires=[
-        'scikit-learn',
-        'yaml',
-        'tensorflow >= 2.1.0',
-        'keras-tuner',
-        'google-cloud-storage',
-        'lightgbm',
-        'xgboost',
-        'flask',
-        'flask_restful'
-    ],
-    include_package_data=True,
-    license='MIT',
-    classifiers=[
-        # Trove classifiers
-        # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy'
-    ],
-)

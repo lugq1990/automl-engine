@@ -1,7 +1,9 @@
 scikit-learn
-yaml
+pyyaml
 tensorflow >= 2.1.0
 keras-tuner
 google-cloud-storage
 lightgbm
 xgboost
+flask
+flask_restful
