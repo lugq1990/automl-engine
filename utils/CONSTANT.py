@@ -35,8 +35,33 @@ STRING_TO_TASK = {v: k for k, v in TASK_TO_STRING.items()}
 # Here I just add a tmp folder path and model save path
 import tempfile
 import os
+from pathlib import Path
 
-PROJECT_TMP_PATH = tempfile.mkdtemp()
+# Added logic to keep only one temp folder is used no other folders are created for this project.
+# TODO:Have to write the folder names into disk, otherwise how we know the only one tmp folder?
+def get_tmp_folder():
+    cur_path = os.path.abspath(Path(__file__).parent)
+
+    print("Get cur_path: ", cur_path)
+    try:
+        config_file_path = os.path.join(cur_path, 'config.txt')
+        with open(config_file_path, 'r') as f:
+            data = f.read()
+
+        # with read couldn't just is None, not None in fact
+        if len(data) == 0:
+            with open(config_file_path, 'w') as f:
+                PROJECT_TMP_PATH = tempfile.mkdtemp()
+                f.write(PROJECT_TMP_PATH)
+        else:
+            PROJECT_TMP_PATH = data
+
+        return PROJECT_TMP_PATH
+    except IOError as e:
+        print("When try to read and write `config.txt` file with error: {}".format(e))
+   
+PROJECT_TMP_PATH = get_tmp_folder()
+
 # :TODO: in real prod, change this.
 # PROJECT_TMP_PATH = "C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder"
 TMP_FOLDER = os.path.join(PROJECT_TMP_PATH, "tmp")

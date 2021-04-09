@@ -522,8 +522,12 @@ if __name__ == '__main__':
     # backend = Backend(output_folder=models_path)
     # print("*****" + backend.output_folder)
 
-    auto_cl = ClassificationAutoML(models_path=models_path)
-    auto_cl.fit(file_load, val_split=.2)
+    auto_cl = ClassificationAutoML()
+
+    # try to use sklearn iris dataset
+    from sklearn.datasets import load_iris
+    x, y = load_iris(return_X_y=True)
+    auto_cl.fit(x=x, y=y)
 
     # print(auto_cl.models_list)
     # print(auto_cl.score(xtest, ytest))
@@ -535,20 +539,20 @@ if __name__ == '__main__':
     # # get model score
     # print(auto_cl.get_sorted_models_scores(xtest, ytest))
 
-    test_file_name = 'test.csv'
+    # test_file_name = 'test.csv'
 
-    file_load_pred = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', use_for_pred=True,
-        service_account_file_name=service_account_name, service_account_file_path=service_account_file_path, except_columns='Survived')
+    # file_load_pred = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', use_for_pred=True,
+    #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path, except_columns='Survived')
 
-    # file_load_score = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', 
-    #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
+    # # file_load_score = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', 
+    # #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
 
-    print(auto_cl.models_list)
-    # print(auto_cl.score(file_load_pred))
-    print('*' * 20)
-    print(auto_cl.predict(file_load_pred)[:10])
-    print('*'*20)
-    print(auto_cl.predict_proba(file_load_pred)[:10])
+    # print(auto_cl.models_list)
+    # # print(auto_cl.score(file_load_pred))
+    # print('*' * 20)
+    # print(auto_cl.predict(file_load_pred)[:10])
+    # print('*'*20)
+    # print(auto_cl.predict_proba(file_load_pred)[:10])
 
     # print('*' * 20)
     # print(auto_cl.score(file_load_score))
@@ -557,14 +561,14 @@ if __name__ == '__main__':
     # print(auto_cl.get_sorted_models_scores(file_load_score))
 
     # This is used for the submition for Kaggle
-    pred_data = pd.read_csv(os.path.join(file_path, test_file_name))
+    # pred_data = pd.read_csv(os.path.join(file_path, test_file_name))
 
-    pass_id_df = pred_data[['PassengerId']]
+    # pass_id_df = pred_data[['PassengerId']]
 
-    prediction = auto_cl.predict(file_load_pred)
-    pred_df = pd.DataFrame(prediction, columns=['Survived'])
+    # prediction = auto_cl.predict(file_load_pred)
+    # pred_df = pd.DataFrame(prediction, columns=['Survived'])
 
-    pred_df = pd.concat([pass_id_df, pred_df], axis=1)
+    # pred_df = pd.concat([pass_id_df, pred_df], axis=1)
 
-    pred_df.to_csv(os.path.join(file_path,"Submition_with_automl.csv"), index=False)
+    # pred_df.to_csv(os.path.join(file_path,"Submition_with_automl.csv"), index=False)
 

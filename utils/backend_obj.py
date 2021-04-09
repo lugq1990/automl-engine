@@ -319,12 +319,12 @@ class Backend(object):
         return cls.instance
 
 
-# if __name__ == "__main__":
-#     backend = Backend()
-#     print(backend.output_folder)
-#     print(backend.tmp_folder_name)
+if __name__ == "__main__":
+    backend = Backend()
+    print(backend.output_folder)
+    print(backend.tmp_folder_name)
 
-#     print(backend.load_models_combined_with_model_name())
+    # print(backend.load_models_combined_with_model_name())
 
-#     # To test there is just one instance.
-#     print(backend == Backend())
+    # # To test there is just one instance.
+    # print(backend == Backend())

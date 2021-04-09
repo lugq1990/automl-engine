@@ -361,38 +361,13 @@ class PipelineTrain(Pipeline):
         :param x: data should be processed already!
         :return:
         """
-        try:
-            if not estimator:
-                logger.warning("When to get model prediction, estimator hasn't been provided, "
-                               "use best trained model from disk to get prediction!")
-                # if the estimator is None, then try to get the best score instance for this.
-                models_list = self.backend.load_models_combined_with_model_name()
-                model_score = [float(model_name.split('-')[1].split('.')[0]) for model_name, _ in models_list]
-
-                estimator = models_list[model_score.index(np.argmax(model_score))][1]
-
-            if not hasattr(estimator, 'predict'):
-                raise NotImplementedError("For estimator:{} "
-                                          "doesn't support `predict` func".format(self.training_pipeline))
-
-            # let's just make the processing step with data here!
-            x = self._process_dataset_with_processor(x)
-
-            # When we do real processing for `stacking`, new created dataset should happen here.
-            if model_name is not None:
-                if model_name.lower().startswith('stacking'):
-                    x = ModelEnsemble.create_stacking_dataset(x, backend=self.backend)
-                else:
-                    raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
-
-            pred = estimator.predict(x)
-
+        prob = self._get_model_predict_proba(estimator, x, model_name)
+        if len(prob) >= 1:
+            pred = np.argmax(prob, axis=1)
+            
             return pred
-        except Exception as e:
-            logger.error("When try to use pipeline to get prediction with error: {}".format(e))
-            raise RuntimeError("When try to use pipeline to get prediction with error: {}".format(e))
 
-    def _get_model_predict_proba(self, estimator, x):
+    def _get_model_predict_proba(self, estimator, x, model_name=None):
         """
         Probability func should based on this func.
         :param estimator:
@@ -400,22 +375,75 @@ class PipelineTrain(Pipeline):
         :return:
         """
         try:
-            logger.info("Start to get model probability prediction based on trained model")
+            if estimator is None:
+                # This is used for on-line prediction that we couldn't get training status that we have already get.
+                # so here is try to re-construct best trained model from disk.
+                logger.warning("When to get model prediction, estimator hasn't been provided, "
+                               "use best trained model from disk to get prediction!")
+                # if the estimator is None, then try to get the best score instance for this.
+                models_list = self.backend.load_models_combined_with_model_name()
 
-            # for probability should also process this data.
-            x = self._process_dataset_with_processor(x)
+                if len(models_list) == 0:
+                    logger.error("When try to get model prediction, couldn't get trained models from disk! Please try to check!")
+                    return
 
+                try:
+                    # This is changed as the score is with `AdaboostClassifier-0.766667.pkl`
+                    model_score = []
+                    for ml_name, _ in models_list:
+                        ml_score = ml_name.split('-')[1]
+                        ml_score = float(ml_score[:ml_score.rindex('.')])
+                        model_score.append(ml_score)
+                    # model_score = [float(model_name.split('-')[1].split('.')[0]) for model_name, _ in models_list]
+                    estimator = models_list[np.argmax(model_score)][1]
+
+                    if model_name is None:
+                        model_name = models_list[np.argmax(model_score)][0]
+
+                    logger.info("Get best estimator: {}".format(model_name))
+                except ValueError as e:
+                    logger.error("When try to get model score based on trained model name, get error: {}".format(e))
+                    raise e
+                
             if not hasattr(estimator, 'predict_proba'):
                 raise NotImplementedError("For estimator:{} "
                                           "doesn't support `predict_proba` func".format(self.training_pipeline))
+
+            # let's just make the processing step with data here!
+            x = self._process_dataset_with_processor(x)
+
+            # When we do real processing for `stacking`, new created dataset should happen here.
+            if model_name is not None:
+                if model_name.lower().startswith('stacking'):
+                    logger.info("Start to produce new dataset with `stacking` class.")
+                    x = ModelEnsemble.create_stacking_dataset(x, backend=self.backend)
+                else:
+                    raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
 
             prob = estimator.predict_proba(x)
 
             return prob
         except Exception as e:
-            logger.error("When try to use pipeline to get probability with error: {}".format(e))
-            raise Exception("When try to use pipeline to "
-                            "get probability with error: {}".format(e))
+            logger.error("When try to use pipeline to get prediction with error: {}".format(e))
+            raise RuntimeError("When try to use pipeline to get prediction with error: {}".format(e))
+
+        # try:
+        #     logger.info("Start to get model probability prediction based on trained model")
+
+        #     # for probability should also process this data.
+        #     x = self._process_dataset_with_processor(x)
+
+        #     if not hasattr(estimator, 'predict_proba'):
+        #         raise NotImplementedError("For estimator:{} "
+        #                                   "doesn't support `predict_proba` func".format(self.training_pipeline))
+
+        #     prob = estimator.predict_proba(x)
+
+        #     return prob
+        # except Exception as e:
+        #     logger.error("When try to use pipeline to get probability with error: {}".format(e))
+        #     raise Exception("When try to use pipeline to "
+        #                     "get probability with error: {}".format(e))
 
     def _fit(self, x, y, n_jobs=None):
         """
@@ -608,7 +636,7 @@ if __name__ == '__main__':
 
     from auto_ml.utils.backend_obj import Backend
 
-    models_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\tmp_folder\tmp\models_folder_test"
+    models_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\tmp_folder\models"
     backend = Backend(output_folder=models_path)
 
     classifier_pipeline = ClassificationPipeline(backend=backend)
@@ -631,7 +659,9 @@ if __name__ == '__main__':
 
     # train_df = pd.read_csv("")
 
-    classifier_pipeline.fit(xtrain, ytrain)
+    # classifier_pipeline.fit(xtrain, ytrain)
+    pred = classifier_pipeline.predict(xtrain)
+
     print("Model score: ", classifier_pipeline.score(xtest, ytest))
 
     print(classifier_pipeline.get_sorted_models_scores(xtest, ytest))
