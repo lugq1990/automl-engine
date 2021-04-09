@@ -9,7 +9,9 @@ Here is the classifier real training happens here.
 """
 import numpy as np
 import time
+import tqdm
 from sklearn.model_selection import GridSearchCV
+
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import create_logger
 
@@ -88,28 +90,53 @@ class GridSearchModel(object):
         :param n_jobs: how much cores to use
         :return:
         """
-        if n_jobs is None:
-            # as we don't need to use full cores, so here will just
-            # to do training sequence for each training estimator
-            logger.info("Start to train model based on whole cores.")
+        # parallel training
+        if n_jobs is not None and n_jobs > 1:
+            # here couldn't use multiprocessing here, just to set
+            # estimator `n_job`
+            # we could add other multiprocessing here either if we want.
+            logger.info("Start to train model based on {} cores.".format(n_jobs))
+            # set `n_jobs` for each estimator
             for estimator in self.estimator_list:
-                start_time = time.time()
+                if hasattr(estimator, 'n_jobs'):
+                    estimator.n_jobs = n_jobs
+        
 
+        with tqdm.tqdm(range(len(self.estimator_list))) as process:
+            start_time = time.time()
+            for i in range(len(self.estimator_list)):
+                estimator = self.estimator_list[i]
                 estimator.fit(x, y)
 
                 # Add training info, so that we could get better understanding while training happens.
                 # Must be `estimator.estimator.name` as estimator is s warpper for each instance.
                 logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator.estimator.name, round(time.time() - start_time, 2)))
 
-        elif n_jobs:
-            # here couldn't use multiprocessing here, just to set
-            # estimator `n_job`
-            # we could add other multiprocessing here either if we want.
-            logger.info("Start to train model based on {} cores.".format(n_jobs))
-            for estimator in self.estimator_list:
-                if hasattr(estimator, 'n_jobs'):
-                    estimator.n_jobs = n_jobs
-                estimator.fit(x, y)
+                process.update(1)
+
+        # if n_jobs is None:
+        #     # as we don't need to use full cores, so here will just
+        #     # to do training sequence for each training estimator
+        #     logger.info("Start to train model based on whole cores.")
+        #     for estimator in self.estimator_list:
+        #         start_time = time.time()
+
+        #         estimator.fit(x, y)
+
+        #         # Add training info, so that we could get better understanding while training happens.
+        #         # Must be `estimator.estimator.name` as estimator is s warpper for each instance.
+        #         logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator.estimator.name, round(time.time() - start_time, 2)))
+
+        # elif n_jobs:
+        #     # here couldn't use multiprocessing here, just to set
+        #     # estimator `n_job`
+        #     # we could add other multiprocessing here either if we want.
+        #     logger.info("Start to train model based on {} cores.".format(n_jobs))
+        #     for estimator in self.estimator_list:
+        #         if hasattr(estimator, 'n_jobs'):
+        #             estimator.n_jobs = n_jobs
+        #         estimator.fit(x, y)
+
         logger.info("Model selection training has finished.")
 
         # after the training finished, then we should get each estimator with score
@@ -207,7 +234,7 @@ class GridSearchModel(object):
                                                      key=lambda x: x[1][1], reverse=True)[:self.n_best_model]}
 
         for estimator_name, estimator_tuple in n_best_score_dict.items():
-            model_name = estimator_name + "-" + str(round(estimator_tuple[1], 6))
+            model_name = estimator_name + "-" + str(round(estimator_tuple[1], 6)) + ".pkl"
             try:
                 model_instance = self.backend.load_model(model_name)
                 model_list.append(model_instance)
@@ -222,7 +249,7 @@ class GridSearchModel(object):
         the model into disk with fixed name, but should with score.
         :return:
         """
-        self.best_esmator_name = self.best_estimator.__class__.__name__ + '-' + self.best_score
+        self.best_esmator_name = self.best_estimator.__class__.__name__ + '-' + str(self.best_score) + ".pkl"
         self.backend.save_model(self.best_estimator,  self.best_esmator_name)
 
     def load_bestest_model(self):
@@ -317,10 +344,13 @@ if __name__ == '__main__':
     from sklearn.datasets import load_iris
     from auto_ml.base.classifier_algorithms import LogisticRegression
     from auto_ml.base.classifier_algorithms import SupportVectorMachine
+    from auto_ml.utils.backend_obj import Backend
+
+    backend = Backend()
 
     x, y = load_iris(return_X_y=True)
 
-    g = GridSearchModel()
+    g = GridSearchModel(backend)
     lr = LogisticRegression()
     clf = SupportVectorMachine()
     g.add_estimator(lr)

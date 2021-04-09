@@ -7,3 +7,4 @@ lightgbm
 xgboost
 flask
 flask_restful
+tqdm
