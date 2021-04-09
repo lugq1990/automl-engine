@@ -11,6 +11,7 @@ Key features highlights:
  - `Nueral network models search` with `kerastunner` to find best hyper-parameter for specific type of algorithm.
  - `Cloud files` are supported like: `Cloud storage` for GCP or local files.
  - `Logging` different processing information into one date file for future reference.
+ - `Processing monitoring` for each algorithm training status.
  - `RESTful API` for API call to get prediction based on best trained model.
 
 Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle competion, as this dataset contain different kinds of data types also contain some missing values with different threasholds.
