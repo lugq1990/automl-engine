@@ -105,10 +105,29 @@ class PipelineTrain(Pipeline):
         """
         # except for included processor, then we also need to add some other's processor...
 
-        # Here I add a pre-order that for some processing step must be added like `imputation`...
-        # as some processing is a must, for other will be enhancement like feature-selection...
-        # I add a logic here is: the most less important step should be first added, the most important
-        # will be last inserted into 0 index... HERE add with data structure: Stack
+        process_step = self._get_process_step(data)
+
+        # return is a dictionary
+        pipeline_steps = ProcessingFactory.get_processor_list(process_step)
+
+        self.processing_pipeline = Pipeline(pipeline_steps)
+
+        if len(self.processing_pipeline.steps) == 0:
+            raise RuntimeError("When try to build procesing pipeline, we couldn't get any steps, " + 
+                        "please check whether you have provide a wrong parameter for `include_preprocessors` and `exclude_preprocessors`!")
+                        
+        logger.info("Whole process pipeline steps: {}".format('\t'.join([x[0] for x in self.processing_pipeline.steps])))
+
+        return self.processing_pipeline
+
+    def _get_process_step(self, data):
+        """Get pre-define processing steps that we would take based on the dataset.
+
+        Here I add a pre-order that for some processing step must be added like `imputation`...
+        as some processing is a must, for other will be enhancement like feature-selection...
+        I add a logic here is: the most less important step should be first added, the most important
+        will be last inserted into 0 index... HERE add with data structure: Stack
+        """
         step_stack = []
         if self.use_feature_seletion or \
                 any([True if data is not None and data.shape[1] > self.max_feature_num else False]):
@@ -128,27 +147,20 @@ class PipelineTrain(Pipeline):
 
         process_step = [step_stack.pop() for _ in range(len(step_stack))]
 
-        # Whole need to add or delete processor steps should happen here.
-        if self.include_estimators:
-            process_step.extend([x for x in self.include_estimators if x not in process_step])
+        # Pre-configured processor that we would like or don't need.
+        if self.include_preprocessors:
+            process_step.extend([x for x in self.include_preprocessors if x not in process_step])
 
-        if self.exclude_estimators:
+        if self.exclude_preprocessors:
             # not include some steps
-            [process_step.remove(x) for x in self.exclude_estimators]
+            [process_step.remove(x) for x in self.exclude_preprocessors]
 
         # Here we should ensure that `process_step` should be at least 2 stages, otherwise will get error.
         if len(process_step) == 1:
             # add with `Standard` as most of algorithm would like data to be standard data.
             process_step.append('Standard')
 
-        # return is a dictionary
-        pipeline_steps = ProcessingFactory.get_processor_list(process_step)
-
-        self.processing_pipeline = Pipeline(pipeline_steps)
-
-        logger.info("Whole process pipeline steps: {}".format('\t'.join([x[0] for x in self.processing_pipeline.steps])))
-
-        return self.processing_pipeline
+        return process_step
 
     def build_training_pipeline(self):
         """
@@ -427,24 +439,6 @@ class PipelineTrain(Pipeline):
             logger.error("When try to use pipeline to get prediction with error: {}".format(e))
             raise RuntimeError("When try to use pipeline to get prediction with error: {}".format(e))
 
-        # try:
-        #     logger.info("Start to get model probability prediction based on trained model")
-
-        #     # for probability should also process this data.
-        #     x = self._process_dataset_with_processor(x)
-
-        #     if not hasattr(estimator, 'predict_proba'):
-        #         raise NotImplementedError("For estimator:{} "
-        #                                   "doesn't support `predict_proba` func".format(self.training_pipeline))
-
-        #     prob = estimator.predict_proba(x)
-
-        #     return prob
-        # except Exception as e:
-        #     logger.error("When try to use pipeline to get probability with error: {}".format(e))
-        #     raise Exception("When try to use pipeline to "
-        #                     "get probability with error: {}".format(e))
-
     def _fit(self, x, y, n_jobs=None):
         """
         Extract real `fit` logic out side of `fit` func.
@@ -550,8 +544,18 @@ class ClassificationPipeline(PipelineTrain):
     Classification pipeline class that we could use as a `pipeline`,
     also the `ensemble` logic should happen here.
     """
-    def __init__(self, backend=None):
-        super(ClassificationPipeline, self).__init__(backend=backend)
+    def __init__(self, backend=None, 
+                    include_estimators=None, 
+                    exclude_estimators=None,
+                    include_preprocessors=None,
+                    exclude_preprocessors=None,
+                    **kwargs):
+        super(ClassificationPipeline, self).__init__(backend=backend, 
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors,
+                                            **kwargs)
 
     def get_sorted_models_scores(self, x, y, reverse=True):
         """
@@ -572,7 +576,19 @@ class ClassificationPipeline(PipelineTrain):
         just use the class to get whole algorithms instance.
         :return:
         """
-        algorithm_name_list = self.algorithms_config['classification']['default']
+        # If `included_estimator`, then only get these algorithm instance
+        algorithm_name_list = []
+        if self.include_estimators:
+            if isinstance(self.include_estimators, str):
+                algorithm_name_list = [self.include_estimators]
+            elif isinstance(self.include_estimators, list):
+                algorithm_name_list = self.include_estimators
+            else:
+                raise ValueError("Please config `include_estimators` with str or a list of algorithm names!")
+        else:
+            # then just get default algorithms.
+            algorithm_name_list = self.algorithms_config['classification']['default']
+
         algorithms_instance_list = ClassifierFactory.get_algorithm_instance(algorithm_name_list)
 
         return algorithms_instance_list

@@ -184,11 +184,30 @@ class AutoML(BaseEstimator):
 
 
 class ClassificationAutoML(AutoML):
-    def __init__(self, models_path=None):
-        super(ClassificationAutoML, self).__init__(models_path=models_path)
+    def __init__(self, models_path=None, 
+            include_estimators=None, 
+            exclude_estimators=None, 
+            include_preprocessors=None, 
+            exclude_preprocessors=None,
+            **kwargs):
+        """Added with algorithm selection and processing selection, even with others in case we need.
+
+        Args:
+            models_path (Str, optional): Where to store our models. Defaults to None.
+        """
+        super(ClassificationAutoML, self).__init__(models_path=models_path,
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors, **kwargs)
         # after pipeline has finished, then we should use `ensemble` to combine these models
         # action should happen here.
-        self.estimator = ClassificationPipeline(backend=self.backend)
+        self.estimator = ClassificationPipeline(backend=self.backend,
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors, 
+                                            **kwargs)
 
     def fit(self, file_load=None, x=None, y=None, \
              xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True):
@@ -529,7 +548,7 @@ if __name__ == '__main__':
     x, y = load_iris(return_X_y=True)
     auto_cl.fit(x=x, y=y)
 
-    # print(auto_cl.models_list)
+    print(auto_cl.models_list)
     # print(auto_cl.score(xtest, ytest))
     # print('*' * 20)
     # print(auto_cl.predict(xtest)[:10])
