@@ -364,14 +364,9 @@ class ClassificationAutoML(AutoML):
     @staticmethod
     def __get_file_load_data_label(file_load, use_for_pred=True):
         """
-        Get data and label for prediction data.
+        Get data and label from original obj.
         """
         data, label = file_load.data, file_load.label
-
-        if use_for_pred:
-            if label is not None:
-                raise ValueError("When to `predict` with `file_load` obj, if you set parameter: `use_for_pred=True`, then please provide with `label` column." + 
-                        "As we couldn't get label data from file_load obj.")
         
         return data, label
 
@@ -523,31 +518,38 @@ if __name__ == '__main__':
     auto_cl = ClassificationAutoML(models_path=models_path)
 
     # Start to train processing for `FileLoad`
-    # auto_cl.fit(file_load=file_load)
-    # print(auto_cl.models_list)
-    # # print(auto_cl.score(file_load_pred))
+    auto_cl.fit(file_load=file_load)
+    print(auto_cl.models_list)
+    # print(auto_cl.score(file_load_pred))
 
-    # file_load_pred = FileLoad("test.csv", file_path, file_sep=',', use_for_pred=True)
-    # print('*' * 20)
-    # print(auto_cl.predict(file_load=file_load_pred)[:10])
-    # print('*'*20)
-    # print(auto_cl.predict_proba(file_load=file_load_pred)[:10])
+    file_load_pred = FileLoad("test.csv", file_path, file_sep=',', use_for_pred=True)
+    print("Process based on new test file.")
+    print('*' * 20)
+    print(auto_cl.predict(file_load=file_load_pred)[:10])
+    print('*'*20)
+    print(auto_cl.predict_proba(file_load=file_load_pred)[:10])
+
+    print("Process based on original file.")
+    print("*" * 20)
+    print(auto_cl.predict_proba(file_load=file_load)[:10])
+    print("*" * 20)
+    print(auto_cl.score(file_load=file_load))
 
     # try to use sklearn iris dataset
-    from sklearn.datasets import load_iris
-    from sklearn.model_selection import train_test_split
+    # from sklearn.datasets import load_iris
+    # from sklearn.model_selection import train_test_split
     
-    x, y = load_iris(return_X_y=True)
-    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
+    # x, y = load_iris(return_X_y=True)
+    # xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
     
-    auto_cl.fit(xtrain, ytrain)
+    # auto_cl.fit(xtrain, ytrain)
 
-    print(auto_cl.models_list)
-    print(auto_cl.score(xtest, ytest))
-    print('*' * 20)
-    print(auto_cl.predict(xtest)[:10])
-    print('*'*20)
-    print(auto_cl.predict_proba(xtest)[:10])
+    # print(auto_cl.models_list)
+    # print(auto_cl.score(xtest, ytest))
+    # print('*' * 20)
+    # print(auto_cl.predict(xtest)[:10])
+    # print('*'*20)
+    # print(auto_cl.predict_proba(xtest)[:10])
 
     # # get model score
     # print(auto_cl.get_sorted_models_scores(xtest, ytest))
