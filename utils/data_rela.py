@@ -44,7 +44,10 @@ def nan_col_index(data):
     :param data: array type
     :return: index with True if nan or inf value
     """
-    nan_index = np.any(~np.isfinite(data), axis=0)
+    try:     
+        nan_index = np.any(~np.isfinite(data), axis=0)
+    except:
+        nan_index = np.array([True])
     return nan_index
 
 
