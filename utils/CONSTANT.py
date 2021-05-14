@@ -45,6 +45,9 @@ def get_tmp_folder():
     print("Get cur_path: ", cur_path)
     try:
         config_file_path = os.path.join(cur_path, 'config.txt')
+        if not os.path.exists(config_file_path):
+            return tempfile.mkdtemp() 
+
         with open(config_file_path, 'r') as f:
             data = f.read()
 
@@ -61,9 +64,9 @@ def get_tmp_folder():
         print("When try to read and write `config.txt` file with error: {}".format(e))
    
 PROJECT_TMP_PATH = get_tmp_folder()
+print("******* Get temp folder *******: {}".format(PROJECT_TMP_PATH)) 
 
 # :TODO: in real prod, change this.
-# PROJECT_TMP_PATH = "C:/Users/guangqiiang.lu/Documents/lugq/code_for_future/auto_ml_pro/auto_ml/tmp_folder"
 TMP_FOLDER = os.path.join(PROJECT_TMP_PATH, "tmp")
 OUTPUT_FOLDER = os.path.join(PROJECT_TMP_PATH, "models")
 
