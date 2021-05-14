@@ -209,7 +209,7 @@ class ClassificationAutoML(AutoML):
                                             exclude_preprocessors=exclude_preprocessors, 
                                             **kwargs)
 
-    def fit(self, file_load=None, x=None, y=None, \
+    def fit(self, x=None, y=None, file_load=None, \
              xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True):
         """
         Real training logic happen here, also store trained models.
@@ -323,7 +323,7 @@ class ClassificationAutoML(AutoML):
 
         return score_dict
 
-    def predict(self, file_load=None, x=None, **kwargs):
+    def predict(self, x=None, file_load=None, **kwargs):
         """To support with file_load obj with super func."""
         self._check_param(file_load, x)
 
@@ -334,7 +334,7 @@ class ClassificationAutoML(AutoML):
 
         return pred
 
-    def predict_proba(self, file_load=None, x=None, **kwargs):
+    def predict_proba(self, x=None, file_load=None, **kwargs):
         self._check_param(file_load, x)
 
         if file_load is not None:
@@ -344,7 +344,7 @@ class ClassificationAutoML(AutoML):
 
         return prob
 
-    def score(self, file_load=None, x=None, y=None, **kwargs):
+    def score(self, x=None, y=None, file_load=None, **kwargs):
         self._check_param(file_load, x, y)
 
         if file_load is not None:
@@ -370,7 +370,7 @@ class ClassificationAutoML(AutoML):
 
         if use_for_pred:
             if label is not None:
-                raise ValueError("When to `predict` with `file_load` obj, have you set parameter: `use_for_pred=True`?" + 
+                raise ValueError("When to `predict` with `file_load` obj, if you set parameter: `use_for_pred=True`, then please provide with `label` column." + 
                         "As we couldn't get label data from file_load obj.")
         
         return data, label
@@ -378,7 +378,7 @@ class ClassificationAutoML(AutoML):
     @classmethod
     def reconstruct(cls, models_path=None, *args, **kwargs):
         """
-        Used for Restful API to create object.
+        Used for Restful API to create
         """
         return cls(models_path, *args, **kwargs)
 
@@ -511,8 +511,8 @@ if __name__ == '__main__':
     file_name = 'train.csv'
     file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\test"
     # file_path = "gs://cloud_sch_test"
-    service_account_file_path = r"C:\Users\guangqiiang.lu\Downloads"
-    service_account_name = "buoyant-sum-302208-4542dcd74629.json"
+    # service_account_file_path = r"C:\Users\guangqiiang.lu\Downloads"
+    # service_account_name = "buoyant-sum-302208-4542dcd74629.json"
 
     # file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived', 
     #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
@@ -522,28 +522,32 @@ if __name__ == '__main__':
 
     auto_cl = ClassificationAutoML(models_path=models_path)
 
-    # Start to train processing
-    auto_cl.fit(file_load)
-    print(auto_cl.models_list)
-    # print(auto_cl.score(file_load_pred))
+    # Start to train processing for `FileLoad`
+    # auto_cl.fit(file_load=file_load)
+    # print(auto_cl.models_list)
+    # # print(auto_cl.score(file_load_pred))
 
-    file_load_pred = FileLoad("train.csv", file_path, label_name='Survived')
-    print('*' * 20)
-    print(auto_cl.predict(file_load_pred)[:10])
-    print('*'*20)
-    print(auto_cl.predict_proba(file_load_pred)[:10])
+    # file_load_pred = FileLoad("test.csv", file_path, file_sep=',', use_for_pred=True)
+    # print('*' * 20)
+    # print(auto_cl.predict(file_load=file_load_pred)[:10])
+    # print('*'*20)
+    # print(auto_cl.predict_proba(file_load=file_load_pred)[:10])
 
     # try to use sklearn iris dataset
-    # from sklearn.datasets import load_iris
-    # x, y = load_iris(return_X_y=True)
-    # auto_cl.fit(x=x, y=y)
+    from sklearn.datasets import load_iris
+    from sklearn.model_selection import train_test_split
+    
+    x, y = load_iris(return_X_y=True)
+    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
+    
+    auto_cl.fit(xtrain, ytrain)
 
-    # print(auto_cl.models_list)
-    # print(auto_cl.score(xtest, ytest))
-    # print('*' * 20)
-    # print(auto_cl.predict(xtest)[:10])
-    # print('*'*20)
-    # print(auto_cl.predict_proba(xtest)[:10])
+    print(auto_cl.models_list)
+    print(auto_cl.score(xtest, ytest))
+    print('*' * 20)
+    print(auto_cl.predict(xtest)[:10])
+    print('*'*20)
+    print(auto_cl.predict_proba(xtest)[:10])
 
     # # get model score
     # print(auto_cl.get_sorted_models_scores(xtest, ytest))
