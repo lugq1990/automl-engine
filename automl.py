@@ -371,7 +371,7 @@ class ClassificationAutoML(AutoML):
         if use_for_pred:
             if label is not None:
                 raise ValueError("When to `predict` with `file_load` obj, have you set parameter: `use_for_pred=True`?" + 
-                        "As we have get label data from file_load obj.")
+                        "As we couldn't get label data from file_load obj.")
         
         return data, label
 
@@ -507,19 +507,6 @@ class FileLoad:
         
 
 if __name__ == '__main__':
-    # from auto_ml.test.get_test_data import get_training_data
-
-    # df = get_training_data(return_df=True)
-
-    # x = df.drop(['Survived'], axis=1).values
-    # y = df['Survived'].values
-    # # needed to be added for the array when we read data from a file.
-    # x = x.copy(order='C')
-
-    # from sklearn.model_selection import train_test_split
-
-    # xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
-
     # Test with `FileLoad` class
     file_name = 'train.csv'
     file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\test"
@@ -531,24 +518,27 @@ if __name__ == '__main__':
     #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
         
     file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
+    models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
 
-    data, label = file_load.data, file_load.label
+    auto_cl = ClassificationAutoML(models_path=models_path)
 
-    print("data shape and label shape:", data.shape, label.shape)
+    # Start to train processing
+    auto_cl.fit(file_load)
+    print(auto_cl.models_list)
+    # print(auto_cl.score(file_load_pred))
 
-    models_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\tmp_folder\tmp\models_folder_test"
-    models_path = None
-    # backend = Backend(output_folder=models_path)
-    # print("*****" + backend.output_folder)
-
-    auto_cl = ClassificationAutoML()
+    file_load_pred = FileLoad("train.csv", file_path, label_name='Survived')
+    print('*' * 20)
+    print(auto_cl.predict(file_load_pred)[:10])
+    print('*'*20)
+    print(auto_cl.predict_proba(file_load_pred)[:10])
 
     # try to use sklearn iris dataset
-    from sklearn.datasets import load_iris
-    x, y = load_iris(return_X_y=True)
-    auto_cl.fit(x=x, y=y)
+    # from sklearn.datasets import load_iris
+    # x, y = load_iris(return_X_y=True)
+    # auto_cl.fit(x=x, y=y)
 
-    print(auto_cl.models_list)
+    # print(auto_cl.models_list)
     # print(auto_cl.score(xtest, ytest))
     # print('*' * 20)
     # print(auto_cl.predict(xtest)[:10])
@@ -557,27 +547,6 @@ if __name__ == '__main__':
 
     # # get model score
     # print(auto_cl.get_sorted_models_scores(xtest, ytest))
-
-    # test_file_name = 'test.csv'
-
-    # file_load_pred = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', use_for_pred=True,
-    #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path, except_columns='Survived')
-
-    # # file_load_score = FileLoad(test_file_name, file_path, file_sep=',',  label_name='Survived', 
-    # #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
-
-    # print(auto_cl.models_list)
-    # # print(auto_cl.score(file_load_pred))
-    # print('*' * 20)
-    # print(auto_cl.predict(file_load_pred)[:10])
-    # print('*'*20)
-    # print(auto_cl.predict_proba(file_load_pred)[:10])
-
-    # print('*' * 20)
-    # print(auto_cl.score(file_load_score))
-
-    # # get model score
-    # print(auto_cl.get_sorted_models_scores(file_load_score))
 
     # This is used for the submition for Kaggle
     # pred_data = pd.read_csv(os.path.join(file_path, test_file_name))

@@ -57,12 +57,6 @@ class ClassifierFactory:
             elif alg_name == 'XGBClassifier':
                 algorithm_instance_list.append(XGBClassifier())
 
-        # if len(alg_name_list) == 1:
-        #     # if we just provide with name, then return with one instance.
-        #     return algorithm_instance_list[0]
-        # else:
-        #     return algorithm_instance_list
-    
         return algorithm_instance_list
 
 
@@ -272,7 +266,7 @@ class KNNClassifier(ClassifierClass):
     def get_search_space():
         config = ConfigSpace()
 
-        n_neighbors = GridHyperparameter(name='n_neighbors', values=[5, 7, 10])
+        n_neighbors = GridHyperparameter(name='n_neighbors', values=[3, 5, 7, 10])
 
         config.add_hyper([n_neighbors])
 
@@ -280,18 +274,20 @@ class KNNClassifier(ClassifierClass):
 
 
 class DecisionTreeClassifier(ClassifierClass):
-    def __init__(self, criterion='gini', max_depth=None, max_leaf_nodes=None):
+    def __init__(self, criterion='gini', max_depth=None, max_leaf_nodes=None, min_samples_leaf=1):
         super().__init__()
         self.criterion = criterion
         self.max_depth = max_depth
         self.max_leaf_nodes = max_leaf_nodes
+        self.min_samples_leaf = min_samples_leaf
 
     def fit(self, x, y, **kwargs):
         from sklearn.tree import DecisionTreeClassifier
 
         self.estimator = DecisionTreeClassifier(criterion=self.criterion, 
                                                 max_depth=self.max_depth,
-                                                max_leaf_nodes=self.max_leaf_nodes)
+                                                max_leaf_nodes=self.max_leaf_nodes,
+                                                min_samples_leaf=self.min_samples_leaf)
         self.estimator.fit(x, y, **kwargs)
 
         return self
@@ -308,15 +304,16 @@ class DecisionTreeClassifier(ClassifierClass):
 
 
 class AdaboostClassifier(ClassifierClass):
-    def __init__(self, learning_rate=1.0, n_estimators=50):
+    def __init__(self, base_estimator=None, learning_rate=1.0, n_estimators=50):
         super().__init__()
+        self.base_estimator = base_estimator
         self.learning_rate = learning_rate
         self.n_estimators = n_estimators
 
     def fit(self, x, y, **kwargs):
         from sklearn.ensemble import AdaBoostClassifier
 
-        self.estimator = AdaBoostClassifier(learning_rate=self.learning_rate, n_estimators=self.n_estimators)
+        self.estimator = AdaBoostClassifier(base_estimator=self.base_estimator, learning_rate=self.learning_rate, n_estimators=self.n_estimators)
         
         self.estimator.fit(x, y, **kwargs)
         return self
@@ -325,6 +322,8 @@ class AdaboostClassifier(ClassifierClass):
     def get_search_space():
         config = ConfigSpace()
 
+        # Let's try base estimator with DT, as in real world that also make improvement.
+        base_estimators = GridHyperparameter(name='base_estimator', values=[None, DecisionTreeClassifier()])
         n_estimators = GridHyperparameter(name='n_estimators', values=[50, 70, 100])
         learning_rate = UniformHyperparameter(name='learning_rate', low=0.01, high=1.0, size=2)
 

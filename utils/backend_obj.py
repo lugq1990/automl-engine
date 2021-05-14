@@ -14,8 +14,11 @@ from numpy.lib.arraysetops import isin
 import pandas as pd
 import traceback
 
-from tensorflow.keras.models import load_model as keras_load_model
-
+try:
+    is_tf_support = True
+    from tensorflow.keras.models import load_model as keras_load_model
+except ImportError:
+    is_tf_support = False
 
 from auto_ml.utils.logger import create_logger
 from auto_ml.utils.CONSTANT import *
@@ -101,6 +104,8 @@ class Backend(object):
     def load_model(self, identifier):
         """
         Get model instance object with just model name.
+         Noted: `identifier` should contain with `extension`!
+
         :param identifier:
         :return:
         """
@@ -111,11 +116,11 @@ class Backend(object):
             # Keras model.
             return self.load_keras_model(identifier)
 
-        # Should be changed, not to add defualt extension
-        # if not identifier.endswith('pkl'):
-        #     identifier = identifier + '.pkl'
-
+        # For sklearn models by using `pickle`
         try:
+            model_file_path = os.path.join(self.output_folder, identifier)
+            self._file_exists(model_file_path)
+
             with open(os.path.join(self.output_folder, identifier), 'rb') as f:
                 model = pickle.load(f)
 
@@ -132,12 +137,28 @@ class Backend(object):
         try:
             model_path = os.path.join(self.output_folder, identifier)
             
+            self._file_exists(model_path)
+            if not is_tf_support:
+                raise RuntimeError("When try to use `TensorFlow` backend to load model, couldn't load module: `tensorflow`, please check!")
+
             model = keras_load_model(model_path)
 
             return model
         except IOError as e:
-            logger.error("When to load keras model, the file:%s not exist!" % identifier)
-            raise IOError("When to load keras model, the file:%s not exist!" % identifier)
+            logger.error("When to load keras model, get error: {}".format(e))
+            raise IOError("When to load keras model, get error: {}".format(e))
+
+    def _file_exists(self, file_path):
+        """Check file exist or not based on path.
+
+        Args:
+            file_path (Str): File path to check.
+
+        Raises:
+            IOError: [description]
+        """
+        if not os.path.exists(file_path):
+                raise IOError("File: {} not exist!".format(file_path))
 
     def load_models_by_identi_combined_with_model_name(self, identifiers):
         """

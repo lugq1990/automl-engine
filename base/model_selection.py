@@ -100,7 +100,6 @@ class GridSearchModel(object):
             for estimator in self.estimator_list:
                 if hasattr(estimator, 'n_jobs'):
                     estimator.n_jobs = n_jobs
-        
 
         with tqdm.tqdm(range(len(self.estimator_list))) as process:
             start_time = time.time()
@@ -114,32 +113,9 @@ class GridSearchModel(object):
 
                 process.update(1)
 
-        # if n_jobs is None:
-        #     # as we don't need to use full cores, so here will just
-        #     # to do training sequence for each training estimator
-        #     logger.info("Start to train model based on whole cores.")
-        #     for estimator in self.estimator_list:
-        #         start_time = time.time()
-
-        #         estimator.fit(x, y)
-
-        #         # Add training info, so that we could get better understanding while training happens.
-        #         # Must be `estimator.estimator.name` as estimator is s warpper for each instance.
-        #         logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator.estimator.name, round(time.time() - start_time, 2)))
-
-        # elif n_jobs:
-        #     # here couldn't use multiprocessing here, just to set
-        #     # estimator `n_job`
-        #     # we could add other multiprocessing here either if we want.
-        #     logger.info("Start to train model based on {} cores.".format(n_jobs))
-        #     for estimator in self.estimator_list:
-        #         if hasattr(estimator, 'n_jobs'):
-        #             estimator.n_jobs = n_jobs
-        #         estimator.fit(x, y)
-
         logger.info("Model selection training has finished.")
 
-        # after the training finished, then we should get each estimator with score
+        # after the training finished, then we should get each estimator with score that is based on `training score`
         # and store the score with each instance class name and score.
         self._get_estimators_score()
 
@@ -224,7 +200,7 @@ class GridSearchModel(object):
 
         logger.info("Already have saved models: %s" % '\t'.join(self.backend.list_models()))
 
-    def load_best_model_list(self):
+    def load_best_model_list(self, model_extension='pkl'):
         """
         Load previous saved best model into a list of trained instance.
         :return:
@@ -234,7 +210,8 @@ class GridSearchModel(object):
                                                      key=lambda x: x[1][1], reverse=True)[:self.n_best_model]}
 
         for estimator_name, estimator_tuple in n_best_score_dict.items():
-            model_name = estimator_name + "-" + str(round(estimator_tuple[1], 6)) + ".pkl"
+            # TODO: this is used for `sklearn`module, how about if we need other framework?
+            model_name = estimator_name + "-" + str(round(estimator_tuple[1], 6)) + model_extension
             try:
                 model_instance = self.backend.load_model(model_name)
                 model_list.append(model_instance)
