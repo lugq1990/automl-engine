@@ -652,7 +652,7 @@ if __name__ == '__main__':
 
     from auto_ml.utils.backend_obj import Backend
 
-    models_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\tmp_folder\models"
+    models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
     backend = Backend(output_folder=models_path)
 
     classifier_pipeline = ClassificationPipeline(backend=backend)
@@ -673,9 +673,7 @@ if __name__ == '__main__':
     x, y = get_training_data()
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
 
-    # train_df = pd.read_csv("")
-
-    # classifier_pipeline.fit(xtrain, ytrain)
+    classifier_pipeline.fit(xtrain, ytrain)
     pred = classifier_pipeline.predict(xtrain)
 
     print("Model score: ", classifier_pipeline.score(xtest, ytest))

@@ -1,16 +1,20 @@
 # -*- coding:utf-8 -*-
 """
+Main Cross-validation class for adding more estimators and get score using CV.
+
 This will contain some model selection logic should be used here like
 Grid search logic, as here what I could do is create the search space.
 So maybe Grid search to find whole models.
-Here is the classifier real training happens here.
+
+Classifier real training happens here.
 
 @author: Guangqiang.lu
 """
 import numpy as np
 import time
 import tqdm
-from sklearn.model_selection import GridSearchCV
+import itertools
+from sklearn.model_selection import GridSearchCV, cross_validate
 
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import create_logger
@@ -37,8 +41,9 @@ class GridSearchModel(object):
             raise ValueError("When to use Model Ensemble class, we get a None `backend` object! Please check!")
         self.backend = backend 
         self.estimator_list = []
-        self.score_dict = {}
-        self.n_best_model = 10 if n_best_model is not None else n_best_model
+        self.score_list = []
+        self._estimator_param_list = []
+        self.n_best_model = 10 if n_best_model is None else n_best_model
 
     def add_estimator(self, estimator, estimator_params=None):
         """
@@ -54,21 +59,19 @@ class GridSearchModel(object):
         """
         if hasattr(estimator, 'get_search_space'):
             # so that this is our estimator
-            if self.estimator_list is None:
-                self.estimator_list = [GridSearchCV(estimator, estimator.get_search_space())]
+            if len(self._estimator_param_list) == 0:
+                self._estimator_param_list = [(estimator, estimator.get_search_space())]
             else:
-                self.estimator_list.append(GridSearchCV(estimator, estimator.get_search_space()))
+                self._estimator_param_list.append((estimator, estimator.get_search_space()))
         else:
             if estimator_params is None:
                 raise ValueError("When we need to set other sklearn native estimator, do"
                                  "need to add estimator_params for searching")
 
-            if self.estimator is None:
-                self.estimator_list = [GridSearchCV(estimator, estimator_params)]
+            if len(self._estimator_param_list) == 0:
+                self._estimator_param_list = [(estimator, estimator_params)]
             else:
-                self.estimator_list.append(GridSearchCV(estimator, estimator_params))
-
-        return self
+                self._estimator_param_list.append((estimator, estimator_params))
 
     def add_estimators(self, estimator_param_pairs):
         """
@@ -80,6 +83,30 @@ class GridSearchModel(object):
         """
         for estimator, estimator_params in estimator_param_pairs:
             self.add_estimator(estimator, estimator_params)
+
+    def _get_estimators_list(self):
+        """Build a estimator list that with each parameter setting.
+
+        As there maybe many keys that needed to be set, so we need make a `product` of whole keys.
+        """
+        estimator_list = []
+
+        for estimator, estimator_param in self._estimator_param_list:
+            param_keys = list(estimator_param.keys())
+            param_values = []
+            for k in param_keys:
+                param_values.append(estimator_param[k])
+            param_product = list(itertools.product(*param_values))
+
+            for i in range(len(param_product)):
+                estimator_params = {}
+                for j in range(len(param_keys)):
+                    estimator_params[param_keys[j]] = param_product[i][j]
+                    estimator.set_params(**estimator_params)
+                    
+                    estimator_list.append(estimator)
+
+        return estimator_list
 
     def fit(self, x, y, n_jobs=None):
         """
@@ -97,19 +124,39 @@ class GridSearchModel(object):
             # we could add other multiprocessing here either if we want.
             logger.info("Start to train model based on {} cores.".format(n_jobs))
             # set `n_jobs` for each estimator
-            for estimator in self.estimator_list:
+            for i in range(len(self._estimator_param_list)):
+                estimator = self._estimator_param_list[i][0]
                 if hasattr(estimator, 'n_jobs'):
                     estimator.n_jobs = n_jobs
+                    self._estimator_param_list[i][0] = estimator
 
-        with tqdm.tqdm(range(len(self.estimator_list))) as process:
+        estimators_list = self._get_estimators_list()
+
+        with tqdm.tqdm(range(len(estimators_list))) as process:
             start_time = time.time()
-            for i in range(len(self.estimator_list)):
-                estimator = self.estimator_list[i]
-                estimator.fit(x, y)
+            for i in range(len(estimators_list)):
+                
+                # Not using GridSearch class, but to use cross_validate to get best models.
+                estimator = estimators_list[i]
+                # Training happen here for each algorithm with n-fold CV!
+                cv_result = cross_validate(estimator=estimator, 
+                                        X=x, y=y, cv=3, 
+                                        return_train_score=True, 
+                                        return_estimator=True)
 
-                # Add training info, so that we could get better understanding while training happens.
-                # Must be `estimator.estimator.name` as estimator is s warpper for each instance.
-                logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator.estimator.name, round(time.time() - start_time, 2)))
+                mean_train_score = round(cv_result['train_score'].mean(), 6)
+                mean_test_score = round(cv_result['test_score'].mean(), 6)
+
+                # Now for score_dict key is: {name+train_score: [instance, test_score]}
+                estimator_train_name = estimator.name + "_" + str(mean_train_score)
+                self.score_list.append((estimator_train_name, estimator, mean_test_score))
+                self.estimator_list.append(estimator)
+                # self.score_dict[estimator.name + str(mean_train_score)] = (estimator, mean_test_score)
+                # self.estimator_list = estimator
+
+                # estimator = self.estimator_list[i]
+                # estimator.fit(x, y)
+                logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator_train_name, round(time.time() - start_time, 2)))
 
                 process.update(1)
 
@@ -117,12 +164,12 @@ class GridSearchModel(object):
 
         # after the training finished, then we should get each estimator with score that is based on `training score`
         # and store the score with each instance class name and score.
-        self._get_estimators_score()
+        # self._get_estimators_score()
 
         # Here add with information for `n_best_model` name and score
         logger.info("Get some best model scores information based on model_selection module.")
-        for alg_name, score_tuple in self.score_dict.items():
-            logger.info("Algorithm: {} with score: {}".format(alg_name, score_tuple[1]))
+        for alg_name, _, alg_test_score in self.score_list:
+            logger.info("Algorithm: {} with test score: {}".format(alg_name, alg_test_score))
 
         # after we have get the score, then we should store the trained estimators
         logger.info("Start to save best selected models into disk.")
@@ -181,22 +228,33 @@ class GridSearchModel(object):
         :param n_best_model: How many best model to save
         :return:
         """
-        # added how many best model to be saved into disk based on score.
-        n_best_score_dict = {k: v for k, v in sorted(self.score_dict.items(),
-                                                     key=lambda x: x[1][1], reverse=True)[:self.n_best_model]}
+        # Loop for each algorithm and save `n_best_models` instance. 
+        alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list])
+        
+        # print(self.score_list)
+        for alg in alg_name_set:
+            # Get which algorithm, then sort based on test score, get `n_best_models`
+            alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
+                    in self.score_list if alg_name.startswith(alg)]
 
-        for estimator_name, estimator_tuple in n_best_score_dict.items():
-            estimator = estimator_tuple[0]
-            # NO NEED: just save the score float into str
-            # Get score string with round 6 or 100% accuracy
-            # score_str = str(round(estimator_tuple[1], 6)).split('.')[-1] \
-            #     if estimator_tuple[1] < 1.0 else '100'
-            score_str = str(round(estimator_tuple[1], 6))
+            if len(alg_list) == 0:
+                raise ValueError("Couldn't get algorithm: {} from `self._score_list`".format(alg))
+            
+            # sort models based on test score.
+            alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)
+    
+            if len(alg_list) > self.n_best_model:
+                alg_list = alg_list[self.n_best_model]
 
-            # ADD with `-` with name and score, so that we could get the score later
-            model_name = estimator_name + "-" + score_str
-            logger.info("Start to save model: {}".format(model_name))
-            self.backend.save_model(estimator, model_name)
+            for i in range(len(alg_list)):
+                # Loop for satisfied algorithm instance and dump each of them.
+                alg_name, estimator, test_score = alg_list[i][0], alg_list[i][1], alg_list[i][2]
+                # change trained score with test_score.
+                alg_name_split = alg_name.split('_')
+                alg_name = alg_name_split[0] + "_" + str(test_score)
+
+                logger.info("Start to save model: {}".format(alg_name))
+                self.backend.save_model(estimator, alg_name)
 
         logger.info("Already have saved models: %s" % '\t'.join(self.backend.list_models()))
 
@@ -205,19 +263,29 @@ class GridSearchModel(object):
         Load previous saved best model into a list of trained instance.
         :return:
         """
+        # TODO: Why not just load whole models from disk then sort based on name?
         model_list = []
-        n_best_score_dict = {k: v for k, v in sorted(self.score_dict.items(),
-                                                     key=lambda x: x[1][1], reverse=True)[:self.n_best_model]}
 
-        for estimator_name, estimator_tuple in n_best_score_dict.items():
-            # TODO: this is used for `sklearn`module, how about if we need other framework?
-            model_name = estimator_name + "-" + str(round(estimator_tuple[1], 6)) + model_extension
-            try:
-                model_instance = self.backend.load_model(model_name)
-                model_list.append(model_instance)
-            except IOError as e:
-                raise IOError("When try load trained model file:{} "
-                              "with error: {}".format(estimator_name, e))
+        alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list])
+        
+        for alg in alg_name_set:
+            # Get which algorithm, then sort based on test score, get `n_best_models`
+            alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
+                    in self.score_list if alg_name.startswith(alg) ]
+            alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
+
+            if len(alg_list) == 0:
+                continue
+            
+            for alg_name, estimator, test_score in alg_list:
+                # change trained score with test_score.
+                alg_name_split = alg_name.split('_')
+                model_name = alg_name_split[0] + "_" + test_score
+
+                logger.info("Start to save model: {}".format(model_name))
+                model = self.backend.load_model(model_name)
+                model_list.append(model)
+
         return model_list
 
     def save_bestest_model(self):
@@ -239,48 +307,48 @@ class GridSearchModel(object):
     @property
     def best_estimator(self):
         """
-        To get best estimator based on the training score list
+        To get best estimator based on the testing score list
         :return: best estimator
         """
-        best_estimator_list = [estimator.best_estimator_ for estimator in self.estimator_list]
-        best_score_list = [estimator.best_score_ for estimator in self.estimator_list]
+        if len(self.score_list) == 0:
+            raise ValueError("Please fit model first!")
 
-        if best_estimator_list is not None:
-            if best_score_list is None:
-                logger.error("We to get best estimator, don't get best score list")
-                raise Exception("We to get best estimator, don't get best score list")
+        max_test_score = np.argmax([test_score for _, _, test_score in self.score_list])
 
-            best_estimator = best_estimator_list[np.argmax(best_score_list)]
-
-            return best_estimator
-        else:
-            logger.error("When to get best estimator, we don't get the best estimator list")
-            raise Exception("When to get best estimator, we don't get the best estimator list")
+        try:
+            return self.estimator_list[max_test_score]
+        except IndexError as e:
+            logger.error("To get best estimator with index error: {}".format(e))
+            raise IndexError("To get best estimator with index error: {}".format(e))
 
     @property
     def best_score(self):
-        best_score_list = [estimator.best_score_ for estimator in self.estimator_list]
+        if len(self.score_list) == 0:
+            raise ValueError("Please fit model first!")
+        
         try:
-            return round(max(best_score_list), 6)
-        except Exception as e:
-            raise Exception("When try to get best score get error: {}".format(e))
+            max_score = max([test_score for _, _, test_score in self.score_list])
+            return max_score    
+        except IndexError as e:
+            logger.error("To get best score with index error: {}".format(e))
+            raise IndexError("To get best score with index error: {}".format(e))
+        
+    # def _get_estimators_score(self):
+    #     """
+    #     To get whole trained estimator based on data and label for storing
+    #     the result based on each trained grid model best estimator.
+    #     score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
+    #     :return:
+    #     """
+    #     for estimator in self.estimator_list:
+    #         # here I also need the trained estimator object, so here
+    #         # also with trained object.
+    #         best_estimator = estimator.best_estimator_
+    #         best_score = round(estimator.best_score_, 6)
 
-    def _get_estimators_score(self):
-        """
-        To get whole trained estimator based on data and label for storing
-        the result based on each trained grid model best estimator.
-        score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
-        :return:
-        """
-        for estimator in self.estimator_list:
-            # here I also need the trained estimator object, so here
-            # also with trained object.
-            best_estimator = estimator.best_estimator_
-            best_score = round(estimator.best_score_, 6)
-
-            # This should based on the trained best score, not based on trained model then score again.
-            self.score_dict[best_estimator.__class__.__name__] = (best_estimator, best_score)
-                                               #self._score_with_estimator(best_estimator, x, y))
+    #         # This should based on the trained best score, not based on trained model then score again.
+    #         self.score_dict[best_estimator.__class__.__name__] = (best_estimator, best_score)
+    #                                            #self._score_with_estimator(best_estimator, x, y))
 
     @staticmethod
     def _score_with_estimator(estimator_instance, x, y):
@@ -320,7 +388,7 @@ class GridSearchModel(object):
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
     from auto_ml.base.classifier_algorithms import LogisticRegression
-    from auto_ml.base.classifier_algorithms import SupportVectorMachine
+    from auto_ml.base.classifier_algorithms import GradientBoostingTree
     from auto_ml.utils.backend_obj import Backend
 
     backend = Backend()
@@ -329,18 +397,18 @@ if __name__ == '__main__':
 
     g = GridSearchModel(backend)
     lr = LogisticRegression()
-    clf = SupportVectorMachine()
+    clf = GradientBoostingTree()
     g.add_estimator(lr)
-    g.add_estimator(clf)
+    # g.add_estimator(clf)
 
     g.fit(x, y)
-    print(g.best_estimator)
-    print(g.best_score)
-    print(g.score(x, y))
+    # print(g.best_estimator)
+    # print(g.best_score)
+    # print(g.score(x, y))
 
-    g.save_bestest_model()
-    bst_model = g.load_bestest_model()
-    print(bst_model.score(x, y))
-    print(g.score_dict)
-    g.save_best_model_list()
-    print(g.load_best_model_list())
+    # g.save_bestest_model()
+    # bst_model = g.load_bestest_model()
+    # print(bst_model.score(x, y))
+    # print(g.score_dict)
+    # g.save_best_model_list()
+    # print(g.load_best_model_list())

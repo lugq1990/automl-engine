@@ -19,16 +19,13 @@ Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle comp
 
 from auto_ml.automl import ClassificationAutoML, FileLoad
 
-file_name = 'train.csv'
-file_path = r"C:\auto_ml\test"  # Absolute path
-file_load = FileLoad(file_name, file_path=file_path, label_name='Survived')
+file_load = FileLoad(r"C:\auto_ml\test\train.csv", label_name='Survived')
 
 auto_cl = ClassificationAutoML()
 auto_cl.fit(file_load=file_load, val_split=0.2)
 
 # Get prediction based on best trained models
-test_file_name = 'test.csv'
-file_load_test = FileLoad(test_file_name, file_path=file_path)
+file_load_test = FileLoad(r"C:\auto_ml\test\test.csv")
 
 pred = auto_cl.predict(file_load=file_load_test)
 ```

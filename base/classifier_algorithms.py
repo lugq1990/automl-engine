@@ -135,9 +135,9 @@ class LogisticRegression(ClassifierClass):
 
         c_list = UniformHyperparameter(name="C", low=0.1, high=10, size=3)
         # dual = CategoryHyperparameter(name="dual", categories=[True, False])
-        grid = GridHyperparameter(name="C", values=[1, 2, 3])
+        # grid = GridHyperparameter(name="C", values=[1, 2, 3])
 
-        config.add_hyper([c_list, grid])
+        config.add_hyper([c_list])
 
         # config.get_hypers()
         return config.get_hypers()
@@ -176,9 +176,9 @@ class SupportVectorMachine(ClassifierClass):
 
         c_list = UniformHyperparameter(name="C", low=0.1, high=10, size=3)
         # dual = CategoryHyperparameter(name="dual", categories=[True, False])
-        grid = GridHyperparameter(name="C", values=[10, 20, 30])
+        # grid = GridHyperparameter(name="C", values=[10, 100])
 
-        config.add_hyper([c_list, grid])
+        config.add_hyper([c_list])
 
         return config.get_hypers()
 
