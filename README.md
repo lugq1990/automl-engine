@@ -1,8 +1,10 @@
 # auto-ml-cl
 
-How to create a machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about `Data Loading`, `Feature Engineering`, `Model Training`, `Model Selection`, `Model Evaluation` and `Model Sink`, even `RESTful` with best trained model. Now this is **auto_ml_cl** comes in.
+Get best models with only **3** lines of code no matter what type of data with **auto-ml-cl**.
 
-This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with few lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine. Currently this repository is only support with `Classification` problem.
+How to create a machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about `Data Loading`, `Feature Engineering`, `Model Training`, `Model Selection`, `Model Evaluation` and `Model Sink`, even `RESTful` with best trained model. Now **Auto-ML** comes in to show power!
+
+This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with **3** lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine. Noted: currently this repository is only support with `Classification` problem, will try to support with `Regression` sooner.
 
 Key features highlights:
  - `machine learning` and `neural network models` are supported.
@@ -19,13 +21,13 @@ Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle comp
 
 from auto_ml.automl import ClassificationAutoML, FileLoad
 
-file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test\", label_name='Survived')
+file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name='Survived')
 
 auto_cl = ClassificationAutoML()
 auto_cl.fit(file_load=file_load, val_split=0.2)
 
 # Get prediction based on best trained models
-file_load_test = FileLoad(file_name="test.csv", file_path = r"C:\auto_ml\test\")
+file_load_test = FileLoad(file_name="test.csv", file_path = r"C:\auto_ml\test")
 
 pred = auto_cl.predict(file_load=file_load_test)
 ```
@@ -114,4 +116,5 @@ Insight for logics to `auto` machine learning training steps.
 7. Start `training` with training pipeline with processed data with doing parameters search to find `best parameter's model`, also combined with Neural network search to find best neural models. If need `validation` will use some data to do validation that will reduce training data size, or could use trainded `auto_ml` object to do validation will also be fine.
 8. Use `Ensemble` logic to do `voting` or `stacking` to combine trained models as a new more diverse model based on best trained model.
 9.  `Evaluate` each trained models based on validation data and return a ditionary with `training model name`, `training score` and `validation score`.
-10.  Support to `export trained models into a new folder` that we want.
+10.  Support to `export trained models into a pre-defined folder` that we want.
+11.  Support `RESTful API` call based on best trained model based on `test score`.
