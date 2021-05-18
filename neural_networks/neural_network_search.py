@@ -141,7 +141,7 @@ class EvaluateNeuralModel:
             model_path = OUTPUT_FOLDER
 
         for model, model_score in zip(self.model_list, score_list):
-            model_name = self.algorithm_name + '-' + str(model_score) + model_name_suffix
+            model_name = self.algorithm_name + '_' + str(model_score) + model_name_suffix
             try:
                 model.save(os.path.join(model_path, model_name))
 

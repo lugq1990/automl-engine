@@ -140,12 +140,16 @@ class GridSearchModel(object):
                 estimator = estimators_list[i]
                 # Training happen here for each algorithm with n-fold CV!
                 cv_result = cross_validate(estimator=estimator, 
-                                        X=x, y=y, cv=3, 
+                                        X=x, y=y, cv=2, 
                                         return_train_score=True, 
                                         return_estimator=True)
 
                 mean_train_score = round(cv_result['train_score'].mean(), 6)
                 mean_test_score = round(cv_result['test_score'].mean(), 6)
+
+                # Noted: CV is just to get training info, but real estimator hasn't been fitted!
+                # Real training should happen
+                estimator.fit(x, y)
 
                 # Now for score_dict key is: {name+train_score: [instance, test_score]}
                 estimator_train_name = estimator.name + "_" + str(mean_train_score)
@@ -173,6 +177,8 @@ class GridSearchModel(object):
 
         # after we have get the score, then we should store the trained estimators
         logger.info("Start to save best selected models into disk.")
+        # remove duplicate ones
+        # self.estimator_list = list(set(self.estimator_list))
         self.save_best_model_list()
 
         return self
@@ -241,10 +247,12 @@ class GridSearchModel(object):
                 raise ValueError("Couldn't get algorithm: {} from `self._score_list`".format(alg))
             
             # sort models based on test score.
-            alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)
+            alg_list = sorted(set(alg_list), key=lambda l: l[-1], reverse=True)
+            print(alg_list)
     
             if len(alg_list) > self.n_best_model:
-                alg_list = alg_list[self.n_best_model]
+                alg_list = alg_list[:self.n_best_model]
+            
 
             for i in range(len(alg_list)):
                 # Loop for satisfied algorithm instance and dump each of them.
@@ -386,20 +394,20 @@ class GridSearchModel(object):
 
 
 if __name__ == '__main__':
-    from sklearn.datasets import load_iris
+    from sklearn.datasets import load_iris, load_digits
     from auto_ml.base.classifier_algorithms import LogisticRegression
-    from auto_ml.base.classifier_algorithms import GradientBoostingTree
+    from auto_ml.base.classifier_algorithms import GradientBoostingTree, LightGBMClassifier
     from auto_ml.utils.backend_obj import Backend
 
-    backend = Backend()
+    backend = Backend(output_folder=r"C:\Users\guangqiiang.lu\Downloads\test_automl")
 
-    x, y = load_iris(return_X_y=True)
+    x, y = load_digits(return_X_y=True)
 
     g = GridSearchModel(backend)
     lr = LogisticRegression()
-    clf = GradientBoostingTree()
+    clf = LightGBMClassifier()
     g.add_estimator(lr)
-    # g.add_estimator(clf)
+    g.add_estimator(clf)
 
     g.fit(x, y)
     # print(g.best_estimator)

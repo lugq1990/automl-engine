@@ -386,58 +386,55 @@ class PipelineTrain(Pipeline):
         :param x:
         :return:
         """
-        try:
-            if estimator is None:
-                # This is used for on-line prediction that we couldn't get training status that we have already get.
-                # so here is try to re-construct best trained model from disk.
-                logger.warning("When to get model prediction, estimator hasn't been provided, "
-                               "use best trained model from disk to get prediction!")
-                # if the estimator is None, then try to get the best score instance for this.
-                models_list = self.backend.load_models_combined_with_model_name()
+        if estimator is None:
+            # This is used for on-line prediction that we couldn't get training status that we have already get.
+            # so here is try to re-construct best trained model from disk.
+            logger.warning("When to get model prediction, estimator hasn't been provided, "
+                            "use best trained model from disk to get prediction!")
+            # if the estimator is None, then try to get the best score instance for this.
+            models_list = self.backend.load_models_combined_with_model_name()
 
-                if len(models_list) == 0:
-                    logger.error("When try to get model prediction, couldn't get trained models from disk! Please try to check!")
-                    return
+            if len(models_list) == 0:
+                logger.error("When try to get model prediction, couldn't get trained models from disk! Please try to check!")
+                return None
 
-                try:
-                    # This is changed as the score is with `AdaboostClassifier-0.766667.pkl`
-                    model_score = []
-                    for ml_name, _ in models_list:
-                        ml_score = ml_name.split('-')[1]
-                        ml_score = float(ml_score[:ml_score.rindex('.')])
-                        model_score.append(ml_score)
-                    # model_score = [float(model_name.split('-')[1].split('.')[0]) for model_name, _ in models_list]
-                    estimator = models_list[np.argmax(model_score)][1]
+            try:
+                # This is changed as the score is with `AdaboostClassifier_0.766667.pkl`
+                model_score = []
+                for ml_name, _ in models_list:
+                    ml_score = ml_name.split('_')[1]
+                    ml_score = float(ml_score[:ml_score.rindex('.')])
+                    model_score.append(ml_score)
+                # model_score = [float(model_name.split('-')[1].split('.')[0]) for model_name, _ in models_list]
+                estimator = models_list[np.argmax(model_score)][1]    
 
-                    if model_name is None:
-                        model_name = models_list[np.argmax(model_score)][0]
+                if model_name is None:
+                    model_name = models_list[np.argmax(model_score)][0]
 
-                    logger.info("Get best estimator: {}".format(model_name))
-                except ValueError as e:
-                    logger.error("When try to get model score based on trained model name, get error: {}".format(e))
-                    raise e
-                
-            if not hasattr(estimator, 'predict_proba'):
-                raise NotImplementedError("For estimator:{} "
-                                          "doesn't support `predict_proba` func".format(self.training_pipeline))
+                logger.info("Get best estimator: {}".format(model_name))
+            except ValueError as e:
+                logger.error("When try to get model score based on trained model name, get error: {}".format(e))
+                raise e
+            
+        if not hasattr(estimator, 'predict_proba'):
+            raise NotImplementedError("For estimator:{} "
+                                        "doesn't support `predict_proba` func".format(self.training_pipeline))
 
-            # let's just make the processing step with data here!
-            x = self._process_dataset_with_processor(x)
+        # let's just make the processing step with data here!
+        x = self._process_dataset_with_processor(x)
 
-            # When we do real processing for `stacking`, new created dataset should happen here.
-            if model_name is not None:
-                if model_name.lower().startswith('stacking'):
-                    logger.info("Start to produce new dataset with `stacking` class.")
-                    x = ModelEnsemble.create_stacking_dataset(x, backend=self.backend)
-                else:
-                    raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
+        # When we do real processing for `stacking`, new created dataset should happen here.
+        if model_name is not None:
+            if model_name.lower().startswith('stacking'):
+                logger.info("Start to produce new dataset with `stacking` class.")
+                x = ModelEnsemble.create_stacking_dataset(x, backend=self.backend)
+            else:
+                raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
 
-            prob = estimator.predict_proba(x)
+        prob = estimator.predict_proba(x)
 
-            return prob
-        except Exception as e:
-            logger.error("When try to use pipeline to get prediction with error: {}".format(e))
-            raise RuntimeError("When try to use pipeline to get prediction with error: {}".format(e))
+        return prob
+        
 
     def _fit(self, x, y, n_jobs=None):
         """
@@ -448,28 +445,23 @@ class PipelineTrain(Pipeline):
         # before we do anything, first should ensure we have proper data and label
         self._check_data_and_lable(x, y)
 
-        try:
-            # real training pipeline with Grid search to find best models, also will store the
-            # best models.
-            logger.info("Start to do pipeline training step.")
-            start_time = time.time()
+        # real training pipeline with Grid search to find best models, also will store the
+        # best models.
+        logger.info("Start to do pipeline training step.")
+        start_time = time.time()
 
-            self.training_pipeline.fit(x, y, n_jobs=None)
-            logger.info("Training pipeline finished takes: {} seconds.".format(round((time.time() - start_time)), 2))
+        self.training_pipeline.fit(x, y, n_jobs=None)
+        logger.info("Training pipeline finished takes: {} seconds.".format(round((time.time() - start_time)), 2))
 
             # Whether or not to use `model_ensemble`
-            if self.use_ensemble:
-                logger.info("We are going to use `ensemble` logic to combine models!")
-                # so that we could config this based on what we want.
-                kwargs = {"ensemble_alg": self.ensemble_alg, "voting_logic": self.voting_logic}
+        if self.use_ensemble:
+            logger.info("We are going to use `ensemble` logic to combine models!")
+            # so that we could config this based on what we want.
+            kwargs = {"ensemble_alg": self.ensemble_alg, "voting_logic": self.voting_logic}
 
-                start_time = time.time()
-                self._fit_ensemble(x, y, **kwargs)
-                logger.info("`Ensemble` training pipeline finished takes: {} seconds.".format(round(time.time() - start_time), 2))
-
-        except Exception as e:
-            logger.error("When do real pipeline training get error: {}".format(e))
-            raise Exception("When do real pipeline training get error: {}".format(e))
+            start_time = time.time()
+            self._fit_ensemble(x, y, **kwargs)
+            logger.info("`Ensemble` training pipeline finished takes: {} seconds.".format(round(time.time() - start_time), 2))
 
     def __repr__(self):
         if self.training_pipeline is None:
@@ -504,13 +496,12 @@ class PipelineTrain(Pipeline):
 
         model_ensemble = ModelEnsemble(backend=self.backend, ensemble_alg=ensemble_alg, voting_logic=voting_logic)
 
-        try:
-            # in fact with `training`, then the model will be saved into disk directly.
-            # so that we don't need to care the rest, just `fit`
-            model_ensemble.fit(data, label)
-        except Exception as e:
-            raise RuntimeError("When try to use `ModelEnsemble` to do model ensemble logic, "
-                               "we get error: {}".format(e))
+        # in fact with `training`, then the model will be saved into disk directly.
+        # so that we don't need to care the rest, just `fit`
+        logger.info("Start to build `ensemble` logic using `{}` algorithm with voting logic: {}".format(ensemble_alg, voting_logic))
+        
+        model_ensemble.fit(data, label)
+        
 
     def _process_dataset_with_processor(self, x):
         """
@@ -654,6 +645,7 @@ if __name__ == '__main__':
 
     models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
     backend = Backend(output_folder=models_path)
+    print("Backend output folder ", backend.output_folder)
 
     classifier_pipeline = ClassificationPipeline(backend=backend)
     # print(classifier_pipeline)
@@ -670,7 +662,7 @@ if __name__ == '__main__':
     from auto_ml.test.get_test_data import get_training_data
     from sklearn.model_selection import train_test_split
 
-    x, y = get_training_data()
+    # x, y = get_training_data()
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
 
     classifier_pipeline.fit(xtrain, ytrain)

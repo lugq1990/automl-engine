@@ -12,6 +12,7 @@ automl training logic.
 import numpy as np
 from sklearn.ensemble import VotingClassifier, VotingRegressor
 from sklearn.model_selection import cross_validate
+from tensorflow.python.types.core import Value
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.metrics.scorer import accuracy, r2
 from auto_ml.base.classifier_algorithms import ClassifierClass, ClassifierFactory
@@ -63,9 +64,6 @@ class ModelEnsemble(ClassifierClass):
             if ensemble_alg == 'stacking' else None
 
     def fit(self, x, y, **kwargs):
-        # First we should to get whole trained models no matter for `voting` or `stacking`
-        # self.model_list_without_score = self._get_model_list_without_score()
-
         if self.ensemble_alg == 'voting':
             self.fit_bagging(x, y, **kwargs)
         elif self.ensemble_alg == 'stacking':
@@ -144,7 +142,7 @@ class ModelEnsemble(ClassifierClass):
         # model score should also based on CV result.
         score = cross_validate(self.estimator, x_new, y, cv=5)['test_score'][0]
         score = str(round(score, 6))
-        stacking_model_name = "Stacking-{}".format(score)
+        stacking_model_name = "Stacking_{}".format(score)
         logger.info("Stacking model score: {}".format(score))
 
         self.backend.save_model(self.estimator, stacking_model_name)
@@ -156,7 +154,7 @@ class ModelEnsemble(ClassifierClass):
         :return:
         """
         algorithm_name_list = load_yaml_file()['classification']['default']
-        trained_model_alg_name_list = [x[0].split("-")[0] for x in self.model_list_without_score]
+        trained_model_alg_name_list = list(set([x[0].split("_")[0] for x in self.model_list_without_score]))
 
         for algo_name in trained_model_alg_name_list:
             if algo_name in algorithm_name_list:
@@ -187,11 +185,11 @@ class ModelEnsemble(ClassifierClass):
         if not model_list:
             raise IOError("There isn't any trained model for `Ensemble`.")
 
-        # after we have get the model list, we should ensure the model by the model
-        # name with endswith score.
+        # Get sorted model based on model name score.
         # Model name like this: ('lr_0.98.pkl', lr)
         # model_list.sort(key=lambda x: float("0." + x[0].split('-')[1].split('.')[0]), reverse=True)
-        model_list.sort(key=lambda x: float(x[0].split('-')[1].split('.')[0]))
+        model_list = sorted(model_list, key=lambda x: float(x[0].split("_")[1].replace(".pkl", '')))
+        # model_list.sort(key=lambda x: float(x[0].split('-')[1].split('.')[0]))
 
         return model_list
 
@@ -244,14 +242,19 @@ class ModelEnsemble(ClassifierClass):
         # Whole trained estimator prediction result.
         pred_array = np.empty((len(x), n_estimators))
 
-        logger.info("Start to get trained model prediction for `stacking`")
+        logger.info("Get {} trained models' prediction for `stacking`".format(n_estimators))
         model_list_without_score = model_ensemble.model_list_without_score
+
         for i in range(n_estimators):
             logger.info("To get prediction for estimator: {}".format(model_list_without_score[i][0]))
 
-            estimator = model_list_without_score[i][1]
+            model = model_list_without_score[i][1]
 
-            pred = estimator.predict(x)
+            if model is None:
+                raise ValueError("We get None estimator from disk! Please check!")
+            
+            # Noted: To get prediction, we need to use attr: `estimator` as real trained instance!
+            pred = model.estimator.predict(x)
             pred_array[:, i] = pred
 
         # Then should combined the prediction and original data
@@ -262,12 +265,17 @@ class ModelEnsemble(ClassifierClass):
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
+
     from auto_ml.test.get_test_data import get_training_data
+    from auto_ml.utils.backend_obj import Backend
 
     x, y = load_iris(return_X_y=True)
     x, y = get_training_data()
 
-    model_ensemble = ModelEnsemble(ensemble_alg='stacking', voting_logic='soft', )
+    backend = Backend(output_folder=r"C:\Users\guangqiiang.lu\Downloads\test_automl")
+
+    print("Get backend output folder:", backend.output_folder)
+    model_ensemble = ModelEnsemble(backend=backend, ensemble_alg='stacking', voting_logic='soft', )
 
     model_ensemble.fit(x, y)
     # print([x[1].__class__ for x in model_ensemble.model_list])

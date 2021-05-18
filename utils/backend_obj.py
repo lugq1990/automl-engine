@@ -101,7 +101,7 @@ class Backend(object):
             logger.error("When try to save model: %s, face problem: %s" % (identifier, e))
             raise IOError("When try to save model: %s, face problem: %s" % (identifier, e))
 
-    def load_model(self, identifier):
+    def load_model(self, identifier, model_suffix='.pkl'):
         """
         Get model instance object with just model name.
          Noted: `identifier` should contain with `extension`!
@@ -111,13 +111,16 @@ class Backend(object):
         """
         # Here has to be changed for different platform
         default_neural_network_algorithms = hyper_yml['DefaultAlgorithms']
-        identi_name = identifier.split('-')[0]
+        identi_name = identifier.split('_')[0]
         if identi_name in default_neural_network_algorithms:
             # Keras model.
             return self.load_keras_model(identifier)
 
         # For sklearn models by using `pickle`
         try:
+            if not identifier.endswith(model_suffix):
+                identifier += model_suffix
+
             model_file_path = os.path.join(self.output_folder, identifier)
             self._file_exists(model_file_path)
 
@@ -323,28 +326,45 @@ class Backend(object):
                         # in case if need with many trials couldn't delete these files, not good idea, so raise will be a solution
                         raise IOError("When try to remove file: {} in folder:{} get error: {}".format(file, folder_name, e))
         
-    @classmethod
-    def __new__(cls, *args, **kwargs):
-        """
-        `Singleton` is used to ensure there will be just one instance in
-        whole running process.
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        if not cls.instance:
-            # we should avoid to use __new__(cls, *args, **kwargs) as with error need to fix, just with __new__(cls) will be fine.
-            # https://stackoverflow.com/questions/34777773/typeerror-object-takes-no-parameters-after-defining-new
-            cls.instance = super(Backend, cls).__new__(cls)
+    # @classmethod
+    # def __new__(cls, *args, **kwargs):
+    #     """
+    #     `Singleton` is used to ensure there will be just one instance in
+    #     whole running process.
+    #     :param args:
+    #     :param kwargs:
+    #     :return:
+    #     """
+    #     if not cls.instance:
+    #         # we should avoid to use __new__(cls, *args, **kwargs) as with error need to fix, just with __new__(cls) will be fine.
+    #         # https://stackoverflow.com/questions/34777773/typeerror-object-takes-no-parameters-after-defining-new
+    #         cls.instance = super(Backend, cls).__new__(cls)
             
-        return cls.instance
+    #     return cls.instance
 
 
 if __name__ == "__main__":
-    backend = Backend()
+    from auto_ml.base.classifier_algorithms import LogisticRegression
+    output_folder = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
+    backend = Backend(output_folder=output_folder)
     print(backend.output_folder)
     print(backend.tmp_folder_name)
 
+    # model_list = backend.load_models_combined_with_model_name()
+    # model_list = sorted(model_list, key=lambda x: float(x[0].split("_")[1].replace(".pkl", '')))
+    # print(model_list)
+
+    from sklearn.datasets import load_iris
+    x, y = load_iris(return_X_y=True)
+
+    lr = LogisticRegression()
+    lr.fit(x, y)
+    backend.save_model(lr, "lr_0.23")
+    
+    lr_new = backend.load_model("lr_0.23")
+    model = lr
+    print("Model has been trained?", hasattr(model.estimator, 'coef_'))
+    print(model.estimator.score(x, y))
     # print(backend.load_models_combined_with_model_name())
 
     # # To test there is just one instance.

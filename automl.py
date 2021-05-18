@@ -155,7 +155,7 @@ class AutoML(BaseEstimator):
 
         # sort models by `training` score with diff type of problem
         models_list = sorted(models_list,
-                             key=lambda model: float(model[0].split("-")[1].replace(".pkl", '').replace(".h5", '')),
+                             key=lambda model: float(model[0].split("_")[1].replace(".pkl", '').replace(".h5", '')),
                              reverse=reverse)
 
         return models_list
@@ -504,7 +504,7 @@ class FileLoad:
 if __name__ == '__main__':
     # Test with `FileLoad` class
     file_name = 'train.csv'
-    file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\code_for_future\auto_ml_pro\auto_ml\test"
+    file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\real_code\auto_ml\auto_ml\test"
     # file_path = "gs://cloud_sch_test"
     # service_account_file_path = r"C:\Users\guangqiiang.lu\Downloads"
     # service_account_name = "buoyant-sum-302208-4542dcd74629.json"

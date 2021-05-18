@@ -62,6 +62,9 @@ class ClassifierFactory:
 
 class ClassifierClass(BaseEstimator):
     def __init__(self):
+        """TODO: Change here. Here should be changed, as `self.estimator` will be constructed from `fit`, if
+        we have saved trained instance into disk, then re-load won't get the `estimator`!
+        """
         super(ClassifierClass, self).__init__()
         self.name = self.__class__.__name__
         self.estimator = None
@@ -72,7 +75,12 @@ class ClassifierClass(BaseEstimator):
         raise NotImplementedError
 
     def predict(self, x):
-        pred = self.estimator.predict(x)
+        try:            
+            pred = self.estimator.predict(x)
+        except:
+            prob = self.predict_proba(x)
+            pred = np.argmax(prob, axis=1)
+
         return pred
 
     def score(self, x, y):
@@ -80,11 +88,12 @@ class ClassifierClass(BaseEstimator):
         return score
 
     def predict_proba(self, x):
-        try:
-            prob = self.estimator.predict_proba(x)
-            return prob
-        except:
-            raise NotImplementedError("Current estimator doesn't support predict_proba!")
+        prob = self.estimator.predict_proba(x)
+        return prob
+
+    # def _check_estimator_func(self, func_name):
+    #     if not hasattr(self.estimator, func_name):
+    #         raise ValueError("Current `estimator`: {} doesn't support function: {}".format(self.estimator, func_name))
 
     @staticmethod
     def get_search_space():
@@ -106,7 +115,7 @@ class LogisticRegression(ClassifierClass):
                  n_jobs=None,
                  random_state=1234
                  ):
-        super(LogisticRegression, self).__init__()
+        super().__init__()
         self.C = C
         self.class_weight = class_weight
         self.dual = dual
@@ -115,7 +124,6 @@ class LogisticRegression(ClassifierClass):
         self.n_jobs = n_jobs
         self.random_state = random_state
 
-    def fit(self, x, y):
         from sklearn.linear_model import LogisticRegression
 
         self.estimator = LogisticRegression(C=self.C,
@@ -126,6 +134,9 @@ class LogisticRegression(ClassifierClass):
                                 n_jobs=self.n_jobs,
                                 random_state=self.random_state)
 
+
+    def fit(self, x, y):
+        
         self.estimator.fit(x, y)
         return self
 
@@ -133,7 +144,7 @@ class LogisticRegression(ClassifierClass):
     def get_search_space():
         config = ConfigSpace()
 
-        c_list = UniformHyperparameter(name="C", low=0.1, high=10, size=3)
+        c_list = UniformHyperparameter(name="C", low=0.1, high=100, size=3)
         # dual = CategoryHyperparameter(name="dual", categories=[True, False])
         # grid = GridHyperparameter(name="C", values=[1, 2, 3])
 
@@ -425,7 +436,7 @@ if __name__ == '__main__':
 
     x, y = load_iris(return_X_y=True)
 
-    lr = XGBClassifier()
+    lr = LogisticRegression()
 
     print(lr.get_search_space())
 

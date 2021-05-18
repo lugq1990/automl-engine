@@ -41,11 +41,10 @@ from pathlib import Path
 # TODO:Have to write the folder names into disk, otherwise how we know the only one tmp folder?
 def get_tmp_folder():
     cur_path = os.path.abspath(Path(__file__).parent)
-
-    print("Get cur_path: ", cur_path)
+    
     try:
         config_file_path = os.path.join(cur_path, 'config.txt')
-        if not os.path.exists(config_file_path):
+        if not os.path.exists(cur_path) or not os.path.exists(config_file_path):
             return tempfile.mkdtemp() 
 
         with open(config_file_path, 'r') as f:
