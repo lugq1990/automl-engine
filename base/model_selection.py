@@ -133,9 +133,8 @@ class GridSearchModel(object):
         estimators_list = self._get_estimators_list()
 
         with tqdm.tqdm(range(len(estimators_list))) as process:
-            start_time = time.time()
             for i in range(len(estimators_list)):
-                
+                start_time = time.time()
                 # Not using GridSearch class, but to use cross_validate to get best models.
                 estimator = estimators_list[i]
                 # Training happen here for each algorithm with n-fold CV!

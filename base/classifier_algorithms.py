@@ -396,7 +396,8 @@ class XGBClassifier(ClassifierClass):
                     objective='binary:logistic',
                     reg_lambda=1, 
                     reg_alpha=0, 
-                    gamma=0):
+                    gamma=0,
+                    verbose=0):
         super().__init__()
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
@@ -404,6 +405,8 @@ class XGBClassifier(ClassifierClass):
         self.reg_lambda = reg_lambda
         self.reg_alpha = reg_alpha
         self.gamma = gamma
+        # Whether or not to see logs
+        self.verbose = verbose
     
     def fit(self, x, y, **kwargs):
         from xgboost import XGBClassifier
@@ -413,7 +416,8 @@ class XGBClassifier(ClassifierClass):
                                         reg_lambda=self.reg_lambda,
                                         objective=self.objective,
                                         gamma=self.gamma,
-                                        reg_alpha=self.reg_alpha)
+                                        reg_alpha=self.reg_alpha,
+                                        verbose=self.verbose)
 
         self.estimator.fit(x, y, **kwargs)
         return self
