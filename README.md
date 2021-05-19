@@ -17,15 +17,20 @@ Key features highlights:
  - `RESTful API` for API call to get prediction based on best trained model.
 
 Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle competion, as this dataset contain different kinds of data types also contain some missing values with different threasholds.
+
 ```python
 
 from auto_ml.automl import ClassificationAutoML, FileLoad
 
 file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name='Survived')
-
 auto_cl = ClassificationAutoML()
 auto_cl.fit(file_load=file_load, val_split=0.2)
+```
 
+That's it all you need to get best models based on your dataset!
+
+If you need to get model prediction based on best trained model, that's easy just call `predict` function based on test data file like bellow code.
+```python
 # Get prediction based on best trained models
 file_load_test = FileLoad(file_name="test.csv", file_path = r"C:\auto_ml\test")
 
