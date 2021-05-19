@@ -1,3 +1,4 @@
+pandas
 scikit-learn
 pyyaml
 tensorflow >= 2.1.0
@@ -8,5 +9,4 @@ xgboost
 flask
 flask_restful
 tqdm
-pandas
 numpy

@@ -290,15 +290,19 @@ class ClassificationAutoML(AutoML):
         logger.info(score_log_str)
 
         for model_name, test_score in score_dict.items():
-            model_name_split = model_name.split('_')
-            # model_name = model_name_split[0]
-            train_score = model_name_split[1]
-            train_score = train_score[:train_score.rindex(".")]
-            # must convert to str, otherwise with not wanted result.
-            test_score = str(test_score)
-            
-            log_str = out_str_format.format(model_name, train_score, test_score)
-            score_log_str += '\n' + log_str
+            try:
+                model_name_split = model_name.split('_')
+                # model_name = model_name_split[0]
+                train_score = model_name_split[1]
+                train_score = train_score[:train_score.rindex(".")]
+                # must convert to str, otherwise with not wanted result.
+                test_score = str(test_score)
+                
+                log_str = out_str_format.format(model_name, train_score, test_score)
+                score_log_str += '\n' + log_str
+            except Exception as e:
+                logger.warning("Get invalidate model name: {}".format(model_name))
+                continue
 
             logger.info(log_str)
         
