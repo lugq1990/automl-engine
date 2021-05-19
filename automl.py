@@ -290,7 +290,7 @@ class ClassificationAutoML(AutoML):
         logger.info(score_log_str)
 
         for model_name, test_score in score_dict.items():
-            model_name_split = model_name.split('-')
+            model_name_split = model_name.split('_')
             # model_name = model_name_split[0]
             train_score = model_name_split[1]
             train_score = train_score[:train_score.rindex(".")]
@@ -304,7 +304,7 @@ class ClassificationAutoML(AutoML):
         
         return score_log_str
 
-    def get_sorted_models_scores(self, file_load=None, xtest=None, ytest=None, **kwargs):
+    def get_sorted_models_scores(self, xtest=None, ytest=None, file_load=None, **kwargs):
         """
         To get some best trained model's score for `test` data with ordered.
 
@@ -518,7 +518,7 @@ if __name__ == '__main__':
     auto_cl = ClassificationAutoML(models_path=models_path)
 
     # Start to train processing for `FileLoad`
-    auto_cl.fit(file_load=file_load)
+    auto_cl.fit(file_load=file_load, val_split=.2)
     print(auto_cl.models_list)
     # print(auto_cl.score(file_load_pred))
 
@@ -534,6 +534,7 @@ if __name__ == '__main__':
     print(auto_cl.predict_proba(file_load=file_load)[:10])
     print("*" * 20)
     print(auto_cl.score(file_load=file_load))
+    print(auto_cl.get_sorted_models_scores(file_load=file_load))
 
     # try to use sklearn iris dataset
     # from sklearn.datasets import load_iris
