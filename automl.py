@@ -388,13 +388,27 @@ class FileLoad:
 
     Make this class as a container for later use case.
     """
-    def __init__(self, file_name, file_path=None, file_sep=',', label_name='label', use_for_pred=False,
+    def __init__(self, file_name, label_name='label', file_path=None, file_sep=',', use_for_pred=False,
             service_account_file_name=None, service_account_file_path=None, except_columns=None):
-        """
-        Support with prediction data load. If true, have to set parameter: `use_for_pred=True`
+        """Main container for file-like dataset.
+
+        Args:
+            file_name (str): Name of file
+            label_name (str, optional): What is `label` column's name?. Defaults to 'label'.
+            file_path (str, optional): Where file located?. Defaults to None.
+            file_sep (str, optional): File seprator. Defaults to ','.
+            use_for_pred (Boolean, optional): Whether to use this for prediction? 
+                Noted: If file doesn't contain label column, do need set this parameter to `True`. Defaults to False.
+            service_account_file_name (str, optional): SA file name. Defaults to None.
+            service_account_file_path (str, optional): SA file path. Defaults to None.
+            except_columns (List, optional): Columns are needed to be used. Defaults to None.
+
+        Raises:
+            ValueError: [description]
         """
         if not file_name.endswith('csv'):
             raise ValueError("Currently only support CSV file! Please provide with a CSV file.")
+            
         self.file_name = file_name
         self.file_sep = file_sep
         self.file_path = file_path if file_path is not None else '.'

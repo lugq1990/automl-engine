@@ -397,7 +397,7 @@ class XGBClassifier(ClassifierClass):
                     reg_lambda=1, 
                     reg_alpha=0, 
                     gamma=0,
-                    verbose=0):
+                    eval_metric='mlogloss'):
         super().__init__()
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
@@ -405,8 +405,8 @@ class XGBClassifier(ClassifierClass):
         self.reg_lambda = reg_lambda
         self.reg_alpha = reg_alpha
         self.gamma = gamma
-        # Whether or not to see logs
-        self.verbose = verbose
+        # Whether or not to see logs, `verbose` is not used for xgboost higher version, set with `eval_metric` to avoid warnings
+        self.eval_metric = eval_metric
     
     def fit(self, x, y, **kwargs):
         from xgboost import XGBClassifier
@@ -417,7 +417,7 @@ class XGBClassifier(ClassifierClass):
                                         objective=self.objective,
                                         gamma=self.gamma,
                                         reg_alpha=self.reg_alpha,
-                                        verbose=self.verbose)
+                                        eval_metric=self.eval_metric)
 
         self.estimator.fit(x, y, **kwargs)
         return self
