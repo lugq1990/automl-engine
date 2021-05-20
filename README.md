@@ -6,20 +6,16 @@ How to create a machine learning and deep learning models with just a few lines 
 
 This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with **3** lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine. Noted: currently this repository is only support with `Classification` problem, will try to support with `Regression` sooner.
 
-Key features highlights:
- - `machine learning` and `neural network models` are supported.
- - `Automatically data pre-processing` with missing, unstable, categorical various data types.
- - `Ensemble logic` to combine models to build more powerful models.
- - `Nueral network models search` with `kerastunner` to find best hyper-parameter for specific type of algorithm.
- - `Cloud files` are supported like: `Cloud storage` for GCP or local files.
- - `Logging` different processing information into one date file for future reference.
- - `Processing monitoring` for each algorithm training status.
- - `RESTful API` for API call to get prediction based on best trained model.
+## Installation
+
+- `pip install auto-ml-cl`
+
+## Getting started
+
 
 Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle competion, as this dataset contain different kinds of data types also contain some missing values with different threasholds.
 
 ```python
-
 from auto_ml.automl import ClassificationAutoML, FileLoad
 
 file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name='Survived')
@@ -72,6 +68,20 @@ pred = auto_cl.predict(xtest)
 prob = auto_cl.predict_proba(xtest)
 ```
 
+## Key features
+
+ - `machine learning` and `neural network models` are supported.
+ - `Automatically data pre-processing` with missing, unstable, categorical various data types.
+ - `Ensemble logic` to combine models to build more powerful models.
+ - `Nueral network models search` with `kerastunner` to find best hyper-parameter for specific type of algorithm.
+ - `Cloud files` are supported like: `Cloud storage` for GCP or local files.
+ - `Logging` different processing information into one date file for future reference.
+ - `Processing monitoring` for each algorithm training status.
+ - `RESTful API` for API call to get prediction based on best trained model.
+
+
+## Algorithms supported
+
 Current supported algorithms:
  - Logistic Regression
  - Support vector machine
@@ -97,6 +107,8 @@ For raw data file, will try with some common pre-procesing steps to create datas
  - PCA to demension reduction with threashold
  - Feature selection with variance or LinearRegression or ExtraTree
 
+
+## Insights
 
 Insight for logics to `auto` machine learning training steps.    
     
