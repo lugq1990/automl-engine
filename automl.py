@@ -9,6 +9,7 @@ author: Guangqiang.lu
 import numpy as np
 import pandas as pd
 import time
+import matplotlib.pyplot as plt
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import train_test_split
@@ -17,7 +18,7 @@ from auto_ml.utils.backend_obj import Backend
 from auto_ml.base.classifier_algorithms import *
 from auto_ml.metrics.scorer import *
 from auto_ml.utils.CONSTANT import *
-from auto_ml.pipelines.pipeline_training import ClassificationPipeline
+from auto_ml.pipelines.pipeline_training import ClassificationPipeline,  RegressionPipeline
 from auto_ml.utils.logger import create_logger
 
 
@@ -83,7 +84,8 @@ class AutoML(BaseEstimator):
 
         self.delete_models = delete_models
 
-    def fit(self, *args, **kwargs):
+    def fit(self, x=None, y=None, file_load=None, \
+             xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True, *args, **kwargs):
         """
         Type of the problem attribute should be added, so that for `score`,
         we could get metrics based on different problem.
@@ -92,9 +94,41 @@ class AutoML(BaseEstimator):
         :param n_jobs:
         :return:
         """
-        raise NotImplementedError
+        start_time = time.time()
 
-    def predict(self, x, **kwargs):
+        # Add logic here is that we should clean models' folder, so that every time we could get a clean folder for next time running!
+        if self.backend and self.delete_models:
+            self.backend.clean_folder()
+
+        x, y = self._get_data_and_label(file_load, x, y)
+
+        if val_split is not None:
+            # if do need to do validation based on current train data, then just split current data into validation as well
+            x, xval, y, yval = train_test_split(x, y, test_size=val_split)
+        else:
+            # Here I think if and only if the data length is over a threashold, then to do validation,even user haven't provided val data.
+            if len(x) > VALIDATION_THRESHOLD:
+                val_split = .2
+                # if do need to do validation based on current train data, then just split current data into validation as well
+                x, xval, y, yval = train_test_split(x, y, test_size=val_split)
+
+        # after the checking process, then we need to create the Pipeline for whole process.
+        # Here should use a Pipeline object to do real training, also with `ensemble`
+        self.estimator.fit(x, y, n_jobs=n_jobs, use_neural_network=use_neural_network)
+
+        # load trained models for prediction and scoring for testing data.
+        # after we have fitted the trained models, then next step is to load whole of them from disk
+        # and sort them based on score, and get scores for `test data` and `test label`
+        # WE could get them from parent function, so that we could also use this for `regression`
+        self.models_list = self._load_trained_models_ordered_by_score(higher_best=True)
+
+        self._validation_models(xval, yval)
+
+        logger.info("Whole training pipeline takes: {} seconds!".format(round(time.time() - start_time, 2)))
+
+        return self
+
+    def predict(self, x=None, file_load=None, **kwargs):
         """
         Most of the prediction logic should happen here, as for the score should based on
         prediction result.
@@ -103,13 +137,15 @@ class AutoML(BaseEstimator):
         :param kwargs:
         :return:
         """
+        x = self._get_training_data(x, file_load)
+
         logger.info("Start to get prediction based on best trained model.")
         prediction = self.estimator.predict(x)
         logger.info("Prediction step finishes.")
 
         return prediction
 
-    def predict_proba(self, x, **kwargs):
+    def predict_proba(self, x=None, file_load=None, **kwargs):
         """
         Should support with probability if supported.
         :param x:
@@ -120,18 +156,25 @@ class AutoML(BaseEstimator):
         if not hasattr(self.estimator, 'predict_proba'):
             raise NotImplementedError("Best fitted model:{} doesn't support `predict_proba`".format(self.best_model))
 
+        x = self._get_training_data(x, file_load)
+
         logger.info("Start to get probability based on best trained model.")
         prob = self.estimator.predict_proba(x)
         logger.info("Prediction step finishes.")
 
         return prob
 
-    def score(self, x, y, **kwargs):
+    def score(self, x=None, y=None, file_load=None, **kwargs):
         self._check_fitted()
 
         logger.info("Start to get prediction based on best trained model!")
 
-        # Use child func.
+        self._check_param(file_load, x, y)
+
+        if file_load is not None:
+            x, y = self.__get_file_load_data_label(file_load, use_for_pred=False)
+
+        # Use child func, child should implement with score based on different type of problem.
         score = self.estimator.score(x, y)
 
         logger.info("Get score: {} based on best model!".format(score))
@@ -182,76 +225,28 @@ class AutoML(BaseEstimator):
 
         return True
 
+    @staticmethod
+    def _check_param(*args):
+        all_None = all([arg is None for arg in args])
 
-class ClassificationAutoML(AutoML):
-    def __init__(self, models_path=None, 
-            include_estimators=None, 
-            exclude_estimators=None, 
-            include_preprocessors=None, 
-            exclude_preprocessors=None,
-            **kwargs):
-        """Added with algorithm selection and processing selection, even with others in case we need.
+        if all_None:
+            raise ValueError("Please provide at least one parameter!")
 
-        Args:
-            models_path (Str, optional): Where to store our models. Defaults to None.
+    @staticmethod
+    def __get_file_load_data_label(file_load, use_for_pred=True):
         """
-        super(ClassificationAutoML, self).__init__(models_path=models_path,
-                                            include_estimators=include_estimators,
-                                            exclude_estimators=exclude_estimators,
-                                            include_preprocessors=include_preprocessors,
-                                            exclude_preprocessors=exclude_preprocessors, **kwargs)
-        # after pipeline has finished, then we should use `ensemble` to combine these models
-        # action should happen here.
-        self.estimator = ClassificationPipeline(backend=self.backend,
-                                            include_estimators=include_estimators,
-                                            exclude_estimators=exclude_estimators,
-                                            include_preprocessors=include_preprocessors,
-                                            exclude_preprocessors=exclude_preprocessors, 
-                                            **kwargs)
-
-    def fit(self, x=None, y=None, file_load=None, \
-             xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True):
+        Get data and label from original obj.
         """
-        Real training logic happen here, also store trained models.
+        data, label = file_load.data, file_load.label
+        
+        return data, label
 
-        Support both with file to train also with data and label data.
-
-        :param xtrain: train data
-        :param ytrain: label data
-        :param n_jobs: how many cores to use
-        :return:
+    @classmethod
+    def reconstruct(cls, models_path=None, *args, **kwargs):
         """
-        start_time = time.time()
-
-        # Add logic here is that we should clean models' folder, so that every time we could get a clean folder for next time running!
-        if self.backend and self.delete_models:
-            self.backend.clean_folder()
-
-        x, y = self._get_data_and_label(file_load, x, y)
-
-        if val_split is not None:
-            # if do need to do validation based on current train data, then just split current data into validation as well
-            x, xval, y, yval = train_test_split(x, y, test_size=val_split)
-        else:
-            # Here I think if and only if the data length is over a threashold, then to do validation,even user haven't provided val data.
-            if len(x) > VALIDATION_THRESHOLD:
-                val_split = .2
-                # if do need to do validation based on current train data, then just split current data into validation as well
-                x, xval, y, yval = train_test_split(x, y, test_size=val_split)
-
-        # after the checking process, then we need to create the Pipeline for whole process.
-        # Here should use a Pipeline object to do real training, also with `ensemble`
-        self.estimator.fit(x, y, n_jobs=n_jobs, use_neural_network=use_neural_network)
-
-        # load trained models for prediction and scoring for testing data.
-        # after we have fitted the trained models, then next step is to load whole of them from disk
-        # and sort them based on score, and get scores for `test data` and `test label`
-        # WE could get them from parent function, so that we could also use this for `regression`
-        self.models_list = self._load_trained_models_ordered_by_score(higher_best=True)
-
-        self._validation_models(xval, yval)
-
-        logger.info("Whole training pipeline takes: {} seconds!".format(round(time.time() - start_time, 2)))
+        Used for Restful API to create
+        """
+        return cls(models_path, *args, **kwargs)
 
     @staticmethod
     def _get_data_and_label(file_load, x, y):
@@ -327,68 +322,106 @@ class ClassificationAutoML(AutoML):
 
         return score_dict
 
-    def predict(self, x=None, file_load=None, **kwargs):
-        """To support with file_load obj with super func."""
+    def _get_training_data(self, x, file_load):
+        """Get training data based on `file_load` or `x`,
+        if x is provided, then just return x, otherwise should get data 
+        from file_load.
+
+        Either of thems should be provided.
+
+        Args:
+            x ([type]): [description]
+            file_load ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         self._check_param(file_load, x)
 
-        if file_load is not None:
-            x, _ = self.__get_file_load_data_label(file_load)
+        if x is not None:
+            return x
+        elif file_load is not None:
+            x, _ = self.__get_file_load_data_label(file_load)   
+            return x
 
-        pred = super().predict(x)
 
-        return pred
+class ClassificationAutoML(AutoML):
+    def __init__(self, models_path=None, 
+            include_estimators=None, 
+            exclude_estimators=None, 
+            include_preprocessors=None, 
+            exclude_preprocessors=None,
+            **kwargs):
+        """Added with algorithm selection and processing selection, even with others in case we need.
 
-    def predict_proba(self, x=None, file_load=None, **kwargs):
-        self._check_param(file_load, x)
+        Args:
+            models_path (Str, optional): Where to store our models. Defaults to None.
+        """
+        super(ClassificationAutoML, self).__init__(models_path=models_path,
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors, **kwargs)
+        # after pipeline has finished, then we should use `ensemble` to combine these models
+        # action should happen here.
+        self.estimator = ClassificationPipeline(backend=self.backend,
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors, 
+                                            **kwargs)
 
-        if file_load is not None:
-            x, _ = self.__get_file_load_data_label(file_load)
+    def fit(self, x=None, y=None, file_load=None, \
+             xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True):
+        """
+        Real training logic happen here, also store trained models.
 
-        prob = super().predict_proba(x)
+        Support both with file to train also with data and label data.
 
-        return prob
-
-    def score(self, x=None, y=None, file_load=None, **kwargs):
-        self._check_param(file_load, x, y)
-
-        if file_load is not None:
-            x, y = self.__get_file_load_data_label(file_load, use_for_pred=False)
+        :param xtrain: train data
+        :param ytrain: label data
+        :param n_jobs: how many cores to use
+        :return:
+        """
+        super().fit(x=x, y=y, file_load=file_load, 
+            xval=xval, yval=yval, val_split=val_split, n_jobs=n_jobs, use_neural_network=use_neural_network)    
+    
+        return self
         
-        score = super().score(x, y)
 
-        return score
+class RegressionAutoML(AutoML):
+    def __init__(self, models_path=None, 
+            include_estimators=None, 
+            exclude_estimators=None, 
+            include_preprocessors=None, 
+            exclude_preprocessors=None,
+            **kwargs):
+        """Added with algorithm selection and processing selection, even with others in case we need.
 
-    @staticmethod
-    def _check_param(*args):
-        all_None = all([arg is None for arg in args])
-
-        if all_None:
-            raise ValueError("Please provide at least one parameter!")
-
-    @staticmethod
-    def __get_file_load_data_label(file_load, use_for_pred=True):
+        Args:
+            models_path (Str, optional): Where to store our models. Defaults to None.
         """
-        Get data and label from original obj.
-        """
-        data, label = file_load.data, file_load.label
-        
-        return data, label
+        super(RegressionAutoML, self).__init__(models_path=models_path,
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors, **kwargs)        
 
-    @classmethod
-    def reconstruct(cls, models_path=None, *args, **kwargs):
-        """
-        Used for Restful API to create
-        """
-        return cls(models_path, *args, **kwargs)
-
-        
+        # after pipeline has finished, then we should use `ensemble` to combine these models
+        # action should happen here.
+        self.estimator = RegressionPipeline(backend=self.backend,
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors, 
+                                            **kwargs)
 
 class FileLoad:
     """Load data from file, support with local file also with GCS.
 
     Make this class as a container for later use case.
     """
-    def __init__(self, file_name, label_name='label', file_path=None, file_sep=',', use_for_pred=False,
+    def __init__(self, file_name, file_path=None, file_sep=',', label_name='label', use_for_pred=False,
             service_account_file_name=None, service_account_file_path=None, except_columns=None):
         """Main container for file-like dataset.
 
@@ -534,41 +567,54 @@ if __name__ == '__main__':
     models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
 
     auto_cl = ClassificationAutoML(models_path=models_path)
+    # auto_cl = RegressionAutoML(models_path=models_path)
 
-    # Start to train processing for `FileLoad`
-    auto_cl.fit(file_load=file_load, val_split=.2)
-    print(auto_cl.models_list)
-    # print(auto_cl.score(file_load_pred))
+    # # Start to train processing for `FileLoad`
+    # auto_cl.fit(file_load=file_load, val_split=.2)
+    # print(auto_cl.models_list)
+    # # print(auto_cl.score(file_load_pred))
 
-    file_load_pred = FileLoad("test.csv", file_path, file_sep=',', use_for_pred=True)
-    print("Process based on new test file.")
-    print('*' * 20)
-    print(auto_cl.predict(file_load=file_load_pred)[:10])
-    print('*'*20)
-    print(auto_cl.predict_proba(file_load=file_load_pred)[:10])
+    # file_load_pred = FileLoad("test.csv", file_path, file_sep=',', use_for_pred=True)
+    # print("Process based on new test file.")
+    # print('*' * 20)
+    # print(auto_cl.predict(file_load=file_load_pred)[:10])
+    # print('*'*20)
+    # print(auto_cl.predict_proba(file_load=file_load_pred)[:10])
 
-    print("Process based on original file.")
-    print("*" * 20)
-    print(auto_cl.predict_proba(file_load=file_load)[:10])
-    print("*" * 20)
-    print(auto_cl.score(file_load=file_load))
-    print(auto_cl.get_sorted_models_scores(file_load=file_load))
+    # print("Process based on original file.")
+    # print("*" * 20)
+    # print(auto_cl.predict_proba(file_load=file_load)[:10])
+    # print("*" * 20)
+    # print(auto_cl.score(file_load=file_load))
+    # print(auto_cl.get_sorted_models_scores(file_load=file_load))
 
     # try to use sklearn iris dataset
-    # from sklearn.datasets import load_iris
-    # from sklearn.model_selection import train_test_split
+    from sklearn.datasets import load_boston, load_iris
+    from sklearn.model_selection import train_test_split
     
-    # x, y = load_iris(return_X_y=True)
-    # xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
+    x, y = load_iris(return_X_y=True)
+    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
     
-    # auto_cl.fit(xtrain, ytrain)
+    auto_cl.fit(xtrain, ytrain)
 
-    # print(auto_cl.models_list)
-    # print(auto_cl.score(xtest, ytest))
-    # print('*' * 20)
-    # print(auto_cl.predict(xtest)[:10])
-    # print('*'*20)
-    # print(auto_cl.predict_proba(xtest)[:10])
+    print(auto_cl.models_list)
+    print(auto_cl.score(xtest, ytest))
+    print('*' * 20)
+    print(auto_cl.predict(xtest)[:10])
+    print('*' * 20)
+    pred = auto_cl.predict(xtest)
+    print(auto_cl.predict_proba(xtest)[:10])
+    print("Truth data: ")
+    print(ytest)
+
+
+    # import matplotlib.pyplot as plt
+
+    # plt.plot(pred, label='pred')
+    # plt.plot(ytest, label='ytest')
+    # plt.legend()
+
+    # plt.show()
 
     # # get model score
     # print(auto_cl.get_sorted_models_scores(xtest, ytest))

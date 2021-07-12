@@ -24,12 +24,12 @@ from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import create_logger
 from auto_ml.base.model_selection import GridSearchModel
 from auto_ml.base.classifier_algorithms import ClassifierFactory
+from auto_ml.base.regressor_algorithms import RegressorFactory
 from auto_ml.preprocessing.processing_factory import ProcessingFactory
 from auto_ml.ensemble.model_ensemble import ModelEnsemble
-from auto_ml.utils.data_rela import get_scorer_based_on_target
+from auto_ml.utils.data_rela import get_scorer_based_on_target, get_type_problem
 from auto_ml.utils.data_rela import check_data_and_label, hash_dataset_name
 
-from auto_ml.neural_networks.neural_network_search import NeuralModelSearch
 
 
 logger = create_logger(__file__)
@@ -162,7 +162,7 @@ class PipelineTrain(Pipeline):
 
         return process_step
 
-    def build_training_pipeline(self):
+    def build_training_pipeline(self, y=None, use_neural_network=True):
         """
         Real pipeline step should happen here.
         Let child to do real build with different steps
@@ -181,12 +181,13 @@ class PipelineTrain(Pipeline):
         :return: a list of instance algorithm object.
         """
         # This should be lazy part.
-        self.training_pipeline = GridSearchModel(backend=self.backend)
+        self.training_pipeline = GridSearchModel(backend=self.backend, use_neural_network=use_neural_network)
 
         # This is based on diff type of problem to get each algorithm's instance! 
         # Tips: Parent class could call Child private function!
-        algorithms_instance_list = self._get_algorithms_instance_list()
+        algorithms_instance_list = self._get_algorithms_instance_list(y=y)
 
+        print("Get algorithms: ", algorithms_instance_list)
         logger.info("Get training algorithms: {}".format([al_instance.name for al_instance in algorithms_instance_list]))
 
         for algorithm_instance in algorithms_instance_list:
@@ -232,7 +233,8 @@ class PipelineTrain(Pipeline):
         """
         logger.info("Start Model Pipeline training!")
 
-        self.training_pipeline = self.build_training_pipeline()
+        self.task_type = get_type_problem(y)
+        self.training_pipeline = self.build_training_pipeline(y=y, use_neural_network=use_neural_network)
 
         logger.info("Before processing, data shape: %d" % x.shape[1])
         # first should `fit` with processing pipeline and save it into disk.
@@ -241,17 +243,6 @@ class PipelineTrain(Pipeline):
 
         self._fit(x, y, n_jobs=n_jobs)
         logger.info("End Model Pipeline training.")
-
-        # Add with neural network search to find with Neural models
-        if use_neural_network:
-            logger.info("Start to use Nueral Network to fit data with `tuner`!")
-
-            # `fit` related func like validation and save models are warpped in `fit` func, 
-            # here just `fit`
-            neural_model = NeuralModelSearch(models_path=self.backend.output_folder) 
-            neural_model.fit(x, y)  
-
-            logger.info("Finished Nueral Network search logic!") 
 
         # After model has finished training, the best_model should be `training_pipeline`
         self.best_model = self.training_pipeline
@@ -361,6 +352,8 @@ class PipelineTrain(Pipeline):
         logger.info("Start to get model score for model: {}.".format(estimator))
         pred = self._get_model_predict(estimator, x, model_name=model_name)
 
+        # This is supported with both regression and classification, 
+        # as `scorer` is a class instance based on each type of problem.
         score = scorer(y, pred)
         logger.info("Model: {} get score: {:.4f}.".format(estimator, score))
 
@@ -374,10 +367,15 @@ class PipelineTrain(Pipeline):
         :return:
         """
         prob = self._get_model_predict_proba(estimator, x, model_name)
-        if len(prob) >= 1:
-            pred = np.argmax(prob, axis=1)
-            
-            return pred
+        if self.task_type == 'classification':
+            if len(prob) >= 1:
+                pred = np.argmax(prob, axis=1)
+                
+                return pred
+        else:
+            pred = prob
+        
+        return pred
 
     def _get_model_predict_proba(self, estimator, x, model_name=None):
         """
@@ -415,10 +413,11 @@ class PipelineTrain(Pipeline):
             except ValueError as e:
                 logger.error("When try to get model score based on trained model name, get error: {}".format(e))
                 raise e
-            
-        if not hasattr(estimator, 'predict_proba'):
-            raise NotImplementedError("For estimator:{} "
-                                        "doesn't support `predict_proba` func".format(self.training_pipeline))
+
+        if self.task_type == 'classification':   
+            if not hasattr(estimator, 'predict_proba'):
+                raise NotImplementedError("For estimator:{} "
+                                            "doesn't support `predict_proba` func".format(self.training_pipeline))
 
         # let's just make the processing step with data here!
         x = self._process_dataset_with_processor(x)
@@ -431,11 +430,13 @@ class PipelineTrain(Pipeline):
             else:
                 raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
 
-        prob = estimator.predict_proba(x)
+        if self.task_type == 'classification':
+            prob = estimator.predict_proba(x)
+        else:
+            prob = estimator.predict(x)
 
         return prob
         
-
     def _fit(self, x, y, n_jobs=None):
         """
         Extract real `fit` logic out side of `fit` func.
@@ -443,7 +444,7 @@ class PipelineTrain(Pipeline):
         :return:
         """
         # before we do anything, first should ensure we have proper data and label
-        self._check_data_and_lable(x, y)
+        self._check_data_and_label(x, y)
 
         # real training pipeline with Grid search to find best models, also will store the
         # best models.
@@ -520,7 +521,7 @@ class PipelineTrain(Pipeline):
             logger.error("When to process data in `ensemble`, get error: {}".format(e))
             raise e
 
-    def _check_data_and_lable(self, x, y):
+    def _check_data_and_label(self, x, y):
         """
         Let child to do this.
         :param x:
@@ -528,6 +529,42 @@ class PipelineTrain(Pipeline):
         :return:
         """
         raise NotImplementedError
+
+    def _get_algorithms_instance_list(self, y=None):
+        """
+        Get algorithm instance by factory class based on target data.
+
+        To get whole instance object list based on the configuration in the yaml file,
+        as we have added with `factory pattern` in classifier class, so here we could
+        just use the class to get whole algorithms instance.
+
+        Noted: Should support with classification and regression.
+        :return:
+        """
+        # If `included_estimator`, then only get these algorithm instance
+        algorithm_name_list = []
+        if self.include_estimators:
+            if isinstance(self.include_estimators, str):
+                algorithm_name_list = [self.include_estimators]
+            elif isinstance(self.include_estimators, list):
+                algorithm_name_list = self.include_estimators
+            else:
+                raise ValueError("Please config `include_estimators` with str or a list of algorithm names!")
+        else:
+            # then just get default algorithms based on target value.
+            task_type = get_type_problem(y)
+
+            print("**** get type of problem ****", task_type)
+
+            algorithm_name_list = self.algorithms_config[task_type]['default']
+            
+            # When to get instances, should base on each type of problem
+            if task_type == 'classification':
+                algorithms_instance_list = ClassifierFactory.get_algorithm_instance(algorithm_name_list)
+            else:
+                algorithms_instance_list = RegressorFactory.get_algorithm_instance(algorithm_name_list)
+
+        return algorithms_instance_list
 
 
 class ClassificationPipeline(PipelineTrain):
@@ -547,44 +584,9 @@ class ClassificationPipeline(PipelineTrain):
                                             include_preprocessors=include_preprocessors,
                                             exclude_preprocessors=exclude_preprocessors,
                                             **kwargs)
+        self.task_type = 'classification'
 
-    def get_sorted_models_scores(self, x, y, reverse=True):
-        """
-        Use parent function to get the model scores...
-        :param x:
-        :param y:
-        :param reverse:
-        :return:
-        """
-        return super().get_sorted_models_scores(x, y, reverse=True)
-
-    def _get_algorithms_instance_list(self):
-        """
-        Get algorithm instance by factory class.
-
-        To get whole instance object list based on the configuration in the yaml file,
-        as we have added with `factory pattern` in classifier class, so here we could
-        just use the class to get whole algorithms instance.
-        :return:
-        """
-        # If `included_estimator`, then only get these algorithm instance
-        algorithm_name_list = []
-        if self.include_estimators:
-            if isinstance(self.include_estimators, str):
-                algorithm_name_list = [self.include_estimators]
-            elif isinstance(self.include_estimators, list):
-                algorithm_name_list = self.include_estimators
-            else:
-                raise ValueError("Please config `include_estimators` with str or a list of algorithm names!")
-        else:
-            # then just get default algorithms.
-            algorithm_name_list = self.algorithms_config['classification']['default']
-
-        algorithms_instance_list = ClassifierFactory.get_algorithm_instance(algorithm_name_list)
-
-        return algorithms_instance_list
-
-    def _check_data_and_lable(self, x, y, task=None, dataset_name=None):
+    def _check_data_and_label(self, x, y, task=None):
         """
         Check data and label before we do real training.
         :param x:
@@ -627,13 +629,44 @@ class ClassificationPipeline(PipelineTrain):
 
 
 class RegressionPipeline(PipelineTrain):
-    def build_pipeline(self):
+    def __init__(self, backend=None, 
+                    include_estimators=None, 
+                    exclude_estimators=None,
+                    include_preprocessors=None,
+                    exclude_preprocessors=None,
+                    **kwargs):
+        super(RegressionPipeline, self).__init__(backend=backend, 
+                                            include_estimators=include_estimators,
+                                            exclude_estimators=exclude_estimators,
+                                            include_preprocessors=include_preprocessors,
+                                            exclude_preprocessors=exclude_preprocessors,
+                                            **kwargs)
+        self.task_type = 'regression'
+
+    def _check_data_and_label(self, x, y, task=None):
+        """Data and label should be the one that we need for regression.
+
+        Args:
+            x ([type]): [description]
+            y ([type]): [description]
+            task ([type], optional): [description]. Defaults to None.
+
+        Raises:
+            ValueError: [description]
+
+        Returns:
+            [type]: [description]
         """
-        Here should be the regression step that could be used
-        to build the pipeline object.
-        :return:
-        """
-        pass
+        regression_tasks = [3]
+        
+        if task is not None and task not in regression_tasks:
+            raise ValueError("Task should be in [{}]".format(' '.join(regression_tasks)))
+
+        # self.dataset_name = hash_dataset_name(x) if dataset_name is None else dataset_name
+        # we should ensure data could be trained like training data should be 2D
+        x, y = check_data_and_label(x, y)
+
+        return x, y
 
 
 if __name__ == '__main__':

@@ -91,10 +91,6 @@ class ClassifierClass(BaseEstimator):
         prob = self.estimator.predict_proba(x)
         return prob
 
-    # def _check_estimator_func(self, func_name):
-    #     if not hasattr(self.estimator, func_name):
-    #         raise ValueError("Current `estimator`: {} doesn't support function: {}".format(self.estimator, func_name))
-
     @staticmethod
     def get_search_space():
         """

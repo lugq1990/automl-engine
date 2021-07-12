@@ -12,12 +12,14 @@ automl training logic.
 import numpy as np
 from sklearn.ensemble import VotingClassifier, VotingRegressor
 from sklearn.model_selection import cross_validate
-from tensorflow.python.types.core import Value
+
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.metrics.scorer import accuracy, r2
 from auto_ml.base.classifier_algorithms import ClassifierClass, ClassifierFactory
+from auto_ml.base.regressor_algorithms import RegressorFactory
 from auto_ml.utils.logger import create_logger
 from auto_ml.utils.paths import load_yaml_file
+from auto_ml.utils.data_rela import get_type_problem
 
 
 logger = create_logger(__file__)
@@ -56,14 +58,22 @@ class ModelEnsemble(ClassifierClass):
         elif self.task_type == 'regression':
             self.metrics = r2
         self.estimator = None
+
         # Whole trained model object list, like: [('LogisticRegression', LogisticRegression-9323.pkl),...]
         self.model_list_without_score = self._get_model_list_without_score()
         # Add attr for `stacking` logic to store the whole models needed to be load
         # for later step to make new dataset, so here just store the instances don't need to re-load
-        self.stacking_models = [model[1] for model in self.model_list_without_score] \
-            if ensemble_alg == 'stacking' else None
+        if self.model_list_without_score is not None:
+            self.stacking_models = [model[1] for model in self.model_list_without_score] \
+                if ensemble_alg == 'stacking' else None
+        else:
+            self.stacking_models = None
 
     def fit(self, x, y, **kwargs):
+        # If there isn't any trained model, don't need with ensemble! Just return.
+        if self.model_list is None:
+            return None
+
         if self.ensemble_alg == 'voting':
             self.fit_bagging(x, y, **kwargs)
         elif self.ensemble_alg == 'stacking':
@@ -110,7 +120,6 @@ class ModelEnsemble(ClassifierClass):
         Implement with stacking logic is combined trained model prediction and original data into
         a new training data.
 
-        # TODO: how TO choose new algorithm for the training?
         # Just to select the best score algorithm for the later step, based on the factory class
         to get the original class name and to load a new classifier.
 
@@ -129,11 +138,16 @@ class ModelEnsemble(ClassifierClass):
         # `model_list_without_score` is sorted based on score in fact.
         # In fact we have to add the estimator name based on what we have(using the yaml file result)
         # as we want to avoid to load the pipeline instance...
-        best_estimator_name = self._get_best_model_estimator_name_based_on_yaml()
+        best_estimator_name = self._get_best_model_estimator_name_based_on_yaml(y=y)
 
         logger.info("Get estaimator {} for stacking logic.".format(best_estimator_name))
+
+        task_type = get_type_problem(y)
         # As return is a list, but here we just need `one instance` for combined dataset
-        self.estimator = ClassifierFactory.get_algorithm_instance(best_estimator_name)[0]
+        if task_type == 'classification':
+            self.estimator = ClassifierFactory.get_algorithm_instance(best_estimator_name)[0]
+        else:
+            self.estimator = RegressorFactory.get_algorithm_instance(best_estimator_name)[0]
 
         logger.info("Loaded {} instance for `stacking` training.".format(best_estimator_name))
         # start training step for `stacking`
@@ -147,13 +161,15 @@ class ModelEnsemble(ClassifierClass):
 
         self.backend.save_model(self.estimator, stacking_model_name)
 
-    def _get_best_model_estimator_name_based_on_yaml(self):
+    def _get_best_model_estimator_name_based_on_yaml(self, y=None):
         """
         Just to get the best estimator name based on the yaml file that we have
         for `stacking` ensemble logic.
         :return:
         """
-        algorithm_name_list = load_yaml_file()['classification']['default']
+        task_type = get_type_problem(y)
+
+        algorithm_name_list = load_yaml_file()[task_type]['default']
         trained_model_alg_name_list = list(set([x[0].split("_")[0] for x in self.model_list_without_score]))
 
         for algo_name in trained_model_alg_name_list:
@@ -183,7 +199,10 @@ class ModelEnsemble(ClassifierClass):
 
         # To ensure there should be at least one file for `Ensemble` logic.
         if not model_list:
-            raise IOError("There isn't any trained model for `Ensemble`.")
+            # In case there isn't any trained model!
+            logger.error("There isn't any trained model for `Ensemble`.")
+            return None
+            # raise IOError("There isn't any trained model for `Ensemble`.")
 
         # Get sorted model based on model name score.
         # Model name like this: ('lr_0.98.pkl', lr)
@@ -212,6 +231,9 @@ class ModelEnsemble(ClassifierClass):
         :return: [('LogisticRegression', LogisticRegression-9323.pkl),...]
         """
         model_list_without_score = []
+        if self.model_list is None:
+            return None
+
         for estimator_tuple in self.model_list:
             estimator_name = estimator_tuple[0].split('-')[0]
             # we shouldn't include `ensemble` models.
@@ -237,6 +259,9 @@ class ModelEnsemble(ClassifierClass):
         model_ensemble = cls(backend=backend, task_type=task_type, ensemble_alg=ensemble_alg)
 
         # we don't need to care about `model_list_without_score` has instance or not, as parent does this.
+        if model_ensemble.model_list_without_score is None:
+            return x
+
         n_estimators = len(model_ensemble.model_list_without_score)
 
         # Whole trained estimator prediction result.
@@ -286,4 +311,4 @@ if __name__ == '__main__':
     #     print(getattr(model, "_estimator_type", None))
     print(model_ensemble.stacking_models)
 
-    print(ModelEnsemble.create_stacking_dataset(x))
+    print(ModelEnsemble.create_stacking_dataset(x, backend=backend))

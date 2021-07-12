@@ -63,7 +63,7 @@ def get_tmp_folder():
         print("When try to read and write `config.txt` file with error: {}".format(e))
    
 PROJECT_TMP_PATH = get_tmp_folder()
-print("******* Get temp folder *******: {}".format(PROJECT_TMP_PATH)) 
+print("******* Get temp folder for full project use case *******: {}".format(PROJECT_TMP_PATH)) 
 
 # :TODO: in real prod, change this.
 TMP_FOLDER = os.path.join(PROJECT_TMP_PATH, "tmp")

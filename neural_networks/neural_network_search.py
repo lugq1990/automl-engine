@@ -30,7 +30,7 @@ from kerastuner.tuners import RandomSearch
 from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.CONSTANT import OUTPUT_FOLDER, TMP_FOLDER
 from auto_ml.utils.logger import create_logger
-from auto_ml.utils.data_rela import get_num_classes_based_on_label
+from auto_ml.utils.data_rela import get_num_classes_based_on_label, get_type_problem
 
 
 logger = create_logger(__file__)
@@ -39,14 +39,15 @@ logger = create_logger(__file__)
 hyper_yml_file_name = 'search_hypers.yml'
 # Load hyperparameters
 hyper_yml = load_yaml_file(hyper_yml_file_name)
+default_neural_algorithm_list = hyper_yml['DefaultAlgorithms']
 
 
 # To build the search model based on the hyper yaml file
 class SearchModel(HyperModel):
-    def __init__(self, n_classes, algorithm_name='DNN', type_of_problem='classification', use_dropout=True):
+    def __init__(self, n_classes, algorithm_name='DNN', use_dropout=True):
         self.n_classes = n_classes
         self.algorithm_name = algorithm_name
-        self.type_of_problem = type_of_problem
+        # self.type_of_problem = type_of_problem
         self.use_dropout = use_dropout
         self.n_layers = hyper_yml[algorithm_name]['n_layers']
         self.n_units = hyper_yml[algorithm_name]['n_units']
@@ -56,7 +57,8 @@ class SearchModel(HyperModel):
     def build(self, hp):
         raise NotImplementedError
 
-    def _compile_model(self, model, optimizer_name, 
+    def _compile_model(self, model, 
+            optimizer_name, 
             loss_name='sparse_categorical_crossentropy', 
             metrics='accuracy', 
             type_of_problem='classification'):
@@ -65,14 +67,14 @@ class SearchModel(HyperModel):
         
         if type_of_problem == 'regression':
             loss_name = 'mse'
-            metrics = None
+            metrics = 'mse'
 
         # default to make with `Adam`
         optimizer = keras.optimizers.Adam(learning_optimizer)
         if optimizer_name == 'SGD':
             optimizer = keras.optimizers.SGD(learning_optimizer)
         
-        compile_dict = {'optimizer': optimizer, "loss":loss_name, 'metrics': [metrics]}
+        compile_dict = {'optimizer': optimizer, "loss": loss_name, 'metrics': [metrics]}
 
         model.compile(**compile_dict)
 
@@ -87,8 +89,8 @@ class SearchModel(HyperModel):
 
 
 class DNNSearch(SearchModel):
-    def __init__(self, n_classes, type_of_problem='classification', use_dropout=False):
-        super().__init__(n_classes, algorithm_name='DNN', type_of_problem=type_of_problem, use_dropout=use_dropout)
+    def __init__(self, n_classes, use_dropout=False):
+        super().__init__(n_classes, algorithm_name='DNN', use_dropout=use_dropout)
         self.name = "DNN"
 
     def build(self, hp):
@@ -101,30 +103,43 @@ class DNNSearch(SearchModel):
             if self.use_dropout:
                 model.add(Dropout(0.5))
         
-        model.add(Dense(self.n_classes))
+        # Based on different type, output activation should be different
+        if self.n_classes >= 2:  
+            activation = 'softmax'
+        else:
+            activation = None
+        model.add(Dense(self.n_classes, activation=activation))
 
-        model = self._compile_model(model, 'Adam', type_of_problem=self.type_of_problem)
+        # If `n_classes` is 1, then this is regression
+        if self.n_classes == 1:
+            type_of_problem = 'regression'
+
+        model = self._compile_model(model, 'Adam', type_of_problem=type_of_problem)
         return model
 
 
 class EvaluateNeuralModel:
     def __init__(self, model_list, x, y, algorithm_name='DNN'):
-        self.model_list= model_list if isinstance(model_list, list) else [model_list]
+        self.model_list = model_list if isinstance(model_list, list) else [model_list]
         self.x = x
         self.y = y
         self.algorithm_name = algorithm_name
+        self.score_list = []
     
     def evaluate_models(self):
         self._check_models()
-
+        
         score_list = []
-        for model in self.model_list:
+        for estimator in self.model_list:
             try:
-                score = model.evaluate(self.x, self.y)[1]
+                score = estimator.evaluate(self.x, self.y)[1]
                 # score will be with 6 digits
-                score = round(score, 6)
+                mean_test_score = round(score, 6)
+                
+                estimator_train_name = estimator.name + "_" + str(score)
 
-                score_list.append(score)
+                self.score_list.append((estimator_train_name, estimator, mean_test_score))
+                score_list.append(mean_test_score)
             except ValueError as e:
                 raise ValueError("When try to evaluate model with self data get error: {}".format(e))
             
@@ -163,6 +178,7 @@ class NeuralNetworkFactory:
     @staticmethod
     def get_neural_model_instance(neural_networks_name_list, n_classes):
         """
+        # TODO: Change this for regression.
         n_classes has to be provided as to init instance needs this.
         """
         if isinstance(neural_networks_name_list, str):
@@ -203,7 +219,7 @@ class NeuralModelSearch:
         # default_keys = list(hyper_yml.keys())
         # default_keys.remove('optimizers')
         # Add parameter in yaml file will be better
-        default_keys = hyper_yml['DefaultAlgorithms']
+        default_keys = default_neural_algorithm_list
 
         self.algorithm_list = default_keys if algorithm_list is None else algorithm_list
         self.tuning_algorithm = tuning_algorithm
@@ -213,9 +229,23 @@ class NeuralModelSearch:
         self.models_path = models_path
 
     def fit(self, x, y, epochs=10, val_x=None, val_y=None, validation_split=0.2, evaluate=True):
-        # search should be automatically
+        """Search logic to find best model with support `classification` and `regression`
+
+        Added with a evaluate score list like, so that we could make it with Grid search model: 
+            estimator_train_name = estimator.name + "_" + str(mean_train_score)
+            self.score_list.append((estimator_train_name, estimator, mean_test_score))
+        Args:
+            x ([type]): [description]
+            y ([type]): [description]
+            epochs ([type], optional): [description]. Defaults to 10.
+            val_x ([type], optional): [description]. Defaults to None.
+            val_y ([type], optional): [description]. Defaults to None.
+            validation_split ([type], optional): [description]. Defaults to 0.2.
+            evaluate ([type], optional): [description]. Defaults to True.
+        """
+        task_type = get_type_problem(y)
         
-        tuner_list = self._get_search_tuner_list(x, y)
+        tuner_list = self._get_search_tuner_list(x, y, task_type=task_type)
 
         # whether or not to evaluate should base on attribute
         if evaluate:
@@ -240,7 +270,8 @@ class NeuralModelSearch:
                     logger.warning("There is no best model found.")
                     return 
                 
-                print("Get best models: ", best_models)
+                # add attr to keep best trained models instances
+                self.model_list = best_models
                 self.evaluate_trained_models(best_models, val_x, val_y)
 
         # clean folder
@@ -248,23 +279,49 @@ class NeuralModelSearch:
 
         logger.info("Whole fitting logic finished used {} seconds.".format(time.time() - start_time))
 
+        return self
+
     def evaluate_trained_models(self, best_models, x, y):
+        """After training, evaluate will get best trained model, get test score and save them into disk.
+
+        Args:
+            best_models ([type]): [description]
+            x ([type]): [description]
+            y ([type]): [description]
+        """
         # get each search best models, evaluate and save it.
         evaluate_model = EvaluateNeuralModel(best_models, x, y)
 
         best_models_scores = evaluate_model.evaluate_models()
+        self.score_list = evaluate_model.score_list
+
         logger.info("Get best scores are: [{}]".format('\t'.join([str(score) for score in best_models_scores])))
 
         logger.info("Start to save best trained nueral networks models into disk.")
         evaluate_model.save_models(self.models_path)
     
-    def _get_search_tuner_list(self, x, y):
-        # first should get class number
-        num_classed = get_num_classes_based_on_label(y)
-        logger.info("Get {} classes problem.".format(num_classed))
+    def _get_search_tuner_list(self, x, y, task_type='classification'):
+        """Based on different type of problem to construct many tunners.
+
+        Args:
+            x ([type]): [description]
+            y ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        task_type = get_type_problem(y)
+
+        if task_type == 'regression':
+            num_classes = 1
+            self.objective = 'val_loss'
+        else:
+            num_classes = get_num_classes_based_on_label(y)
+
+        logger.info("Get {} type of problem with {} classes.".format(task_type, num_classes))
 
         logger.info("Start to get model instance for algorithms: [{}]".format('\t'.join(self.algorithm_list)))
-        self.neural_networks_list = NeuralNetworkFactory.get_neural_model_instance(self.algorithm_list, num_classed)
+        self.neural_networks_list = NeuralNetworkFactory.get_neural_model_instance(self.algorithm_list, num_classes)
         
         logger.info("Start to use search algorithm: {} to find models.".format(self.tuning_algorithm))
         
@@ -307,17 +364,17 @@ class NeuralModelSearch:
         
 
 if __name__ == '__main__':
-    model = DNNSearch(3)
-    tuner = RandomSearch(model, objective='val_accuracy', 
-        max_trials=10, executions_per_trial=3, 
-        directory='./auto_ml/tmp_folder/tmp',  project_name='test')
+    # model = DNNSearch(3)
+    # tuner = RandomSearch(model, objective='val_accuracy', 
+    #     max_trials=10, executions_per_trial=3, 
+    #     directory='./auto_ml/tmp_folder/tmp',  project_name='test')
 
     # tuner = NeuralModelRandomSearch(model, objective='val_accuracy', 
     #     max_trials=10, executions_per_trial=3, 
     #     directory='./auto_ml/tmp_folder/tmp',  project_name='test')
 
-    from sklearn.datasets import load_iris
-    x, y = load_iris(return_X_y=True)
+    from sklearn.datasets import load_boston
+    x, y = load_boston(return_X_y=True)
 
     # print("Start to search")
     # tuner.search(x, y, epochs=10, validation_split=.2)
@@ -337,3 +394,6 @@ if __name__ == '__main__':
 
     model_search = NeuralModelSearch()
     model_search.fit(x, y)
+
+    # print("Get prediction: ", model_search.predict(x))
+    # print("Get probability: ", model_search.predict_proba(x))

@@ -11,5 +11,13 @@ classification:
     - AdaboostClassifier
 regression:
   default:
-    - LinearRegression
-    - GradientBoostingRegressor
+    - LinearRegressor
+    - SupportVectorRegressor
+    - GBRegressor
+    - RFRegressor
+    - KNNRegressor
+    - DTRegressor
+    - AdaboostRegressor
+    - LightGBMRegressor
+    - XGBoostRegressor    
+

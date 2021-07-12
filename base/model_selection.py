@@ -10,14 +10,18 @@ Classifier real training happens here.
 
 @author: Guangqiang.lu
 """
+from operator import ne
 import numpy as np
 import time
 import tqdm
 import itertools
 from sklearn.model_selection import GridSearchCV, cross_validate
+from sklearn import metrics
 
 from auto_ml.utils.backend_obj import Backend
 from auto_ml.utils.logger import create_logger
+from auto_ml.utils.data_rela import get_type_problem, get_scorer_based_on_target
+from auto_ml.neural_networks.neural_network_search import NeuralModelSearch, default_neural_algorithm_list
 
 
 logger = create_logger(__file__)
@@ -29,7 +33,7 @@ class GridSearchModel(object):
     of estimators and their parameters list.
     I want to make this class to do real training part.
     """
-    def __init__(self, backend, n_best_model=None):
+    def __init__(self, backend, n_best_model=None, use_neural_network=True):
         """
         self.estimator_list is like: [GridSearchCV(lr, params), ...]
         self.score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
@@ -40,10 +44,13 @@ class GridSearchModel(object):
         if backend is None:
             raise ValueError("When to use Model Ensemble class, we get a None `backend` object! Please check!")
         self.backend = backend 
+        self.use_neural_network = use_neural_network
+        # estimator_list and score_list are binded! they are same order!
         self.estimator_list = []
         self.score_list = []
         self._estimator_param_list = []
         self.n_best_model = 10 if n_best_model is None else n_best_model
+        self._task_type = 'classification'
 
     def add_estimator(self, estimator, estimator_params=None):
         """
@@ -110,8 +117,15 @@ class GridSearchModel(object):
 
     def fit(self, x, y, n_jobs=None):
         """
-        This is real training logic happens here, also we could
-        use parallel training for these estimators.
+        Fit and Cross-validation for each estimator with `scoring` supported!
+        
+        After CV and re-fit with full data, also the `training_score` and `testing_score` is based on CV result. 
+        Support with processing information by `tqdm`.
+
+        By defualt: 
+            `classification` scoring is `accuracy`
+            `regression` scoring is `mean_squared_error`
+    
         :param x: training data
         :param y: training label
         :param n_jobs: how much cores to use
@@ -132,16 +146,21 @@ class GridSearchModel(object):
 
         estimators_list = self._get_estimators_list()
 
+        # Get scoring metrics based on different type of problem.
+        scorer = get_scorer_based_on_target(y)
+        # scorer = metrics.make_scorer(scorer)
+
         with tqdm.tqdm(range(len(estimators_list))) as process:
             for i in range(len(estimators_list)):
                 start_time = time.time()
                 # Not using GridSearch class, but to use cross_validate to get best models.
-                estimator = estimators_list[i]
+                estimator = estimators_list[i] 
+                
                 # Training happen here for each algorithm with n-fold CV!
                 cv_result = cross_validate(estimator=estimator, 
                                         X=x, y=y, cv=2, 
-                                        return_train_score=True, 
-                                        return_estimator=True)
+                                        # scoring=scorer,
+                                        return_train_score=True)
 
                 mean_train_score = round(cv_result['train_score'].mean(), 6)
                 mean_test_score = round(cv_result['test_score'].mean(), 6)
@@ -162,6 +181,20 @@ class GridSearchModel(object):
                 logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator_train_name, round(time.time() - start_time, 2)))
 
                 process.update(1)
+
+        # Add with neural network search to find with Neural models
+        if self.use_neural_network:
+            logger.info("Start to use Nueral Network to fit data with `tuner`!")
+
+            # `fit` related func like validation and save models are warpped in `fit` func, 
+            # here just `fit`
+            neural_model = NeuralModelSearch(models_path=self.backend.output_folder) 
+            neural_model.fit(x, y)  
+
+            # Add with neural network's score list, so that we could do evaluation for DNN models.
+            self.score_list.extend(neural_model.score_list)
+            self.estimator_list.extend(neural_model.model_list)
+            logger.info("Finished Nueral Network search logic!") 
 
         logger.info("Model selection training has finished.")
 
@@ -189,9 +222,11 @@ class GridSearchModel(object):
         :param y:
         :return:
         """
-        best_estimator = self.best_estimator
+        scorer = get_scorer_based_on_target(y)
+        
+        pred = self.predict(x)
 
-        return best_estimator.score(x, y)
+        return scorer(y, pred)
 
     def predict(self, x):
         """
@@ -233,8 +268,14 @@ class GridSearchModel(object):
         :param n_best_model: How many best model to save
         :return:
         """
-        # Loop for each algorithm and save `n_best_models` instance. 
-        alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list])
+        # Loop for each algorithm and save `n_best_models` instance, should `exclude` with nueral network models.
+        # This could be done better, but for now just try to exclude with `sequential` start models.
+        alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list 
+            if instance_name.split("_")[0] != 'sequential'])
+
+        if len(alg_name_set) == 0:
+            logger.warning("There isn't any trained model to save except with Nueral Network!")
+            return
         
         # print(self.score_list)
         for alg in alg_name_set:
@@ -245,13 +286,14 @@ class GridSearchModel(object):
             if len(alg_list) == 0:
                 raise ValueError("Couldn't get algorithm: {} from `self._score_list`".format(alg))
             
-            # sort models based on test score.
-            alg_list = sorted(set(alg_list), key=lambda l: l[-1], reverse=True)
-            print(alg_list)
+            # sort models based on test score by different type of problem.
+            if self._task_type == 'classification':
+                alg_list = sorted(set(alg_list), key=lambda l: l[-1], reverse=True) 
+            else:
+                alg_list = sorted(set(alg_list), key=lambda l: l[-1], reverse=False)
     
             if len(alg_list) > self.n_best_model:
                 alg_list = alg_list[:self.n_best_model]
-            
 
             for i in range(len(alg_list)):
                 # Loop for satisfied algorithm instance and dump each of them.
@@ -279,7 +321,11 @@ class GridSearchModel(object):
             # Get which algorithm, then sort based on test score, get `n_best_models`
             alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
                     in self.score_list if alg_name.startswith(alg) ]
-            alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
+            # Should based on type of problem
+            if self._task_type == 'classification':
+                alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
+            else:
+                alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=False)[self.n_best_model]
 
             if len(alg_list) == 0:
                 continue
@@ -309,6 +355,9 @@ class GridSearchModel(object):
         load best trained model from disk
         :return:
         """
+        if self.best_esmator_name is None:
+            raise ValueError("When try to load best model from disk, please try to save it frist!")
+
         return self.backend.load_model(self.best_esmator_name)
 
     @property
@@ -320,10 +369,16 @@ class GridSearchModel(object):
         if len(self.score_list) == 0:
             raise ValueError("Please fit model first!")
 
-        max_test_score = np.argmax([test_score for _, _, test_score in self.score_list])
+        # Base on different type of problem
+        if self._task_type == 'classification':
+            max_test_score = np.argmax([test_score for _, _, test_score in self.score_list])
+        else:
+            max_test_score = np.argmin([test_score for _, _, test_score in self.score_list])
 
         try:
-            return self.estimator_list[max_test_score]
+            best_estimator =  self.estimator_list[max_test_score]
+            # print("Get best estimator: " , best_estimator)
+            return best_estimator
         except IndexError as e:
             logger.error("To get best estimator with index error: {}".format(e))
             raise IndexError("To get best estimator with index error: {}".format(e))
@@ -334,29 +389,17 @@ class GridSearchModel(object):
             raise ValueError("Please fit model first!")
         
         try:
-            max_score = max([test_score for _, _, test_score in self.score_list])
+            if self._task_type == 'classification':
+                max_score = max([test_score for _, _, test_score in self.score_list])
+            else:
+                max_score = min([test_score for _, _, test_score in self.score_list])
+            
+            logger.info("Get best score: {}".format(max_score))
             return max_score    
         except IndexError as e:
             logger.error("To get best score with index error: {}".format(e))
             raise IndexError("To get best score with index error: {}".format(e))
         
-    # def _get_estimators_score(self):
-    #     """
-    #     To get whole trained estimator based on data and label for storing
-    #     the result based on each trained grid model best estimator.
-    #     score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
-    #     :return:
-    #     """
-    #     for estimator in self.estimator_list:
-    #         # here I also need the trained estimator object, so here
-    #         # also with trained object.
-    #         best_estimator = estimator.best_estimator_
-    #         best_score = round(estimator.best_score_, 6)
-
-    #         # This should based on the trained best score, not based on trained model then score again.
-    #         self.score_dict[best_estimator.__class__.__name__] = (best_estimator, best_score)
-    #                                            #self._score_with_estimator(best_estimator, x, y))
-
     @staticmethod
     def _score_with_estimator(estimator_instance, x, y):
         """

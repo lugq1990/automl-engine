@@ -114,6 +114,11 @@ def check_label(y):
         raise ValueError("We don't support with nan-label! Please check it!")
 
     type_y = type_of_target(y)
+    
+    # Change to support current project with `continuous` as regression.
+    if type_y == 'continuous':
+        type_y = 'regression'
+
     # current support target type
     supported_type = TASK_TO_STRING.values()
     if type_y not in supported_type:
