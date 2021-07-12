@@ -9,7 +9,6 @@ author: Guangqiang.lu
 import numpy as np
 import pandas as pd
 import time
-import matplotlib.pyplot as plt
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import train_test_split
@@ -631,3 +630,15 @@ if __name__ == '__main__':
 
     # pred_df.to_csv(os.path.join(file_path,"Submition_with_automl.csv"), index=False)
 
+
+
+from auto_ml.automl import RegressionAutoML
+from sklearn.datasets import load_boston
+
+x, y = load_boston(return_X_y=True)
+
+auto_clf = RegressionAutoML()
+
+auto_clf.fit(x, y)
+print(auto_clf.score(x, y))
+print(auto_clf.predict(x))
