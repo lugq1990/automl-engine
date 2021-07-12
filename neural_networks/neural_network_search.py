@@ -113,6 +113,8 @@ class DNNSearch(SearchModel):
         # If `n_classes` is 1, then this is regression
         if self.n_classes == 1:
             type_of_problem = 'regression'
+        else:
+            type_of_problem = 'classification'
 
         model = self._compile_model(model, 'Adam', type_of_problem=type_of_problem)
         return model

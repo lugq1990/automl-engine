@@ -566,8 +566,8 @@ if __name__ == '__main__':
     file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
     models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
 
-    auto_cl = ClassificationAutoML(models_path=models_path)
-    # auto_cl = RegressionAutoML(models_path=models_path)
+    # auto_cl = ClassificationAutoML(models_path=models_path)
+    auto_cl = RegressionAutoML(models_path=models_path)
 
     # # Start to train processing for `FileLoad`
     # auto_cl.fit(file_load=file_load, val_split=.2)
@@ -592,7 +592,7 @@ if __name__ == '__main__':
     from sklearn.datasets import load_boston, load_iris
     from sklearn.model_selection import train_test_split
     
-    x, y = load_iris(return_X_y=True)
+    x, y = load_boston(return_X_y=True)
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
     
     auto_cl.fit(xtrain, ytrain)
