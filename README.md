@@ -4,7 +4,10 @@ Get best models with only **3** lines of code no matter what type of data with *
 
 How to create a machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about `Data Loading`, `Feature Engineering`, `Model Training`, `Model Selection`, `Model Evaluation` and `Model Sink`, even `RESTful` with best trained model. Now **Auto-ML** comes in to show power!
 
-This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with **3** lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine. Noted: currently this repository is only support with `Classification` problem, will try to support with `Regression` sooner.
+This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with **3** lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine. 
+
+Happy to accounce:
+Both **classification** and **regression** problems are supported now!
 
 ## Installation
 

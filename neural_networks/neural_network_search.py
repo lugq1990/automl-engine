@@ -4,6 +4,7 @@
 import os
 import traceback
 import time
+import numpy as np
 import string
 import random
 import shutil
@@ -30,7 +31,7 @@ from kerastuner.tuners import RandomSearch
 from auto_ml.utils.paths import load_yaml_file
 from auto_ml.utils.CONSTANT import OUTPUT_FOLDER, TMP_FOLDER
 from auto_ml.utils.logger import create_logger
-from auto_ml.utils.data_rela import get_num_classes_based_on_label, get_type_problem
+from auto_ml.utils.data_rela import get_num_classes_based_on_label, get_scorer_based_on_target, get_type_problem
 
 
 logger = create_logger(__file__)
@@ -134,7 +135,17 @@ class EvaluateNeuralModel:
         score_list = []
         for estimator in self.model_list:
             try:
-                score = estimator.evaluate(self.x, self.y)[1]
+                # score = estimator.evaluate(self.x, self.y)[1]
+                scorer = get_scorer_based_on_target(self.y)
+                task_type = get_type_problem(self.y)
+                pred = estimator.predict(self.x)
+
+                if task_type == 'classification':
+                    # if this is classification problem, so change probability into prediction
+                    pred = np.argmax(pred, axis=1)
+
+                score = scorer(self.y, pred)
+
                 # score will be with 6 digits
                 mean_test_score = round(score, 6)
                 
@@ -180,7 +191,6 @@ class NeuralNetworkFactory:
     @staticmethod
     def get_neural_model_instance(neural_networks_name_list, n_classes):
         """
-        # TODO: Change this for regression.
         n_classes has to be provided as to init instance needs this.
         """
         if isinstance(neural_networks_name_list, str):
@@ -201,7 +211,7 @@ class NeuralModelSearch:
     Main class for caller class to find best models.
     """
     def __init__(self, objective='val_accuracy', 
-                    max_trials=5, 
+                    max_trials=1, 
                     executions_per_trial=1, 
                     directory=None, 
                     project_name=None, 

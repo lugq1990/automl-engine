@@ -8,6 +8,8 @@ import numpy as np
 import hashlib
 import pandas as pd
 import scipy.sparse as sp
+
+from sklearn import metrics
 from sklearn.utils.validation import check_X_y, check_array
 from sklearn.utils.multiclass import type_of_target
 
@@ -203,9 +205,10 @@ def get_scorer_based_on_target(y):
     type_of_problem = get_type_problem(y)
 
     if type_of_problem == 'classification':
-        scorer = accuracy
+        scorer = metrics.accuracy_score
     elif type_of_problem == 'regression':
-        scorer = mean_squared_error
+        # Change to r2 score
+        scorer = metrics.r2_score
     else:
         raise ValueError("When to score data get not "
                          "supported type of problem: {}".format(type_of_problem))

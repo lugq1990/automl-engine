@@ -119,6 +119,10 @@ class AutoML(BaseEstimator):
         # after we have fitted the trained models, then next step is to load whole of them from disk
         # and sort them based on score, and get scores for `test data` and `test label`
         # WE could get them from parent function, so that we could also use this for `regression`
+
+        # TODO: This should be changed for regression! As regression may have negative values, so here should change 
+        # on different type. 
+        # After change regression metrics to r2, this is workable
         self.models_list = self._load_trained_models_ordered_by_score(higher_best=True)
 
         self._validation_models(xval, yval)
@@ -302,7 +306,7 @@ class AutoML(BaseEstimator):
         
         return score_log_str
 
-    def get_sorted_models_scores(self, xtest=None, ytest=None, file_load=None, **kwargs):
+    def get_sorted_models_scores(self, xtest=None, ytest=None, file_load=None, reverse=True, **kwargs):
         """
         To get some best trained model's score for `test` data with ordered.
 
@@ -317,7 +321,7 @@ class AutoML(BaseEstimator):
         if file_load is not None:
             xtest, ytest = file_load.data, file_load.label
 
-        score_dict = self.estimator.get_sorted_models_scores(xtest, ytest, reverse=True)
+        score_dict = self.estimator.get_sorted_models_scores(xtest, ytest, reverse=reverse)
 
         return score_dict
 
@@ -369,23 +373,6 @@ class ClassificationAutoML(AutoML):
                                             include_preprocessors=include_preprocessors,
                                             exclude_preprocessors=exclude_preprocessors, 
                                             **kwargs)
-
-    def fit(self, x=None, y=None, file_load=None, \
-             xval=None, yval=None, val_split=None, n_jobs=None, use_neural_network=True):
-        """
-        Real training logic happen here, also store trained models.
-
-        Support both with file to train also with data and label data.
-
-        :param xtrain: train data
-        :param ytrain: label data
-        :param n_jobs: how many cores to use
-        :return:
-        """
-        super().fit(x=x, y=y, file_load=file_load, 
-            xval=xval, yval=yval, val_split=val_split, n_jobs=n_jobs, use_neural_network=use_neural_network)    
-    
-        return self
         
 
 class RegressionAutoML(AutoML):
@@ -565,8 +552,8 @@ if __name__ == '__main__':
     file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
     models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
 
-    # auto_cl = ClassificationAutoML(models_path=models_path)
-    auto_cl = RegressionAutoML(models_path=models_path)
+    auto_cl = ClassificationAutoML(models_path=models_path)
+    # auto_cl = RegressionAutoML(models_path=models_path)
 
     # # Start to train processing for `FileLoad`
     # auto_cl.fit(file_load=file_load, val_split=.2)
@@ -591,7 +578,7 @@ if __name__ == '__main__':
     from sklearn.datasets import load_boston, load_iris
     from sklearn.model_selection import train_test_split
     
-    x, y = load_boston(return_X_y=True)
+    x, y = load_iris(return_X_y=True)
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
     
     auto_cl.fit(xtrain, ytrain)
@@ -616,7 +603,7 @@ if __name__ == '__main__':
     # plt.show()
 
     # # get model score
-    # print(auto_cl.get_sorted_models_scores(xtest, ytest))
+    print(auto_cl.get_sorted_models_scores(xtest, ytest))
 
     # This is used for the submition for Kaggle
     # pred_data = pd.read_csv(os.path.join(file_path, test_file_name))
@@ -631,14 +618,3 @@ if __name__ == '__main__':
     # pred_df.to_csv(os.path.join(file_path,"Submition_with_automl.csv"), index=False)
 
 
-
-from auto_ml.automl import RegressionAutoML
-from sklearn.datasets import load_boston
-
-x, y = load_boston(return_X_y=True)
-
-auto_clf = RegressionAutoML()
-
-auto_clf.fit(x, y)
-print(auto_clf.score(x, y))
-print(auto_clf.predict(x))

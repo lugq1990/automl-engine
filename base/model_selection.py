@@ -49,8 +49,11 @@ class GridSearchModel(object):
         self.estimator_list = []
         self.score_list = []
         self._estimator_param_list = []
-        self.n_best_model = 10 if n_best_model is None else n_best_model
+        self.n_best_model = 30 if n_best_model is None else n_best_model
         self._task_type = 'classification'
+
+        self.best_estimator = None
+        self.best_score = 0
 
     def add_estimator(self, estimator, estimator_params=None):
         """
@@ -148,7 +151,7 @@ class GridSearchModel(object):
 
         # Get scoring metrics based on different type of problem.
         scorer = get_scorer_based_on_target(y)
-        # scorer = metrics.make_scorer(scorer)
+        scorer = metrics.make_scorer(scorer)
 
         with tqdm.tqdm(range(len(estimators_list))) as process:
             for i in range(len(estimators_list)):
@@ -159,7 +162,7 @@ class GridSearchModel(object):
                 # Training happen here for each algorithm with n-fold CV!
                 cv_result = cross_validate(estimator=estimator, 
                                         X=x, y=y, cv=2, 
-                                        # scoring=scorer,
+                                        scoring=scorer,
                                         return_train_score=True)
 
                 mean_train_score = round(cv_result['train_score'].mean(), 6)
@@ -173,11 +176,7 @@ class GridSearchModel(object):
                 estimator_train_name = estimator.name + "_" + str(mean_train_score)
                 self.score_list.append((estimator_train_name, estimator, mean_test_score))
                 self.estimator_list.append(estimator)
-                # self.score_dict[estimator.name + str(mean_train_score)] = (estimator, mean_test_score)
-                # self.estimator_list = estimator
 
-                # estimator = self.estimator_list[i]
-                # estimator.fit(x, y)
                 logger.info("GridSearch for algorithm: {} takes {} seconds".format(estimator_train_name, round(time.time() - start_time, 2)))
 
                 process.update(1)
@@ -268,76 +267,105 @@ class GridSearchModel(object):
         :param n_best_model: How many best model to save
         :return:
         """
-        # Loop for each algorithm and save `n_best_models` instance, should `exclude` with nueral network models.
-        # This could be done better, but for now just try to exclude with `sequential` start models.
-        alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list 
-            if instance_name.split("_")[0] != 'sequential'])
+        # Big change here: Not to get n_best models for each algorithms, but should only get 
+        # `n_best` base on test score for full algorithms list!!!
+        alg_list_sati = [(alg_name, estimator, test_score) for alg_name, estimator, test_score in self.score_list 
+                    if alg_name.split("_")[0] != 'sequential']
+        # alg_list_sati.sort(key=lambda l:l[-1], reverse=True)
+        # alg_list = alg_list_sati[:self.n_best_model]
+        alg_list = sorted(alg_list_sati, key=lambda l: l[-1], reverse=True)[:self.n_best_model]
 
-        if len(alg_name_set) == 0:
+        if len(alg_list) == 0:
             logger.warning("There isn't any trained model to save except with Nueral Network!")
             return
-        
-        # print(self.score_list)
-        for alg in alg_name_set:
-            # Get which algorithm, then sort based on test score, get `n_best_models`
-            alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
-                    in self.score_list if alg_name.startswith(alg)]
+        if isinstance(alg_list, tuple):
+            # in case there is just one tuple
+            alg_list = [alg_list]
 
-            if len(alg_list) == 0:
-                raise ValueError("Couldn't get algorithm: {} from `self._score_list`".format(alg))
-            
-            # sort models based on test score by different type of problem.
-            if self._task_type == 'classification':
-                alg_list = sorted(set(alg_list), key=lambda l: l[-1], reverse=True) 
-            else:
-                alg_list = sorted(set(alg_list), key=lambda l: l[-1], reverse=False)
-    
-            if len(alg_list) > self.n_best_model:
-                alg_list = alg_list[:self.n_best_model]
+        # Start looping
+        for i, (alg_name, estimator, test_score) in enumerate(alg_list):
+            if i == 0:
+                self.best_estimator = estimator
+                self.best_score = test_score
 
-            for i in range(len(alg_list)):
-                # Loop for satisfied algorithm instance and dump each of them.
-                alg_name, estimator, test_score = alg_list[i][0], alg_list[i][1], alg_list[i][2]
-                # change trained score with test_score.
-                alg_name_split = alg_name.split('_')
-                alg_name = alg_name_split[0] + "_" + str(test_score)
+            # alg_name, estimator, test_score = alg_list[i][0], alg_list[i][1], alg_list[i][2]
+            alg_name_split = alg_name.split('_')
+            alg_name = alg_name_split[0] + "_" + str(test_score)
 
-                logger.info("Start to save model: {}".format(alg_name))
-                self.backend.save_model(estimator, alg_name)
+            logger.info("Start to save model: {}".format(alg_name))
+            self.backend.save_model(estimator, alg_name)
 
         logger.info("Already have saved models: %s" % '\t'.join(self.backend.list_models()))
+        
+        # # print(self.score_list)
+        # for alg in alg_name_set:
+        #     # Get which algorithm, then sort based on test score, get `n_best_models`
+        #     alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
+        #             in self.score_list if alg_name.startswith(alg)]
+
+        #     if len(alg_list) == 0:
+        #         raise ValueError("Couldn't get algorithm: {} from `self._score_list`".format(alg))
+    
+        #     # After change regression metrics to R2 score, then the best model also with highest score.
+        #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
+
+        #     if len(alg_list) > self.n_best_model:
+        #         alg_list = alg_list[:self.n_best_model]
+
+        #     for i, (alg_name, estimator, test_score) in enumerate(alg_list):
+        #         # Loop for satisfied algorithm instance and dump each of them.
+        #         if i == 0:
+        #             self.best_estimator = estimator
+        #             self.best_score = test_score
+
+        #         # alg_name, estimator, test_score = alg_list[i][0], alg_list[i][1], alg_list[i][2]
+        #         alg_name_split = alg_name.split('_')
+        #         alg_name = alg_name_split[0] + "_" + str(test_score)
+
+        #         logger.info("Start to save model: {}".format(alg_name))
+        #         self.backend.save_model(estimator, alg_name)
+
+        
 
     def load_best_model_list(self, model_extension='pkl'):
         """
         Load previous saved best model into a list of trained instance.
         :return:
         """
-        # TODO: Why not just load whole models from disk then sort based on name?
-        model_list = []
+        # This should be changed to just load full models from disk, not based on the trained object.
+        # As there maybe a failure to save models.
+        model_list = self.backend.list
 
-        alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list])
+        # # TODO: Why not just load whole models from disk then sort based on name?
+        # model_list = []
+
+        # alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list])
         
-        for alg in alg_name_set:
-            # Get which algorithm, then sort based on test score, get `n_best_models`
-            alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
-                    in self.score_list if alg_name.startswith(alg) ]
-            # Should based on type of problem
-            if self._task_type == 'classification':
-                alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
-            else:
-                alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=False)[self.n_best_model]
+        # for alg in alg_name_set:
+        #     # Get which algorithm, then sort based on test score, get `n_best_models`
+        #     alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
+        #             in self.score_list if alg_name.startswith(alg) ]
+        #     # Should based on type of problem
+        #     # if self._task_type == 'classification':
+        #     #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
+        #     # else:
+        #     #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=False)[self.n_best_model]
 
-            if len(alg_list) == 0:
-                continue
+        #     # After change regression metrics to R2 score, then the best model also with highest score.
+        #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
+
+
+        #     if len(alg_list) == 0:
+        #         continue
             
-            for alg_name, estimator, test_score in alg_list:
-                # change trained score with test_score.
-                alg_name_split = alg_name.split('_')
-                model_name = alg_name_split[0] + "_" + test_score
+        #     for i, (alg_name, estimator, test_score) in enumerate(alg_list):
+        #         # change trained score with test_score.
+        #         alg_name_split = alg_name.split('_')
+        #         model_name = alg_name_split[0] + "_" + test_score
 
-                logger.info("Start to save model: {}".format(model_name))
-                model = self.backend.load_model(model_name)
-                model_list.append(model)
+        #         logger.info("Start to save model: {}".format(model_name))
+        #         model = self.backend.load_model(model_name)
+        #         model_list.append(model)
 
         return model_list
 
@@ -360,46 +388,12 @@ class GridSearchModel(object):
 
         return self.backend.load_model(self.best_esmator_name)
 
-    @property
     def best_estimator(self):
-        """
-        To get best estimator based on the testing score list
-        :return: best estimator
-        """
-        if len(self.score_list) == 0:
-            raise ValueError("Please fit model first!")
-
-        # Base on different type of problem
-        if self._task_type == 'classification':
-            max_test_score = np.argmax([test_score for _, _, test_score in self.score_list])
-        else:
-            max_test_score = np.argmin([test_score for _, _, test_score in self.score_list])
-
-        try:
-            best_estimator =  self.estimator_list[max_test_score]
-            # print("Get best estimator: " , best_estimator)
-            return best_estimator
-        except IndexError as e:
-            logger.error("To get best estimator with index error: {}".format(e))
-            raise IndexError("To get best estimator with index error: {}".format(e))
-
-    @property
+        return self.best_estimator
+   
     def best_score(self):
-        if len(self.score_list) == 0:
-            raise ValueError("Please fit model first!")
-        
-        try:
-            if self._task_type == 'classification':
-                max_score = max([test_score for _, _, test_score in self.score_list])
-            else:
-                max_score = min([test_score for _, _, test_score in self.score_list])
-            
-            logger.info("Get best score: {}".format(max_score))
-            return max_score    
-        except IndexError as e:
-            logger.error("To get best score with index error: {}".format(e))
-            raise IndexError("To get best score with index error: {}".format(e))
-        
+        return self.best_score
+
     @staticmethod
     def _score_with_estimator(estimator_instance, x, y):
         """
