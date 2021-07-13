@@ -99,7 +99,8 @@ Full functionality for both `classification` and `regression` is same, so the on
 ```python
 from auto_ml.automl import RegressionAutoML, FileLoad
 
-file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name='Survived')
+file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name="label")
+# Just change this class
 auto_cl = RegressionAutoML()
 auto_cl.fit(file_load=file_load, val_split=0.2)
 ```
