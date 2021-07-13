@@ -47,7 +47,7 @@ class PipelineTrain(Pipeline):
                  use_onehot=True,
                  use_standard=True,
                  use_norm=False,
-                 use_pca=True,
+                 use_pca=False,
                  use_minmax=False,
                  use_feature_seletion=False,
                  max_feature_num=20,
@@ -143,7 +143,9 @@ class PipelineTrain(Pipeline):
             # One-hot logic should happen after the imputation logic! As we need numeric data.
             step_stack.append('OnehotEncoding')
         if self.use_imputation:
-            step_stack.append('Imputation')
+            # Add a logic that if there isn't any NAN value, just pass this
+            if np.isnan(data).any():    
+                step_stack.append('Imputation')
 
         process_step = [step_stack.pop() for _ in range(len(step_stack))]
 
@@ -181,7 +183,7 @@ class PipelineTrain(Pipeline):
         :return: a list of instance algorithm object.
         """
         # This should be lazy part.
-        self.training_pipeline = GridSearchModel(backend=self.backend, use_neural_network=use_neural_network)
+        self.training_pipeline = GridSearchModel(backend=self.backend, use_neural_network=use_neural_network, task_type=self.task_type)
 
         # This is based on diff type of problem to get each algorithm's instance! 
         # Tips: Parent class could call Child private function!
@@ -233,7 +235,7 @@ class PipelineTrain(Pipeline):
         """
         logger.info("Start Model Pipeline training!")
 
-        self.task_type = get_type_problem(y)
+        # self.task_type = get_type_problem(y)
         self.training_pipeline = self.build_training_pipeline(y=y, use_neural_network=use_neural_network)
 
         logger.info("Before processing, data shape: %d" % x.shape[1])
@@ -258,7 +260,7 @@ class PipelineTrain(Pipeline):
         """
         # func `get_scorer_based_on_target` already with type of problem
         # should based on the prediction not estimator
-        scorer = get_scorer_based_on_target(y)
+        scorer = get_scorer_based_on_target(self.task_type)
 
         score = self._get_model_score(self.training_pipeline, x, y, scorer)
 
@@ -309,7 +311,7 @@ class PipelineTrain(Pipeline):
             logger.warning("There isn't any trained model loaded from model path!")
             return None
 
-        scorer = get_scorer_based_on_target(y)
+        scorer = get_scorer_based_on_target(self.task_type)
 
         # first should process this dataset with trained processor, so later step will be easier
         # x = self._process_dataset_with_processor(x)
@@ -374,6 +376,9 @@ class PipelineTrain(Pipeline):
                 return pred
         else:
             pred = prob
+
+        if len(pred.shape) == 1:
+            pred = pred.reshape(-1, 1)
         
         return pred
 
@@ -426,7 +431,7 @@ class PipelineTrain(Pipeline):
         if model_name is not None:
             if model_name.lower().startswith('stacking'):
                 logger.info("Start to produce new dataset with `stacking` class.")
-                x = ModelEnsemble.create_stacking_dataset(x, backend=self.backend)
+                x = ModelEnsemble.create_stacking_dataset(x, backend=self.backend, task_type=self.task_type)
             else:
                 raise ValueError("When to model prediction, model name: {} is not supported!".format(model_name))
 
@@ -495,7 +500,11 @@ class PipelineTrain(Pipeline):
             ensemble_alg = 'stacking'
             voting_logic = 'soft'
 
-        model_ensemble = ModelEnsemble(backend=self.backend, ensemble_alg=ensemble_alg, voting_logic=voting_logic)
+        # for checking which type of problem
+        model_ensemble = ModelEnsemble(backend=self.backend, 
+            ensemble_alg=ensemble_alg, 
+            voting_logic=voting_logic, 
+            task_type=self.task_type)
 
         # in fact with `training`, then the model will be saved into disk directly.
         # so that we don't need to care the rest, just `fit`
@@ -552,14 +561,14 @@ class PipelineTrain(Pipeline):
                 raise ValueError("Please config `include_estimators` with str or a list of algorithm names!")
         else:
             # then just get default algorithms based on target value.
-            task_type = get_type_problem(y)
+            # task_type = get_type_problem(y)
 
-            print("**** get type of problem ****", task_type)
+            print("**** get type of problem ****", self.task_type)
 
-            algorithm_name_list = self.algorithms_config[task_type]['default']
+            algorithm_name_list = self.algorithms_config[self.task_type]['default']
             
             # When to get instances, should base on each type of problem
-            if task_type == 'classification':
+            if self.task_type == 'classification':
                 algorithms_instance_list = ClassifierFactory.get_algorithm_instance(algorithm_name_list)
             else:
                 algorithms_instance_list = RegressorFactory.get_algorithm_instance(algorithm_name_list)

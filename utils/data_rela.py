@@ -194,7 +194,7 @@ def get_type_problem(y):
                          "get not supported type: {}".format(label_type))
 
 
-def get_scorer_based_on_target(y):
+def get_scorer_based_on_target(task_type='classification'):
     """
     Based on the target to return the type of the problem.
     :param y:
@@ -202,16 +202,14 @@ def get_scorer_based_on_target(y):
     """
     # for different problem use different scorer
     # self.type_of_problem = self._get_type_problem(y)
-    type_of_problem = get_type_problem(y)
-
-    if type_of_problem == 'classification':
+    if task_type == 'classification':
         scorer = metrics.accuracy_score
-    elif type_of_problem == 'regression':
+    elif task_type == 'regression':
         # Change to r2 score
         scorer = metrics.r2_score
     else:
         raise ValueError("When to score data get not "
-                         "supported type of problem: {}".format(type_of_problem))
+                         "supported type of problem: {}".format(task_type))
 
     return scorer
 

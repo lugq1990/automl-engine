@@ -177,6 +177,17 @@ class AutoML(BaseEstimator):
         if file_load is not None:
             x, y = self.__get_file_load_data_label(file_load, use_for_pred=False)
 
+        # ensure we have array type
+        if isinstance(x, pd.DataFrame) or isinstance(x, pd.Series):
+            x = x.values
+            if len(x.shape) == 1:
+                x = x.reshape(-1, 1)
+        if isinstance(y, pd.DataFrame) or isinstance(y, pd.Series):
+            y = y.values
+            
+            if len(y.shape) == 1:
+                y = y.reshape(-1, 1)
+
         # Use child func, child should implement with score based on different type of problem.
         score = self.estimator.score(x, y)
 
@@ -266,6 +277,12 @@ class AutoML(BaseEstimator):
         else:
             if x is None or y is None:
                 raise ValueError("When to do training, please provide both `x` and `y`!")
+
+        # Let's try to make DF into array, so later will be easier!
+        if isinstance(x, pd.DataFrame):
+            x = x.values
+        if isinstance(y, pd.DataFrame):
+            y = y.values
         
         return x, y
     
@@ -342,6 +359,8 @@ class AutoML(BaseEstimator):
         self._check_param(file_load, x)
 
         if x is not None:
+            if isinstance(x, pd.DataFrame):
+                x = x.values
             return x
         elif file_load is not None:
             x, _ = self.__get_file_load_data_label(file_load)   
@@ -553,7 +572,7 @@ if __name__ == '__main__':
     models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
 
     auto_cl = ClassificationAutoML(models_path=models_path)
-    # auto_cl = RegressionAutoML(models_path=models_path)
+    auto_cl = RegressionAutoML(models_path=models_path)
 
     # # Start to train processing for `FileLoad`
     # auto_cl.fit(file_load=file_load, val_split=.2)

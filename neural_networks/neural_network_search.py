@@ -122,11 +122,12 @@ class DNNSearch(SearchModel):
 
 
 class EvaluateNeuralModel:
-    def __init__(self, model_list, x, y, algorithm_name='DNN'):
+    def __init__(self, model_list, x, y, algorithm_name='DNN', task_type='classification'):
         self.model_list = model_list if isinstance(model_list, list) else [model_list]
         self.x = x
         self.y = y
         self.algorithm_name = algorithm_name
+        self.task_type = task_type
         self.score_list = []
     
     def evaluate_models(self):
@@ -136,7 +137,7 @@ class EvaluateNeuralModel:
         for estimator in self.model_list:
             try:
                 # score = estimator.evaluate(self.x, self.y)[1]
-                scorer = get_scorer_based_on_target(self.y)
+                scorer = get_scorer_based_on_target(self.task_type)
                 task_type = get_type_problem(self.y)
                 pred = estimator.predict(self.x)
 
@@ -218,7 +219,8 @@ class NeuralModelSearch:
                     algorithm_list=None, 
                     tuning_algorithm='RandomSearch', 
                     num_best_models=5,
-                    models_path=None):
+                    models_path=None, 
+                    task_type='classification'):
         self.objective = objective
         self.max_trials = max_trials
         self.executions_per_trial = executions_per_trial
@@ -240,6 +242,8 @@ class NeuralModelSearch:
         # add with models_path for storing the models into path we want.
         self.models_path = models_path
 
+        self.task_type = task_type
+
     def fit(self, x, y, epochs=10, val_x=None, val_y=None, validation_split=0.2, evaluate=True):
         """Search logic to find best model with support `classification` and `regression`
 
@@ -254,10 +258,8 @@ class NeuralModelSearch:
             val_y ([type], optional): [description]. Defaults to None.
             validation_split ([type], optional): [description]. Defaults to 0.2.
             evaluate ([type], optional): [description]. Defaults to True.
-        """
-        task_type = get_type_problem(y)
-        
-        tuner_list = self._get_search_tuner_list(x, y, task_type=task_type)
+        """        
+        tuner_list = self._get_search_tuner_list(x, y, task_type=self.task_type)
 
         # whether or not to evaluate should base on attribute
         if evaluate:
@@ -302,7 +304,7 @@ class NeuralModelSearch:
             y ([type]): [description]
         """
         # get each search best models, evaluate and save it.
-        evaluate_model = EvaluateNeuralModel(best_models, x, y)
+        evaluate_model = EvaluateNeuralModel(best_models, x, y, task_type=self.task_type)
 
         best_models_scores = evaluate_model.evaluate_models()
         self.score_list = evaluate_model.score_list
@@ -322,8 +324,6 @@ class NeuralModelSearch:
         Returns:
             [type]: [description]
         """
-        task_type = get_type_problem(y)
-
         if task_type == 'regression':
             num_classes = 1
             self.objective = 'val_loss'

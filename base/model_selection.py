@@ -33,7 +33,7 @@ class GridSearchModel(object):
     of estimators and their parameters list.
     I want to make this class to do real training part.
     """
-    def __init__(self, backend, n_best_model=None, use_neural_network=True):
+    def __init__(self, backend, n_best_model=None, use_neural_network=True, task_type='classification'):
         """
         self.estimator_list is like: [GridSearchCV(lr, params), ...]
         self.score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
@@ -50,7 +50,7 @@ class GridSearchModel(object):
         self.score_list = []
         self._estimator_param_list = []
         self.n_best_model = 30 if n_best_model is None else n_best_model
-        self._task_type = 'classification'
+        self.task_type = task_type
 
         self.best_estimator = None
         self.best_score = 0
@@ -150,7 +150,7 @@ class GridSearchModel(object):
         estimators_list = self._get_estimators_list()
 
         # Get scoring metrics based on different type of problem.
-        scorer = get_scorer_based_on_target(y)
+        scorer = get_scorer_based_on_target(self.task_type)
         scorer = metrics.make_scorer(scorer)
 
         with tqdm.tqdm(range(len(estimators_list))) as process:
@@ -187,7 +187,7 @@ class GridSearchModel(object):
 
             # `fit` related func like validation and save models are warpped in `fit` func, 
             # here just `fit`
-            neural_model = NeuralModelSearch(models_path=self.backend.output_folder) 
+            neural_model = NeuralModelSearch(models_path=self.backend.output_folder, task_type=self.task_type) 
             neural_model.fit(x, y)  
 
             # Add with neural network's score list, so that we could do evaluation for DNN models.
@@ -221,7 +221,7 @@ class GridSearchModel(object):
         :param y:
         :return:
         """
-        scorer = get_scorer_based_on_target(y)
+        scorer = get_scorer_based_on_target(self.task_type)
         
         pred = self.predict(x)
 
@@ -285,6 +285,8 @@ class GridSearchModel(object):
         # Start looping
         for i, (alg_name, estimator, test_score) in enumerate(alg_list):
             if i == 0:
+                print("Get best estimator", estimator)
+                print("Get best score:", test_score)
                 self.best_estimator = estimator
                 self.best_score = test_score
 
@@ -297,36 +299,6 @@ class GridSearchModel(object):
 
         logger.info("Already have saved models: %s" % '\t'.join(self.backend.list_models()))
         
-        # # print(self.score_list)
-        # for alg in alg_name_set:
-        #     # Get which algorithm, then sort based on test score, get `n_best_models`
-        #     alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
-        #             in self.score_list if alg_name.startswith(alg)]
-
-        #     if len(alg_list) == 0:
-        #         raise ValueError("Couldn't get algorithm: {} from `self._score_list`".format(alg))
-    
-        #     # After change regression metrics to R2 score, then the best model also with highest score.
-        #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
-
-        #     if len(alg_list) > self.n_best_model:
-        #         alg_list = alg_list[:self.n_best_model]
-
-        #     for i, (alg_name, estimator, test_score) in enumerate(alg_list):
-        #         # Loop for satisfied algorithm instance and dump each of them.
-        #         if i == 0:
-        #             self.best_estimator = estimator
-        #             self.best_score = test_score
-
-        #         # alg_name, estimator, test_score = alg_list[i][0], alg_list[i][1], alg_list[i][2]
-        #         alg_name_split = alg_name.split('_')
-        #         alg_name = alg_name_split[0] + "_" + str(test_score)
-
-        #         logger.info("Start to save model: {}".format(alg_name))
-        #         self.backend.save_model(estimator, alg_name)
-
-        
-
     def load_best_model_list(self, model_extension='pkl'):
         """
         Load previous saved best model into a list of trained instance.
@@ -334,38 +306,15 @@ class GridSearchModel(object):
         """
         # This should be changed to just load full models from disk, not based on the trained object.
         # As there maybe a failure to save models.
-        model_list = self.backend.list
+        model_list = self.backend.load_models_combined_with_model_name()
 
-        # # TODO: Why not just load whole models from disk then sort based on name?
-        # model_list = []
+        # To ensure there should be at least one file for `Ensemble` logic.
+        if not model_list:
+            # In case there isn't any trained model!
+            logger.error("There isn't any trained model to load!")
+            return None
 
-        # alg_name_set = set([instance_name.split("_")[0] for instance_name, _, _ in self.score_list])
-        
-        # for alg in alg_name_set:
-        #     # Get which algorithm, then sort based on test score, get `n_best_models`
-        #     alg_list = [(alg_name, alg_instance, test_score) for alg_name, alg_instance, test_score 
-        #             in self.score_list if alg_name.startswith(alg) ]
-        #     # Should based on type of problem
-        #     # if self._task_type == 'classification':
-        #     #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
-        #     # else:
-        #     #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=False)[self.n_best_model]
-
-        #     # After change regression metrics to R2 score, then the best model also with highest score.
-        #     alg_list = sorted(alg_list, key=lambda l: l[-1], reverse=True)[self.n_best_model]
-
-
-        #     if len(alg_list) == 0:
-        #         continue
-            
-        #     for i, (alg_name, estimator, test_score) in enumerate(alg_list):
-        #         # change trained score with test_score.
-        #         alg_name_split = alg_name.split('_')
-        #         model_name = alg_name_split[0] + "_" + test_score
-
-        #         logger.info("Start to save model: {}".format(model_name))
-        #         model = self.backend.load_model(model_name)
-        #         model_list.append(model)
+        model_list = sorted(model_list, key=lambda x: float(x[0].split("_")[1].replace(".pkl", '')), reverse=True)
 
         return model_list
 

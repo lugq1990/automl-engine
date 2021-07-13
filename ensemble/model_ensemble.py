@@ -142,9 +142,8 @@ class ModelEnsemble(ClassifierClass):
 
         logger.info("Get estaimator {} for stacking logic.".format(best_estimator_name))
 
-        task_type = get_type_problem(y)
         # As return is a list, but here we just need `one instance` for combined dataset
-        if task_type == 'classification':
+        if self.task_type == 'classification':
             self.estimator = ClassifierFactory.get_algorithm_instance(best_estimator_name)[0]
         else:
             self.estimator = RegressorFactory.get_algorithm_instance(best_estimator_name)[0]
@@ -167,9 +166,7 @@ class ModelEnsemble(ClassifierClass):
         for `stacking` ensemble logic.
         :return:
         """
-        task_type = get_type_problem(y)
-
-        algorithm_name_list = load_yaml_file()[task_type]['default']
+        algorithm_name_list = load_yaml_file()[self.task_type]['default']
         trained_model_alg_name_list = list(set([x[0].split("_")[0] for x in self.model_list_without_score]))
 
         for algo_name in trained_model_alg_name_list:
@@ -205,10 +202,8 @@ class ModelEnsemble(ClassifierClass):
             # raise IOError("There isn't any trained model for `Ensemble`.")
 
         # Get sorted model based on model name score.
-        # Model name like this: ('lr_0.98.pkl', lr)
-        # model_list.sort(key=lambda x: float("0." + x[0].split('-')[1].split('.')[0]), reverse=True)
-        model_list = sorted(model_list, key=lambda x: float(x[0].split("_")[1].replace(".pkl", '')))
-        # model_list.sort(key=lambda x: float(x[0].split('-')[1].split('.')[0]))
+        # Model name like this: ('lr_0.98.pkl', lr), higher is better!
+        model_list = sorted(model_list, key=lambda x: float(x[0].split("_")[1].replace(".pkl", '')), reverse=True)
 
         return model_list
 
@@ -220,7 +215,7 @@ class ModelEnsemble(ClassifierClass):
         score_list = []
 
         for model_name, _ in self._load_trained_models():
-            model_score = model_name.split('.')[0].split('-')[-1]
+            model_score = model_name.split('.')[0].split('_')[-1]
             score_list.append(model_score)
 
         return score_list
