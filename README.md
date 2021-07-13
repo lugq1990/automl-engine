@@ -1,5 +1,9 @@
 # auto-ml-cl
 
+
+![Evalution result](https://github.com/lugq1990/auto_ml/blob/master/static_files/auto_ml.png)
+
+
 Get best models with only **3** lines of code no matter what type of data with **auto-ml-cl**.
 
 How to create a machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about `Data Loading`, `Feature Engineering`, `Model Training`, `Model Selection`, `Model Evaluation` and `Model Sink`, even `RESTful` with best trained model. Now **Auto-ML** comes in to show power!
@@ -58,7 +62,7 @@ pred = auto_cl.predict(file_load=file_load_test)
 ```
 
 Then we could get whole trained models' evaluation score for each trained model score, we could get best trained model based on validation score if we would love to use trained model for production, one important thing is that these models are stored in local server, we could use them any time with RESTFul API calls.
-![Evalution result](https://github.com/lugq1990/auto_ml/blob/master/test/diff_model_score.png)
+![Evalution result](https://github.com/lugq1990/auto_ml/blob/master/static_files/diff_model_score.png)
     
 If we want to use GCP cloud storage as a data source for train and test data, what needed is just get the service account file with proper authority, last is just provide with parameter: `service_account_name` and file local path: `service_account_file_path` to `FileLoad` object, then training will start automatically.
 
