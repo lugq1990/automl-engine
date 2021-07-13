@@ -1,7 +1,7 @@
-# auto-ml-cl
-
-
 ![Evalution result](https://github.com/lugq1990/auto_ml/blob/master/static_files/auto_ml.png)
+
+
+# auto-ml-cl
 
 
 Get best models with only **3** lines of code no matter what type of data with **auto-ml-cl**.
