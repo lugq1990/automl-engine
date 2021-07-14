@@ -1,4 +1,4 @@
-![Evalution result](https://drive.google.com/file/d/1-IZA5ca2CPv3_TivCkab_jV-On-7CW-3/view?usp=sharing)
+![Logo](https://github.com/lugq1990/auto-ml-cl/blob/master/static_files/auto_ml.png?raw=true)
 
 
 # auto-ml-cl
@@ -62,7 +62,7 @@ pred = auto_est.predict(file_load=file_load_test)
 ```
 
 Then we could get whole trained models' evaluation score for each trained model score, we could get best trained model based on validation score if we would love to use trained model for production, one important thing is that these models are stored in local server, we could use them any time with RESTFul API calls.
-![Evalution result](https://drive.google.com/file/d/1Nu344CnKrCu-eaPRliYCVKGFupEUvrHs/view?usp=sharing)
+![Evalution result](https://github.com/lugq1990/auto-ml-cl/blob/master/static_files/diff_model_score.png?raw=true)
     
 If we want to use GCP cloud storage as a data source for train and test data, what needed is just get the service account file with proper authority, last is just provide with parameter: `service_account_name` and file local path: `service_account_file_path` to `FileLoad` object, then training will start automatically.
 
