@@ -47,10 +47,10 @@ class PipelineTrain(Pipeline):
                  use_onehot=True,
                  use_standard=True,
                  use_norm=False,
-                 use_pca=False,
+                 use_pca=True,
                  use_minmax=False,
                  use_feature_seletion=False,
-                 max_feature_num=20,
+                 max_feature_num=80,
                  use_ensemble=True,
                  ensemble_alg='stacking',
                  voting_logic='soft',
@@ -145,7 +145,7 @@ class PipelineTrain(Pipeline):
         if self.use_imputation:
             # Add a logic that if there isn't any NAN value, just pass this
             # change to Pandas as numpy won't check for object type like mixture
-            if pd.isnan(data).any():    
+            if pd.isnull(data).any():    
                 step_stack.append('Imputation')
 
         process_step = [step_stack.pop() for _ in range(len(step_stack))]

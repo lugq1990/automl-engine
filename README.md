@@ -47,8 +47,8 @@ Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle comp
 from auto_ml.automl import ClassificationAutoML, FileLoad
 
 file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name='Survived')
-auto_cl = ClassificationAutoML()
-auto_cl.fit(file_load=file_load, val_split=0.2)
+auto_est = ClassificationAutoML()
+auto_est.fit(file_load=file_load, val_split=0.2)
 ```
 
 That's it all you need to get best models based on your dataset!
@@ -58,7 +58,7 @@ If you need to get model prediction based on best trained model, that's easy jus
 # Get prediction based on best trained models
 file_load_test = FileLoad(file_name="test.csv", file_path = r"C:\auto_ml\test")
 
-pred = auto_cl.predict(file_load=file_load_test)
+pred = auto_est.predict(file_load=file_load_test)
 ```
 
 Then we could get whole trained models' evaluation score for each trained model score, we could get best trained model based on validation score if we would love to use trained model for production, one important thing is that these models are stored in local server, we could use them any time with RESTFul API calls.
@@ -75,8 +75,8 @@ service_account_file_path = r"C:\auto_ml\test"
 file_load = FileLoad(file_name, file_path, label_name='Survived', 
     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
 
-auto_cl = ClassificationAutoML()
-auto_cl.fit(file_load=file_load)
+auto_est = ClassificationAutoML()
+auto_est.fit(file_load=file_load)
 ```
 
 If we have data `in memory`, we could also use memory objects to train, test and predict with `auto_ml` object, just like `scikit-learn`.
@@ -88,12 +88,12 @@ from sklearn.model_selection import train_test_split
 x, y = load_iris(return_X_y=True)
 xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
 
-auto_cl = ClassificationAutoML()
-auto_cl.fit(xtrain, ytrain)
+auto_est = ClassificationAutoML()
+auto_est.fit(xtrain, ytrain)
 
-score = auto_cl.score(xtest, ytest)
-pred = auto_cl.predict(xtest)
-prob = auto_cl.predict_proba(xtest)
+score = auto_est.score(xtest, ytest)
+pred = auto_est.predict(xtest)
+prob = auto_est.predict_proba(xtest)
 ```
 
 ### Regression
@@ -105,8 +105,8 @@ from auto_ml.automl import RegressionAutoML, FileLoad
 
 file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name="label")
 # Just change this class
-auto_cl = RegressionAutoML()
-auto_cl.fit(file_load=file_load, val_split=0.2)
+auto_est = RegressionAutoML()
+auto_est.fit(file_load=file_load, val_split=0.2)
 ```
 
 ## Key features

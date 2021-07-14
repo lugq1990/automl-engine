@@ -459,6 +459,8 @@ class FileLoad:
         self.except_columns = except_columns 
         self.data, self.label = self._load_data_file()
 
+        self.columns = None
+
     def _get_file_location(self):
         if self.file_path is not None:
             if self.file_path.startswith("gs://"):
@@ -521,6 +523,7 @@ class FileLoad:
             df = pd.read_csv(os.path.join(file_path, self.file_name), sep=self.file_sep)
 
             df_cols = df.columns
+            self.columns = df_cols
 
             # In case that we don't need some columns and these cols should be in DF columns
             if self.except_columns is not None:
@@ -571,8 +574,8 @@ if __name__ == '__main__':
     file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
     models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
 
-    auto_cl = ClassificationAutoML(models_path=models_path)
-    auto_cl = RegressionAutoML(models_path=models_path)
+    auto_est = ClassificationAutoML(models_path=models_path)
+    auto_est = RegressionAutoML(models_path=models_path)
 
     # # Start to train processing for `FileLoad`
     # auto_cl.fit(file_load=file_load, val_split=.2)
@@ -600,15 +603,19 @@ if __name__ == '__main__':
     x, y = load_iris(return_X_y=True)
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
     
-    auto_cl.fit(xtrain, ytrain)
+    # auto_cl.fit(xtrain, ytrain)
 
-    print(auto_cl.models_list)
-    print(auto_cl.score(xtest, ytest))
+    regression_file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\Kaggle\HousePricePredict"
+    file_load = FileLoad('train.csv', file_path=regression_file_path, label_name='SalePrice')
+    auto_est.fit(file_load=file_load)
+
+    print(auto_est.models_list)
+    print(auto_est.score(xtest, ytest))
     print('*' * 20)
-    print(auto_cl.predict(xtest)[:10])
+    print(auto_est.predict(xtest)[:10])
     print('*' * 20)
-    pred = auto_cl.predict(xtest)
-    print(auto_cl.predict_proba(xtest)[:10])
+    pred = auto_est.predict(xtest)
+    print(auto_est.predict_proba(xtest)[:10])
     print("Truth data: ")
     print(ytest)
 
