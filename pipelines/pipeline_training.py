@@ -144,7 +144,8 @@ class PipelineTrain(Pipeline):
             step_stack.append('OnehotEncoding')
         if self.use_imputation:
             # Add a logic that if there isn't any NAN value, just pass this
-            if np.isnan(data).any():    
+            # change to Pandas as numpy won't check for object type like mixture
+            if pd.isnan(data).any():    
                 step_stack.append('Imputation')
 
         process_step = [step_stack.pop() for _ in range(len(step_stack))]
