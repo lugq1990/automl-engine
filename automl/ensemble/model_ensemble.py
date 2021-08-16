@@ -14,7 +14,7 @@ from sklearn.ensemble import VotingClassifier, VotingRegressor
 from sklearn.model_selection import cross_validate
 
 from utils.backend_obj import Backend
-from ..metrics.scorer import accuracy, r2
+from metrics.scorer import accuracy, r2
 from base.classifier_algorithms import ClassifierClass, ClassifierFactory
 from base.regressor_algorithms import RegressorFactory
 from utils.logger import create_logger

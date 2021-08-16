@@ -623,7 +623,7 @@ class FileLoad:
 if __name__ == '__main__':
     # Test with `FileLoad` class
     file_name = 'train.csv'
-    file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\real_code\\\test"
+    file_path = r"C:\Users\guangqiang.lu\Documents\lugq\github\auto-ml-cl\automl\test"
     # file_path = "gs://cloud_sch_test"
     # service_account_file_path = r"C:\Users\guangqiiang.lu\Downloads"
     # service_account_name = "buoyant-sum-302208-4542dcd74629.json"
@@ -632,10 +632,10 @@ if __name__ == '__main__':
     #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
         
     file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
-    models_path = r"C:\Users\guangqiiang.lu\Downloads\test_automl"
+    models_path = r"C:\Users\guangqiang.lu\Downloads\test_automl"
 
     auto_est = ClassificationAutoML(models_path=models_path)
-    auto_est = RegressionAutoML(models_path=models_path)
+    # auto_est = RegressionAutoML(models_path=models_path)
 
     # # Start to train processing for `FileLoad`
     # auto_cl.fit(file_load=file_load, val_split=.2)
@@ -663,11 +663,11 @@ if __name__ == '__main__':
     x, y = load_iris(return_X_y=True)
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
     
-    # auto_cl.fit(xtrain, ytrain)
+    auto_est.fit(xtrain, ytrain)
 
-    regression_file_path = r"C:\Users\guangqiiang.lu\Documents\lugq\Kaggle\HousePricePredict"
-    file_load = FileLoad('train.csv', file_path=regression_file_path, label_name='SalePrice')
-    auto_est.fit(file_load=file_load)
+    # regression_file_path = r"C:\Users\guangqiang.lu\Documents\lugq\Kaggle\HousePricePredict"
+    # file_load = FileLoad('train.csv', file_path=regression_file_path, label_name='SalePrice')
+    # auto_est.fit(file_load=file_load)
 
     print(auto_est.models_list)
     print(auto_est.score(xtest, ytest))

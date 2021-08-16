@@ -26,7 +26,7 @@ from base.model_selection import GridSearchModel
 from base.classifier_algorithms import ClassifierFactory
 from base.regressor_algorithms import RegressorFactory
 from preprocessing.processing_factory import ProcessingFactory
-from ..ensemble.model_ensemble import ModelEnsemble
+from ensemble.model_ensemble import ModelEnsemble
 from utils.data_rela import get_scorer_based_on_target, get_type_problem
 from utils.data_rela import check_data_and_label, hash_dataset_name
 
