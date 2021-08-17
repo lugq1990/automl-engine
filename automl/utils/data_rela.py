@@ -14,7 +14,6 @@ from sklearn.utils.validation import check_X_y, check_array
 from sklearn.utils.multiclass import type_of_target
 
 from .CONSTANT import *
-from metrics.scorer import *
 
 
 def ensure_data_without_nan(data):

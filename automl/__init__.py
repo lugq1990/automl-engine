@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from automl.automl import ClassificationAutoML, FileLoad, RegressionAutoML
+from automl.estimator import ClassificationAutoML, FileLoad, RegressionAutoML
 
 # __all__ = [ClassificationAutoML, FileLoad, RegressionAutoML]
 __all__ = ['ClassificationAutoML', 

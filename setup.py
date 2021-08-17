@@ -23,7 +23,7 @@ long_description = read('README.md')
 
 setup(
     name='automl-engine',
-    version='0.0.1',
+    version='0.0.2',
     url='https://github.com/lugq1990/automl-engine',
     license='MIT License',
     author='guangqiang.lu',

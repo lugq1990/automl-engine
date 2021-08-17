@@ -13,13 +13,13 @@ import numpy as np
 from sklearn.ensemble import VotingClassifier, VotingRegressor
 from sklearn.model_selection import cross_validate
 
-from utils.backend_obj import Backend
-from metrics.scorer import accuracy, r2
-from base.classifier_algorithms import ClassifierClass, ClassifierFactory
-from base.regressor_algorithms import RegressorFactory
-from utils.logger import create_logger
-from utils.paths import load_yaml_file
-from utils.data_rela import get_type_problem
+from .utils.backend_obj import Backend
+from .scorer import accuracy, r2
+from .classifier_algorithms import ClassifierClass, ClassifierFactory
+from .regressor_algorithms import RegressorFactory
+from .utils.logger import create_logger
+from .utils.paths import load_yaml_file
+from .utils.data_rela import get_type_problem
 
 
 logger = create_logger(__file__)

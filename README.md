@@ -16,14 +16,14 @@ Both **classification** and **regression** problems are supported!
 ## Installation
 
 
-It's highly recommended that to create a **virtual environment** to install `auto-ml-cl` as this will be at least of affect for root user path.
+It's highly recommended that to create a **virtual environment** to install `automl-engine` as this will be at least of affect for root user path.
 
 #### Linux
 
 1. Install virtual env: `sudo apt-get install python3-venv`
 2. Create virtual env folder: `python3 -m venv your_env_name`
 3. activate your virtual env: `source your_env_name/bin/activate`
-4. Install `auto-ml-cl` package: `pip install auto-ml-cl`
+4. Install `automl-engine` package: `pip install automl-engine`
 
 
 #### Windows
@@ -31,7 +31,7 @@ It's highly recommended that to create a **virtual environment** to install `aut
 1. Install virtual env: `python -m pip install virtualenv`
 2. Create virtual env folder: `python -m venv your_env_name`
 3. activate your virtual env: `.\your_env_name\Scripts\activate`
-4. Install `auto-ml-cl` package: `pip install auto-ml-cl`
+4. Install `automl-engine` package: `pip install automl-engine`
 
 
 ## Getting started
@@ -40,10 +40,10 @@ It's highly recommended that to create a **virtual environment** to install `aut
 ### Classification
 
 
-Sample code to use `auto_ml` package by using `Titanic` dataset from Kaggle competion, as this dataset contain different kinds of data types also contain some missing values with different threasholds.
+Sample code to use `auto-ml-cl` package by using `Titanic` dataset from Kaggle competion, as this dataset contain different kinds of data types also contain some missing values with different threasholds.
 
 ```python
-from auto_ml.automl import ClassificationAutoML, FileLoad
+from automl.estimator import ClassificationAutoML, FileLoad
 
 file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name='Survived')
 auto_est = ClassificationAutoML()
@@ -61,7 +61,7 @@ pred = auto_est.predict(file_load=file_load_test)
 ```
 
 Then we could get whole trained models' evaluation score for each trained model score, we could get best trained model based on validation score if we would love to use trained model for production, one important thing is that these models are stored in local server, we could use them any time with RESTFul API calls.
-![Evalution result](https://github.com/lugq1990/auto-ml-cl/blob/master/static_files/diff_model_score.png?raw=true)
+![Evalution result](https://github.com/lugq1990/automl-engine/blob/master/static_files/diff_model_score.png?raw=true)
     
 #### Cloud file support
 
@@ -106,7 +106,7 @@ prob = auto_est.predict_proba(xtest)
 Full functionality for both `classification` and `regression` is same, so the only difference is to change imported class from `ClassificationAutoML` to `RegressionAutoML` just like snippet code
 
 ```python
-from auto_ml.automl import RegressionAutoML, FileLoad
+from automl.estimator import FileLoad, RegressionAutoML
 
 file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name="label")
 # Just change this class

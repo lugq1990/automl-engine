@@ -28,10 +28,10 @@ from kerastuner import HyperModel
 from kerastuner.tuners import RandomSearch
 
 
-from utils.paths import load_yaml_file
-from utils.CONSTANT import OUTPUT_FOLDER, TMP_FOLDER
-from utils.logger import create_logger
-from utils.data_rela import get_num_classes_based_on_label, get_scorer_based_on_target, get_type_problem
+from .utils.paths import load_yaml_file
+from .utils.CONSTANT import OUTPUT_FOLDER, TMP_FOLDER
+from .utils.logger import create_logger
+from .utils.data_rela import get_num_classes_based_on_label, get_scorer_based_on_target, get_type_problem
 
 
 logger = create_logger(__file__)

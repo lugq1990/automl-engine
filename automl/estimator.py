@@ -16,7 +16,7 @@ High level steps:
 
 author: Guangqiang.lu
 """
-import sys
+from __future__ import absolute_import
 
 import pandas as pd
 import time
@@ -24,12 +24,12 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import train_test_split
 
-from utils.backend_obj import Backend
-from base.classifier_algorithms import *
-from metrics.scorer import *
-from utils.CONSTANT import *
-from pipelines.pipeline_training import ClassificationPipeline,  RegressionPipeline
-from utils.logger import create_logger
+from automl.utils.backend_obj import Backend
+from automl.classifier_algorithms import *
+from automl.scorer import *
+from automl.utils.CONSTANT import *
+from automl.pipeline_training import ClassificationPipeline,  RegressionPipeline
+from automl.utils.logger import create_logger
 
 
 logger = create_logger(__file__)
@@ -622,39 +622,16 @@ class FileLoad:
 
 if __name__ == '__main__':
     # Test with `FileLoad` class
+    from automl.estimator import ClassificationAutoML, FileLoad, RegressionAutoML
+    
     file_name = 'train.csv'
     file_path = r"C:\Users\guangqiang.lu\Documents\lugq\github\auto-ml-cl\automl\test"
-    # file_path = "gs://cloud_sch_test"
-    # service_account_file_path = r"C:\Users\guangqiiang.lu\Downloads"
-    # service_account_name = "buoyant-sum-302208-4542dcd74629.json"
-
-    # file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived', 
-    #     service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
         
     file_load = FileLoad(file_name, file_path, file_sep=',',  label_name='Survived')
     models_path = r"C:\Users\guangqiang.lu\Downloads\test_automl"
 
     auto_est = ClassificationAutoML(models_path=models_path)
     # auto_est = RegressionAutoML(models_path=models_path)
-
-    # # Start to train processing for `FileLoad`
-    # auto_cl.fit(file_load=file_load, val_split=.2)
-    # print(auto_cl.models_list)
-    # # print(auto_cl.score(file_load_pred))
-
-    # file_load_pred = FileLoad("test.csv", file_path, file_sep=',', use_for_pred=True)
-    # print("Process based on new test file.")
-    # print('*' * 20)
-    # print(auto_cl.predict(file_load=file_load_pred)[:10])
-    # print('*'*20)
-    # print(auto_cl.predict_proba(file_load=file_load_pred)[:10])
-
-    # print("Process based on original file.")
-    # print("*" * 20)
-    # print(auto_cl.predict_proba(file_load=file_load)[:10])
-    # print("*" * 20)
-    # print(auto_cl.score(file_load=file_load))
-    # print(auto_cl.get_sorted_models_scores(file_load=file_load))
 
     # try to use sklearn iris dataset
     from sklearn.datasets import load_boston, load_iris

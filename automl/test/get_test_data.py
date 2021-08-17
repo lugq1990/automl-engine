@@ -6,8 +6,8 @@ This is used to make test data for whole project
 """
 import os
 import pandas as pd
-from utils.paths import get_root_path
-from utils.backend_obj import Backend
+from ..utils.paths import get_root_path
+from ..utils.backend_obj import Backend
 
 
 backend = Backend()

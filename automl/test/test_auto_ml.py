@@ -1,4 +1,4 @@
-from  ClassificationAutoML, FileLoad
+from automl.estimator import ClassificationAutoML, FileLoad
 from sklearn.datasets import load_iris
 import os
 import numpy as np

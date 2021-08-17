@@ -18,10 +18,10 @@ import itertools
 from sklearn.model_selection import GridSearchCV, cross_validate
 from sklearn import metrics
 
-from utils.backend_obj import Backend
-from utils.logger import create_logger
-from utils.data_rela import get_type_problem, get_scorer_based_on_target
-from neural_networks.neural_network_search import NeuralModelSearch, default_neural_algorithm_list
+from .utils.backend_obj import Backend
+from .utils.logger import create_logger
+from .utils.data_rela import get_type_problem, get_scorer_based_on_target
+from .neural_network_search import NeuralModelSearch, default_neural_algorithm_list
 
 
 logger = create_logger(__file__)
