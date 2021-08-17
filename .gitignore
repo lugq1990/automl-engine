@@ -7,3 +7,8 @@ __pycache__
 *.log
 *.json
 *pyc
+.vscode
+.env
+dist
+build
+*egg-info

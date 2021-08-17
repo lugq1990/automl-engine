@@ -1,18 +1,17 @@
-![Logo](https://github.com/lugq1990/auto-ml-cl/blob/master/static_files/auto_ml.png?raw=true)
+# automl-engine
 
 
-# auto-ml-cl
+Get best models with only **3** lines of code no matter what type of data with **automl-engine**.
 
+How to create machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about `Data Loading`, `Feature Engineering`, `Model Training`, `Model Selection`, `Model Evaluation` and `Model Sink`, even `RESTful` with best trained model. 
 
-Get best models with only **3** lines of code no matter what type of data with **auto-ml-cl**.
+Now **automl-engine** comes in to show power!
 
-How to create a machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about `Data Loading`, `Feature Engineering`, `Model Training`, `Model Selection`, `Model Evaluation` and `Model Sink`, even `RESTful` with best trained model. Now **Auto-ML** comes in to show power!
-
-This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with **3** lines of code by just providing a training file, if there is a test file will be nicer to evaluate trained model without any bias, but if with just one file will also be fine. 
+This repository is based on **scikit-learn** and **TensorFlow** to create both machine learning models and nueral network models with **3** lines of code by just providing `file` or `sklearn` training style, if there is a test file will be nicer to evaluate trained model without any bias.
 
 Happy to accounce:
 
-Both **classification** and **regression** problems are supported now!
+Both **classification** and **regression** problems are supported!
 
 ## Installation
 
@@ -64,6 +63,9 @@ pred = auto_est.predict(file_load=file_load_test)
 Then we could get whole trained models' evaluation score for each trained model score, we could get best trained model based on validation score if we would love to use trained model for production, one important thing is that these models are stored in local server, we could use them any time with RESTFul API calls.
 ![Evalution result](https://github.com/lugq1990/auto-ml-cl/blob/master/static_files/diff_model_score.png?raw=true)
     
+#### Cloud file support
+
+
 If we want to use GCP cloud storage as a data source for train and test data, what needed is just get the service account file with proper authority, last is just provide with parameter: `service_account_name` and file local path: `service_account_file_path` to `FileLoad` object, then training will start automatically.
 
 ```python
@@ -78,6 +80,9 @@ file_load = FileLoad(file_name, file_path, label_name='Survived',
 auto_est = ClassificationAutoML()
 auto_est.fit(file_load=file_load)
 ```
+
+#### sklearn style
+
 
 If we have data `in memory`, we could also use memory objects to train, test and predict with `auto_ml` object, just like `scikit-learn`.
 
@@ -140,18 +145,18 @@ Also supported with `Ensemble` logic to combine different models to build more p
  - Stacking
 
 For raw data file, will try with some common pre-procesing steps to create dataset for algorithms, currently some pre-processing algorithms are supported:
- - Imputation with statistic analysis for continuous and categorical columns, also support with KNN imputaion for categorical columns.
- - Standarize with data standard data
+ - Imputation with statistic analysis for continuous and categorical columns, also support with KNN imputaion
+ - Standarize
  - Normalize 
- - OneHot Encoding for categorical columns
- - MinMax for continuous columns to avoid data volumn bias
- - PCA to demension reduction with threashold
+ - OneHot Encoding
+ - MinMax
+ - PCA
  - Feature selection with variance or LinearRegression or ExtraTree
 
 
 ## Insights
 
-Insight for logics to `auto` machine learning training steps.    
+Insight for logics of `automl-engine`:
     
 1. Load data from file or memory for both training and testinig with class `FileLoad`, support with GCP's `GCS` files as source file.
 2. Build processing pipeline object based on data.
@@ -167,6 +172,7 @@ Insight for logics to `auto` machine learning training steps.
     (5). `FeatureSelection` to keep features with a default threshold or using algorithm with `ExtraTree` or `LinearRegreesion` to select features.
     
     (6). `PCA` to reduce dimenssion if feature variance over a threshold and just keep satisfied features.
+
 3. Build a `Singleton` backend object to do file or data related functions.
 4. Build training pipeline to instant each algorithm with a `factory` class based on pre-defined used algorithms.
 5. Build a `SearchModel` class for each algorithm to find best parameters based on `RandomSearch` or `GridSearch`.
