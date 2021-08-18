@@ -12,13 +12,16 @@
 #
 import os
 import sys
+sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("."))
+
 sys.path.insert(0, os.path.abspath('../'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'automl-engine'
-copyright = '2021, gqianglu'
+copyright = '2020, gqianglu'
 author = 'gqianglu'
 
 # The full version, including alpha/beta/rc tags
@@ -35,7 +38,8 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.napoleon'
 ]
-source_suffix = '.rst'
+source_suffix = [".rst", ".md"]
+master_doc = 'index'
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,6 +57,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 pygments_style = 'sphinx'
+todo_include_todos = False
 
 html_theme = 'sphinx_rtd_theme'
 
@@ -60,3 +65,31 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+htmlhelp_basename = 'automl-enginedoc'
+latex_documents = [
+    (master_doc, 'automl-engine.tex', u'automl-engine Documentation',
+     u'gqianglu', 'manual'),
+]
+
+man_pages = [
+    (master_doc, 'automl-engine', u'automl-engine Documentation',
+     [author], 1)
+]
+
+texinfo_documents = [
+    (master_doc, 'automl-engine', u'automl-engine Documentation',
+     author, 'automl-engine', '3 lines of code for automate machine learning for classification and regression.',
+     'Miscellaneous'),
+]
+
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
