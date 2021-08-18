@@ -5,4 +5,6 @@ Automl Module  (API Reference)
 -------------
 
 .. automodule:: automl.estimator
-  :members: AutoML, ClassificationAutoML, RegressionAutoML, FileLoad
+  :members:
+  :inherited-members:
+  :show-inheritance:
