@@ -14,4 +14,4 @@ This repository is based on **scikit-learn** and **TensorFlow** to create both m
    :name: mastertoc
 
    First step with automl-engine <Quickstart>
-   Automl Module <Automl_module>
+   Automl Module <automl>
