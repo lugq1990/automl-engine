@@ -1,5 +1,6 @@
 # automl-engine
 
+Hands-on Index document page: [`automl-engine`](https://automl-engine.readthedocs.io/en/latest/)
 
 Get best models with only **3** lines of code no matter what type of data with **automl-engine**.
 
