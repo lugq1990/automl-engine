@@ -62,7 +62,7 @@ pred = auto_est.predict(file_load=file_load_test)
 ```
 
 Then we could get whole trained models' evaluation score for each trained model score, we could get best trained model based on validation score if we would love to use trained model for production, one important thing is that these models are stored in local server, we could use them any time with RESTFul API calls.
-![Evalution result](https://github.com/lugq1990/automl-engine/blob/master/static_files/diff_model_score.png?raw=true)
+![Evalution result](https://github.com/lugq1990/automl-engine/blob/master/automl/static_files/diff_model_score.png)
     
 #### Cloud file support
 
@@ -85,7 +85,7 @@ auto_est.fit(file_load=file_load)
 #### sklearn style
 
 
-If we have data `in memory`, we could also use memory objects to train, test and predict with `auto_ml` object, just like `scikit-learn`.
+If we have data `in memory`, we could also use memory objects to train, test and predict with `auto_est` object, just like `scikit-learn`.
 
 ```python
 from sklearn.datasets import load_iris
