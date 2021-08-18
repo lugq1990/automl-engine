@@ -1,0 +1,16 @@
+name: automl-engine-env
+
+dependencies:
+- python=3
+- pandas
+- scikit-learn
+- pyyaml
+- tensorflow >= 2.1.0
+- keras-tuner
+- google-cloud-storage
+- lightgbm
+- xgboost
+- flask
+- flask_restful
+- tqdm
+- numpy
