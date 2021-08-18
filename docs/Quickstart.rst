@@ -149,12 +149,19 @@ Insight for logics of ``automl-engine``:
     
 1. Load data from file or memory for both training and testinig with class ``FileLoad``, support with GCP's ``GCS`` files as source file.
 2. Build processing pipeline object based on data.
+   
     (1). ``Imputation`` for both categorical and numerical data with different logic, if data missing column is over a threshold, will delete that column. Support with algorithm ``KNNImputer`` to impute data or ``SimpleImputer`` to fill missing data.  
-    (2). ``OneHot Encoding`` for categorical columns and add created columns into original data.    
-    (3). ``Standardize`` data to avoid data range, also benefit for some algorithms like ``SVM`` etc.    
+
+    (2). ``OneHot Encoding`` for categorical columns and add created columns into original data.
+
+    (3). ``Standardize`` data to avoid data range, also benefit for some algorithms like ``SVM`` etc.   
+
     (4). ``MinMax`` data to keep data into a 0-1 range.    
+
     (5). ``FeatureSelection`` to keep features with a default threshold or using algorithm with ``ExtraTree`` or ``LinearRegreesion`` to select features.    
+
     (6). ``PCA`` to reduce dimenssion if feature variance over a threshold and just keep satisfied features.
+    
 3. Build a ``Singleton`` backend object to do file or data related functions.
 4. Build training pipeline to instant each algorithm with a ``factory`` class based on pre-defined used algorithms.
 5. Build a ``SearchModel`` class for each algorithm to find best parameters based on ``RandomSearch`` or ``GridSearch``.
