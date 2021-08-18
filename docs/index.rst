@@ -1,11 +1,9 @@
-·· Quickstart file describing automl-engine
-
-First step with automl-engine
+Getting start with automl-engine
 =============================
 
 Get best models with only **3** lines of code no matter what type of data with **automl-engine**.
 
-How to create machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about `Data Loading`, `Feature Engineering`, `Model Training`, `Model Selection`, `Model Evaluation` and `Model Sink`, even `RESTful` with best trained model. 
+How to create machine learning and deep learning models with just a few lines of code by just provide data, then framework will get best trained models based on the data we have? We don't need to care about ``Data Loading``, ``Feature Engineering``, ``Model Training``, ``Model Selection``, ``Model Evaluation`` and ``Model Sink``, even ``RESTful`` with best trained model. 
 
 Now **automl-engine** comes in to show power!
 
@@ -15,10 +13,10 @@ This repository is based on **scikit-learn** and **TensorFlow** to create both m
 Installation
 ------------
 
-·· Warning::
+.. Warning::
    It's highly recommended that to create a **virtual environment** to install `automl-engine` as automl-engine will use many data science packages that needed to be installed.
 
-#### Linux
+Linux
 
    1. Install virtual env: ``sudo apt-get install python3-venv``
    2. Create virtual env folder: ``python3 -m venv your_env_name``
@@ -26,7 +24,7 @@ Installation
    4. Install lastest ``automl-engine`` package: ``pip install automl-engine``
 
 
-#### Windows
+Windows
 
    1. Install virtual env: ``python -m pip install virtualenv``
    2. Create virtual env folder: ``python -m venv your_env_name``
@@ -47,7 +45,7 @@ Sample code to use ``automl-engine`` package by using ``Titanic`` dataset from K
 
 :mod: `FileLoad` is a container for storing our dataset and label, support with ``Cloud storage``. Just provide training file name with file path. 
 
-·· Warning::
+.. Warning::
 
 Please keep in mind to tell ``FileLoad`` which label to use, otherwise will use the last column as label.
 
@@ -82,10 +80,7 @@ If we want to use GCP cloud storage as a data source for train and test data, wh
    >>> file_path = "gs://bucket_name"
    >>> service_account_name = "service_account.json"
    >>> service_account_file_path = r"C:\auto_ml\test"
-
-   >>> file_load = FileLoad(file_name, file_path, label_name='Survived', 
-      service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
-
+   >>> file_load = FileLoad(file_name, file_path, label_name='Survived', service_account_file_name=service_account_name, service_account_file_path=service_account_file_path)
    >>> auto_est = ClassificationAutoML()
    >>> auto_est.fit(file_load=file_load)
 
@@ -96,13 +91,10 @@ If we have data ``in memory``, we could also use memory objects to train, test a
 
    >>> from sklearn.datasets import load_iris
    >>> from sklearn.model_selection import train_test_split
-
    >>> x, y = load_iris(return_X_y=True)
    >>> xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)
-
    >>> auto_est = ClassificationAutoML()
    >>> auto_est.fit(xtrain, ytrain)
-
    >>> score = auto_est.score(xtest, ytest)
    >>> pred = auto_est.predict(xtest)
    >>> prob = auto_est.predict_proba(xtest)
@@ -113,7 +105,6 @@ Regreession support
 Full functionality for both ``classification`` and ``regression`` is same, so the only difference is to change imported class from ``ClassificationAutoML`` to ``RegressionAutoML`` just like snippet code
 
    >>> from automl.estimator import FileLoad, RegressionAutoML
-
    >>> file_load = FileLoad(file_name="train.csv", file_path = r"C:\auto_ml\test", label_name="label")
    >>> # Just change this class
    >>> auto_est = RegressionAutoML()
