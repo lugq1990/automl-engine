@@ -14,18 +14,19 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("."))
-
 sys.path.insert(0, os.path.abspath('../'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'automl-engine'
-copyright = '2020, gqianglu'
-author = 'gqianglu'
+project = u'automl-engine'
+copyright = u'2020, gqianglu'
+author = u'gqianglu'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+# The short X.Y version.
+version = u''
+release = u''
 
 
 # -- General configuration ---------------------------------------------------

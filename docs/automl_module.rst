@@ -1,8 +1,8 @@
+.. apidocs file containing the API Documentation
+.. _metricsdocs:
 
 Automl Module  (API Reference)
 -------------
 
 .. automodule:: automl.estimator
-  :members:
-  :inherited-members:
-  :show-inheritance:
+  :members: AutoML, ClassificationAutoML, RegressionAutoML, FileLoad
