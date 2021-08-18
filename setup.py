@@ -1,12 +1,14 @@
 import io
-import shutil
+import os
 from setuptools import setup, find_packages
 
-# folder_to_be_deleted = ['build', 'automl_engine.egg-info']
+__version__ = '0.0.6'
 
-# for folder in folder_to_be_deleted:
-#     shutil.rmtree(folder)
 
+# for file in os.listdir("dist"):
+#     if __version__ not in file:
+#         os.remove(os.path.join('dist', file))
+        
 
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
@@ -23,7 +25,7 @@ long_description = read('README.md')
 
 setup(
     name='automl-engine',
-    version='0.0.2',
+    version=__version__,
     url='https://github.com/lugq1990/automl-engine',
     license='MIT License',
     author='guangqiang.lu',
@@ -45,9 +47,11 @@ setup(
     description='3 lines of code for automate machine learning for classification and regression.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=['automl'],
+    packages=find_packages(exclude=['test']),
     include_package_data=True,
+    # package_data={'automl': ['*.yml']},
     platforms='any',
+    # packages=['automl'],
     classifiers = [
         'Development Status :: 3 - Alpha',
         

@@ -5,7 +5,7 @@ import json
 from flask import request, Flask, jsonify
 from flask_restful import Resource, Api
 
-from ..automl import ClassificationAutoML
+from automl.estimator import ClassificationAutoML
 
 
 app = Flask(__name__)
