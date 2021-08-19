@@ -701,7 +701,7 @@ if __name__ == '__main__':
     # print(process_pipeline)
     # classifier_pipeline._fit_processing_pipeline(x, y)
 
-    from .test.get_test_data import get_training_data
+    from .pro_test.get_test_data import get_training_data
     from sklearn.model_selection import train_test_split
 
     # x, y = get_training_data()

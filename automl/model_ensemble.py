@@ -286,7 +286,7 @@ class ModelEnsemble(ClassifierClass):
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
 
-    from ..test.get_test_data import get_training_data
+    from .pro_test.get_test_data import get_training_data
     from utils.backend_obj import Backend
 
     x, y = load_iris(return_X_y=True)

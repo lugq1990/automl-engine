@@ -7,12 +7,12 @@ one model training, but also with `ensemble` to combine trained models into a mo
 both reduce `variance` and `bias`. 
 
 High level steps:
-* Load training and testing data file or memory objects.
-* Feature engineering step to process data.
-* Model training based on processed data.
-* Nueral network model training based on processed data.
-* Ensemble logic to combine trained model and do comparation to see better or not.
-* Dump trained models into disk with user defined path.
+1. Load training and testing data file or memory objects.
+2. Feature engineering step to process data.
+3. Model training based on processed data.
+4. Nueral network model training based on processed data.
+5. Ensemble logic to combine trained model and do comparation to see better or not.
+6. Dump trained models into disk with user defined path.
 
 author: Guangqiang.lu
 """
@@ -101,6 +101,12 @@ class AutoML(BaseEstimator):
              xval=None, yval=None, val_split=.2, 
              n_jobs=None, use_neural_network=True, *args, **kwargs):
         """Main training entry point with support with file and memory objects.
+        
+        Full training step with pre-processing pipeline and training pipeline happens here.
+        Various type of data is supported and will convert them into a normal array for later
+        training algorithms, will instant a training pipeline with different algorithms with
+        hyper-parameters selected, will use grid-search to find best hyper-parameters,  will 
+        store these trained models with validation score attached with algorithm name.
 
         Args:
             x ([array], optional): [training data]. Defaults to None.
@@ -148,7 +154,7 @@ class AutoML(BaseEstimator):
         return self
 
     def predict(self, x=None, file_load=None, **kwargs):
-        """Most of the prediction logic should happen here
+        """Based on data or file to get prediction based on best trained models.
 
         Args:
             x ([array], optional): [test data]. Defaults to None.
@@ -253,7 +259,6 @@ class AutoML(BaseEstimator):
         return models_list
 
     def get_sorted_models_scores(self, x, y, **kwargs):
-        
         """
         Add this func to get whole score based for each trained models, so that
         we could get the result that we have taken that times and for each models,
@@ -285,15 +290,25 @@ class AutoML(BaseEstimator):
 
     @staticmethod
     def _check_param(*args):
+        """Check parameters are all None.
+
+        Raises:
+            ValueError: Full parameters are None.
+        """
         all_None = all([arg is None for arg in args])
 
         if all_None:
             raise ValueError("Please provide at least one parameter!")
 
     @staticmethod
-    def __get_file_load_data_label(file_load, use_for_pred=True):
-        """
-        Get data and label from original obj.
+    def __get_file_load_data_label(file_load):
+        """Get data and label from original obj.
+
+        Args:
+            file_load (FileLoad): Container object for data
+
+        Returns:
+            tuple: (data, label)
         """
         data, label = file_load.data, file_load.label
         
@@ -301,15 +316,31 @@ class AutoML(BaseEstimator):
 
     @classmethod
     def reconstruct(cls, models_path=None, *args, **kwargs):
-        """
-        Used for Restful API to create
+        """Used for Restful API to create
+
+        Args:
+            models_path (str, optional): Where trained model is. Defaults to None.
+
+        Returns:
+            AutoML: a re-constructed object for API use case
         """
         return cls(models_path, *args, **kwargs)
 
     @staticmethod
     def _get_data_and_label(file_load, x, y):
-        """
-        Ensure could get data and label.
+        """Get data and label with file_load or just data and label provided.
+
+        Args:
+            file_load (FileLoad): Container
+            x (array): data
+            y (array): label
+
+        Raises:
+            ValueError: Nothing provided, full is None
+            ValueError: Couldn't get data and label
+
+        Returns:
+            tuple: data and label
         """
         if file_load is None and x is None and y is None:
             raise ValueError("When do real training, please provide at least a " +
@@ -529,6 +560,12 @@ class FileLoad:
                 return 'local'
 
     def _get_gcs_file(self):
+        """Download the GCS file into local tmp folder.
+
+        Raises:
+            ValueError: Couldn't get bucket path.
+            e: Download fail with service account.
+        """
         # first service account
         self._check_service_account()
 
@@ -556,6 +593,13 @@ class FileLoad:
             raise e
     
     def _check_service_account(self):
+        """Check service account is exist and with JSON format.
+
+        Raises:
+            ValueError: Service account isn't provided.
+            ValueError: Service account isn't with JSON extension.
+            FileNotFoundError: Service account file isn't exist.
+        """
         # Check service account related
         if not self.service_account_file_name:
             raise ValueError("When try to use GCS, please must provide with service account file to interact with GCS!")
@@ -569,6 +613,14 @@ class FileLoad:
                     "please check it.".format(self.service_account_file_name, self.service_account_file_path))
     
     def _load_data_file(self):
+        """Load data and label based on file_load object.
+
+        Raises:
+            e: Load fail
+
+        Returns:
+            tuple: data and label
+        """
         file_location = self._get_file_location()
         
         file_path = self.file_path

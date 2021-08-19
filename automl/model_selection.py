@@ -380,8 +380,8 @@ class GridSearchModel(object):
 
 if __name__ == '__main__':
     from sklearn.datasets import load_iris, load_digits
-    from base.classifier_algorithms import LogisticRegression
-    from base.classifier_algorithms import GradientBoostingTree, LightGBMClassifier
+    from .classifier_algorithms import LogisticRegression
+    from .classifier_algorithms import GradientBoostingTree, LightGBMClassifier
     from utils.backend_obj import Backend
 
     backend = Backend(output_folder=r"C:\Users\guangqiiang.lu\Downloads\test_automl")

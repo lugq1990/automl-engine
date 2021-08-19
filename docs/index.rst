@@ -15,3 +15,6 @@ This repository is based on **scikit-learn** and **TensorFlow** to create both m
 
    First step with automl-engine <Quickstart>
    Automl Module <automl_module>
+   Preprocessing Module <preprocessing_module>
+   Model selection Module <selection_module>
+   Ensemble Module <ensemble_module>
