@@ -8,3 +8,5 @@ Preprocessing Module  (API Reference)
   :members:
   :inherited-members:
   :show-inheritance:
+
+  .. automethod:: __init__

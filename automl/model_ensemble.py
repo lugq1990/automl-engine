@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 """
+Ensemble trained model into a more robost model with `stacking` and `voting`.
+
 To do ensemble logic with whole trained model, try to improve whole score based on
 different processing logic, also if we could get better result, then we are lucky!
 
@@ -27,10 +29,9 @@ logger = create_logger(__file__)
 
 class ModelEnsemble(ClassifierClass):
     """
-    Currently I want to support 2 different ensemble logic:
+    Currently support with 2 different ensemble logics:
     Voting(weight combine classification: with soft voting and hard voting,
-    regression: weight multiple)
-    stacking(add trained model prediction into training data)
+    regression: weight multiple), stacking(add trained model prediction into training data)
     """
     def __init__(self, backend, task_type='classification', ensemble_alg='voting',
                  voting_logic='soft'):
