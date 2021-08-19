@@ -32,12 +32,11 @@ class GridSearchModel(object):
     Here could just to implement that could add a list
     of estimators and their parameters list.
     I want to make this class to do real training part.
+    
+    self.estimator_list is like: [GridSearchCV(lr, params), ...]
+    self.score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
     """
     def __init__(self, backend, n_best_model=None, use_neural_network=True, task_type='classification'):
-        """
-        self.estimator_list is like: [GridSearchCV(lr, params), ...]
-        self.score_dict is like: {'LogisticRegressin': (lr, 0.9877)}
-        """
         super(GridSearchModel, self).__init__()
         # as we need to do training, so here will just store the trained best model
         # for later step ensemble

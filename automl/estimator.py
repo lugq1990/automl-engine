@@ -7,11 +7,17 @@ one model training, but also with `ensemble` to combine trained models into a mo
 both reduce `variance` and `bias`. 
 
 High level steps:
+
 1. Load training and testing data file or memory objects.
+
 2. Feature engineering step to process data.
+
 3. Model training based on processed data.
+
 4. Nueral network model training based on processed data.
+
 5. Ensemble logic to combine trained model and do comparation to see better or not.
+
 6. Dump trained models into disk with user defined path.
 
 author: Guangqiang.lu
