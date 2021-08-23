@@ -14,22 +14,21 @@ dump whole trained models.
 @author: Guangqiang.lu
 """
 import time
+
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-from .model_selection import GridSearchModel
 from .classifier_algorithms import ClassifierFactory
-from .regressor_algorithms import RegressorFactory
-from .preprocessing import ProcessingFactory
 from .model_ensemble import ModelEnsemble
-from .utils.paths import load_yaml_file
+from .model_selection import GridSearchModel
+from .preprocessing import ProcessingFactory
+from .regressor_algorithms import RegressorFactory
 from .utils.backend_obj import Backend
+from .utils.data_rela import (check_data_and_label, get_scorer_based_on_target,
+                              get_type_problem, hash_dataset_name)
 from .utils.logger import create_logger
-from .utils.data_rela import get_scorer_based_on_target, get_type_problem
-from .utils.data_rela import check_data_and_label, hash_dataset_name
-
-
+from .utils.paths import load_yaml_file
 
 logger = create_logger(__file__)
 
@@ -701,8 +700,9 @@ if __name__ == '__main__':
     # print(process_pipeline)
     # classifier_pipeline._fit_processing_pipeline(x, y)
 
-    from .pro_test.get_test_data import get_training_data
     from sklearn.model_selection import train_test_split
+
+    from .pro_test.get_test_data import get_training_data
 
     # x, y = get_training_data()
     xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=.2)

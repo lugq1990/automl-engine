@@ -1,12 +1,12 @@
 """Main entry for this project restful API."""
 
-import numpy as np
 import json
-from flask import request, Flask, jsonify
-from flask_restful import Resource, Api
+
+import numpy as np
+from flask import Flask, jsonify, request
+from flask_restful import Api, Resource
 
 from automl.estimator import ClassificationAutoML
-
 
 app = Flask(__name__)
 api = Api(app)

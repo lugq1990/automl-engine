@@ -2,37 +2,39 @@
 
 """
 import os
-import traceback
-import time
-import numpy as np
-import string
 import random
 import shutil
+import string
+import time
+import traceback
 import warnings
+
+import numpy as np
+
 warnings.simplefilter("ignore")
 
+import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 # This won't work as check `keras-tuner` source code that uses `print` to get info...
 # # This only workable in linux
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-import tensorflow as tf
 # This is to filter tensorflow warning log
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout, Conv2D, Conv1D, Activation
 from kerastuner import HyperModel
 from kerastuner.tuners import RandomSearch
+from tensorflow import keras
+from tensorflow.keras.layers import (LSTM, Activation, Conv1D, Conv2D, Dense,
+                                     Dropout)
+from tensorflow.keras.models import Sequential
 
-
-from .utils.paths import load_yaml_file
 from .utils.CONSTANT import OUTPUT_FOLDER, TMP_FOLDER
+from .utils.data_rela import (get_num_classes_based_on_label,
+                              get_scorer_based_on_target, get_type_problem)
 from .utils.logger import create_logger
-from .utils.data_rela import get_num_classes_based_on_label, get_scorer_based_on_target, get_type_problem
-
+from .utils.paths import load_yaml_file
 
 logger = create_logger(__file__)
 

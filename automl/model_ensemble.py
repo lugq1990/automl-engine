@@ -15,14 +15,13 @@ import numpy as np
 from sklearn.ensemble import VotingClassifier, VotingRegressor
 from sklearn.model_selection import cross_validate
 
-from .utils.backend_obj import Backend
-from .scorer import accuracy, r2
 from .classifier_algorithms import ClassifierClass, ClassifierFactory
 from .regressor_algorithms import RegressorFactory
+from .scorer import accuracy, r2
+from .utils.backend_obj import Backend
+from .utils.data_rela import get_type_problem
 from .utils.logger import create_logger
 from .utils.paths import load_yaml_file
-from .utils.data_rela import get_type_problem
-
 
 logger = create_logger(__file__)
 
@@ -287,8 +286,9 @@ class ModelEnsemble(ClassifierClass):
 if __name__ == '__main__':
     from sklearn.datasets import load_iris
 
-    from .pro_test.get_test_data import get_training_data
     from utils.backend_obj import Backend
+
+    from .pro_test.get_test_data import get_training_data
 
     x, y = load_iris(return_X_y=True)
     x, y = get_training_data()

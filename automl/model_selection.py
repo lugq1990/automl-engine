@@ -10,19 +10,20 @@ Classifier real training happens here.
 
 @author: Guangqiang.lu
 """
-from operator import ne
-import numpy as np
-import time
-import tqdm
 import itertools
-from sklearn.model_selection import GridSearchCV, cross_validate
+import time
+from operator import ne
+
+import numpy as np
+import tqdm
 from sklearn import metrics
+from sklearn.model_selection import GridSearchCV, cross_validate
 
+from .neural_network_search import (NeuralModelSearch,
+                                    default_neural_algorithm_list)
 from .utils.backend_obj import Backend
+from .utils.data_rela import get_scorer_based_on_target, get_type_problem
 from .utils.logger import create_logger
-from .utils.data_rela import get_type_problem, get_scorer_based_on_target
-from .neural_network_search import NeuralModelSearch, default_neural_algorithm_list
-
 
 logger = create_logger(__file__)
 
@@ -378,10 +379,12 @@ class GridSearchModel(object):
 
 
 if __name__ == '__main__':
-    from sklearn.datasets import load_iris, load_digits
-    from .classifier_algorithms import LogisticRegression
-    from .classifier_algorithms import GradientBoostingTree, LightGBMClassifier
+    from sklearn.datasets import load_digits, load_iris
+
     from utils.backend_obj import Backend
+
+    from .classifier_algorithms import (GradientBoostingTree,
+                                        LightGBMClassifier, LogisticRegression)
 
     backend = Backend(output_folder=r"C:\Users\guangqiiang.lu\Downloads\test_automl")
 

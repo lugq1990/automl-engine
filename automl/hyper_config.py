@@ -4,8 +4,9 @@ Use a class get generate the hyper-parameters
 
 @author: Guangqiang.lu
 """
-import numpy as np
 from collections import defaultdict
+
+import numpy as np
 
 
 class ConfigSpace(object):

@@ -24,19 +24,19 @@ author: Guangqiang.lu
 """
 from __future__ import absolute_import
 
-import pandas as pd
 import time
+
+import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import train_test_split
 
-from automl.utils.backend_obj import Backend
 from automl.classifier_algorithms import *
+from automl.pipeline_training import ClassificationPipeline, RegressionPipeline
 from automl.scorer import *
+from automl.utils.backend_obj import Backend
 from automl.utils.CONSTANT import *
-from automl.pipeline_training import ClassificationPipeline,  RegressionPipeline
 from automl.utils.logger import create_logger
-
 
 logger = create_logger(__file__)
 
@@ -582,7 +582,7 @@ class FileLoad:
             raise ValueError("When to get bucket name from file path: {}, couldn't get the bucket name.".format(self.file_path))
 
         from google.cloud import storage
-        
+
         # init client with service account file
         client = storage.Client.from_service_account_json(os.path.join(self.service_account_file_path, self.service_account_file_name))
 
@@ -680,7 +680,8 @@ class FileLoad:
 
 if __name__ == '__main__':
     # Test with `FileLoad` class
-    from automl.estimator import ClassificationAutoML, FileLoad, RegressionAutoML
+    from automl.estimator import (ClassificationAutoML, FileLoad,
+                                  RegressionAutoML)
     
     file_name = 'train.csv'
     file_path = r"C:\Users\guangqiang.lu\Documents\lugq\github\auto-ml-cl\automl\test"

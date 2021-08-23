@@ -4,24 +4,19 @@ This is main class that is used for whole processing logic for sklearn.
 
 @author: Guangqiang.lu
 """
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 from sklearn.base import TransformerMixin
-from sklearn.feature_selection import VarianceThreshold, SelectFromModel
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.feature_selection import SelectFromModel, VarianceThreshold
 from sklearn.impute import KNNImputer, SimpleImputer
-from sklearn.preprocessing import Normalizer
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import (MinMaxScaler, Normalizer, OneHotEncoder,
+                                   StandardScaler)
 
-
-from .utils.data_rela import check_label, is_categorical_type
 from .utils.CONSTANT import *
-
+from .utils.data_rela import check_label, is_categorical_type
 
 
 class ProcessingFactory:
@@ -98,12 +93,8 @@ class Standard(Process):
         self.estimator = StandardScaler()
 
 
-
-cols_keep_ratio = .8
-
-
 class PrincipalComponentAnalysis(Process):
-    def __init__(self, n_components=None, selection_ratio=.90):
+    def __init__(self, n_components=None, selection_ratio=.90, cols_keep_ratio=.8):
         """
         PCA for data decomposition with PCA
         :param n_components: how many new components to keep
@@ -112,6 +103,7 @@ class PrincipalComponentAnalysis(Process):
         super(PrincipalComponentAnalysis, self).__init__()
         self.estimator = PCA(n_components=n_components)
         self.selection_ratio = selection_ratio
+        self.cols_keep_ratio = cols_keep_ratio
 
     def transform(self, data, y=None):
         """
@@ -127,9 +119,9 @@ class PrincipalComponentAnalysis(Process):
         ratio_list = self.estimator.explained_variance_ratio_
         ratio_cum = np.cumsum(ratio_list)
         n_feature_selected = sum(ratio_cum < self.selection_ratio)
-        if (n_feature_selected / data.shape[1]) < cols_keep_ratio:
+        if (n_feature_selected / data.shape[1]) < self.cols_keep_ratio:
             # we don't want to get so less features
-            n_feature_selected = int(cols_keep_ratio * data.shape[1])
+            n_feature_selected = int(self.cols_keep_ratio * data.shape[1])
 
         return self.estimator.transform(data)[:, :n_feature_selected]
 

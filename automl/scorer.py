@@ -6,6 +6,7 @@ author: Guangqiang.lu
 """
 
 from abc import ABCMeta
+
 import numpy as np
 from sklearn import metrics
 from sklearn.utils.multiclass import type_of_target

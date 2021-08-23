@@ -5,13 +5,15 @@ here so that we could change or do something change could be easier.
 
 @author: Guangqiang.lu
 """
-import numpy as np
 import warnings
-from sklearn.base import BaseEstimator
-from sklearn import metrics
 
-from .hyper_config import (ConfigSpace, UniformHyperparameter, CategoryHyperparameter,
-                                                         NormalHyperameter, GridHyperparameter)
+import numpy as np
+from sklearn import metrics
+from sklearn.base import BaseEstimator
+
+from .hyper_config import (CategoryHyperparameter, ConfigSpace,
+                           GridHyperparameter, NormalHyperameter,
+                           UniformHyperparameter)
 
 warnings.simplefilter('ignore')
 
