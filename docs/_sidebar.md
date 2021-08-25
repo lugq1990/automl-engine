@@ -1,2 +1,2 @@
-* [Index](index.md "index page of automl-engine")
-* [Home](../README.md "Home page of automl-engine")
+* [Index](index.md "Index page of automl-engine")
+* [Home](home_page.md "Home page of automl-engine")
