@@ -7,4 +7,4 @@
 - Get best models with machine learning
 
 [GitHub](https://github.com/lugq1990/automl-engine)
-[Get Started](index.md "Index of automl-engine")
+[Get Started](home.md)

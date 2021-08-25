@@ -7,6 +7,14 @@
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <style>
+    html {
+      overflow-y: scroll;
+    }
+    body {
+      overflow: scroll;
+    }
+  </style>
 </head>
 <body>
   <div id="app">Loading automl-engine</div>
@@ -15,13 +23,16 @@
     window.$docsify = {
       loadSidebar: true,
       coverpage: true,
-      
+      search: "auto",
+      auto2top: true,
       name: 'automl-engine',
       repo: 'https://github.com/lugq1990/automl-engine'
     }
   </script>
   <!-- Docsify v4 -->
-  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <!-- <script src="//cdn.jsdelivr.net/npm/docsify@4"></script> -->
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+  <script src="//unpkg.com/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
+  <script src="//unpkg.com/docsify-scroll-to-top/dist/docsify-scroll-to-top.min.js"></script>
 </body>
 </html>
