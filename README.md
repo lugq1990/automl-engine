@@ -1,7 +1,10 @@
 # automl-engine
 
 
-Hands-on documents with API reference could be found here: [**automl-engine**](https://automl-engine.readthedocs.io/en/latest/)
+Hands-on documents:
+
+ - [**automl-engine API reference**](https://automl-engine.readthedocs.io/en/latest/) 
+ - [**automl-engine document**](https://lugq1990.github.io/automl-engine/)
 
 Get best models with only **3** lines of code no matter what type of data with **automl-engine**.
 
